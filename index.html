@@ -9,6 +9,12 @@
 .panel{position:relative}
 .panel select{background:var(--card)!important;color:var(--ink)!important;border:1px solid var(--line)!important;border-radius:8px;padding:7px 10px;min-width:240px;font:inherit;font-size:13.5px;appearance:auto}
 .panel .fg label{color:var(--muted)}
+.r3del{border:none;background:transparent;color:var(--muted);cursor:pointer;font-size:11px;padding:0 4px;opacity:.35}
+li:hover>.r3del{opacity:1}
+.r3del:hover{color:var(--accent)}
+.r3t{outline:none;border-radius:4px;padding:0 2px}
+.r3t:focus{background:rgba(14,165,233,.12);box-shadow:0 0 0 1px #38bdf8}
+.r3t:empty:before{content:'Nhập nội dung…';color:var(--muted)}
 .pxls{font:inherit;font-size:11.5px;font-weight:600;padding:4px 10px;border-radius:8px;border:1px solid #0ea5e9;background:var(--chip);color:#0369a1;cursor:pointer;white-space:nowrap;margin-left:6px}
 .pxls:hover{background:#0ea5e9;color:#fff}
 .pxls.abs{position:absolute;top:10px;right:120px;z-index:2}
@@ -2719,7 +2725,11 @@ initT10UI();
 /* ---------- Hội viên Doanh nhân T10 ---------- */
 const HVF={asm:'all',list:'near'}, HVEX={asm:new Set(),npp:new Set()};
 const hvA=i=>MBS78_DATA.asm[i], hvN=i=>MBS78_DATA.npp[i], hvS=i=>MBS78_DATA.ss[i];
-function hvRows(){return HV10.rows.filter(r=>(HVF.asm==='all'||hvA(r[2])===HVF.asm)&&(F.vip==='all'||MBS78_DATA.vip[r[6]]===F.vip));}
+// File HV T10: phần BRAND đang lặp lại nguyên số T9 (SO, nền tảng, điểm thưởng trùng T9) → chưa dùng làm số T10
+const HV_STALE=(()=>{const b=HV10.rows.filter(r=>r[7]>=3&&r[14]);const eq=b.filter(r=>Math.abs(r[9]-r[14][2])<1000).length;return b.length>0&&eq/b.length>0.9;})();
+const hvLive=r=>!(HV_STALE&&r[7]>=3);
+function hvRowsAll(){return HV10.rows.filter(r=>(HVF.asm==='all'||hvA(r[2])===HVF.asm)&&(F.vip==='all'||MBS78_DATA.vip[r[6]]===F.vip));}
+function hvRows(){return hvRowsAll().filter(hvLive);}
 function hvAgg(rs){
   const o={n:0,dat:0,base:0,so:0,pend:0,n9:0,dat9:0,keep:0,near:0,nw:0};
   rs.forEach(r=>{o.n++;o.dat+=r[11];o.base+=r[8];o.so+=r[9];o.pend+=r[10];
@@ -2754,10 +2764,10 @@ function renderT10HV(){
   const rs=hvRows(), T=hvAgg(rs), wd=T10_META.mtd_days, wt=WORKDAYS['10'], tp=wd/wt*100;
   const soPct=T.base?T.so/T.base*100:0, prog=tp?soPct/tp*100:0;
   document.getElementById('hvSub').textContent='— MTD đến '+T10_META.last_date+' ('+wd+'/'+wt+' ngày làm việc · '+fp(tp)+' thời gian) · so sánh với T9 cả tháng theo mã KH';
-  document.getElementById('hvBanner').innerHTML=`Đã có <b>${fi(T.dat)}</b>/${fi(T.n)} KH đạt thưởng (<b>${hvP(T.dat,T.n)}</b>) khi mới qua ${fp(tp)} thời gian; SO bằng <b>${fp(soPct)}</b> chỉ tiêu nền tảng → tiến độ SO <b style="color:${prog>=100?'var(--green)':'var(--accent)'}">${fp(prog)}</b> so với tiến độ thời gian (100% = đúng nhịp). Cả tháng T9: ${hvP(T.dat9,T.n9)} KH đạt (${fi(T.dat9)}/${fi(T.n9)}).`;
+  document.getElementById('hvBanner').innerHTML=(HV_STALE?`<div style="color:var(--accent);margin-bottom:6px">⚠️ <b>File Hội viên T10: phần BRAND (${fi(hvRowsAll().filter(r=>r[7]>=3).length)} KH) đang lặp lại nguyên số Tháng 9</b> (SO, chỉ tiêu nền tảng, điểm thưởng trùng T9 ở 99% KH) nên em chưa tính vào T10. Các chỉ số T10 bên dưới chỉ gồm <b>chương trình CAT</b>; cần xuất lại file T10 có số BRAND tháng 10.</div>`:'')+`${HV_STALE?'CAT: ':''}Đã có <b>${fi(T.dat)}</b>/${fi(T.n)} KH đạt thưởng (<b>${hvP(T.dat,T.n)}</b>) khi mới qua ${fp(tp)} thời gian; SO bằng <b>${fp(soPct)}</b> chỉ tiêu nền tảng → tiến độ SO <b style="color:${prog>=100?'var(--green)':'var(--accent)'}">${fp(prog)}</b> so với tiến độ thời gian (100% = đúng nhịp). Cả tháng T9: ${hvP(T.dat9,T.n9)} KH đạt (${fi(T.dat9)}/${fi(T.n9)}).`;
   const K=(l,v,s,ac)=>`<div class="kpi" style="border-top:3px solid ${ac}"><div class="k-lab" style="color:${ac}">${l}</div><div class="k-val">${v}</div><div class="k-sub">${s}</div></div>`;
   document.getElementById('hvKpis').innerHTML=
-    K('KH trong danh sách',fi(T.n),fi(T.nw)+' KH mới so với T9','#0ea5e9')+
+    K('KH trong danh sách',fi(hvRowsAll().length),HV_STALE?'CAT '+fi(T.n)+' · BRAND '+fi(hvRowsAll().length-T.n)+' (chưa có số T10)':fi(T.nw)+' KH mới so với T9','#0ea5e9')+
     K('Đã đạt thưởng T10',fi(T.dat),hvP(T.dat,T.n)+' · T9 cả tháng '+hvP(T.dat9,T.n9),'#2e7d5b')+
     K('SO / Chỉ tiêu nền tảng',fp(soPct),gFmt(T.so)+' / '+gFmt(T.base),'#7c5cbf')+
     K('Tiến độ SO vs thời gian',fp(prog),'thời gian đã qua '+fp(tp),prog>=100?'#2e7d5b':'#e8613c')+
@@ -2778,14 +2788,19 @@ function renderT10HV(){
   rh+=`<tr class="tot"><td style="text-align:left">Chưa đạt thưởng</td><td>${fi(nd)}</td><td>${nd?'100,0%':hvDash}</td><td>${gFmt(rs.filter(r=>!r[11]).reduce((a,r)=>a+Math.max(0,r[8]-r[9]),0))}</td></tr></tbody>`;
   document.getElementById('hvReason').innerHTML=rh;
   // tier
-  let th='<thead><tr><th style="text-align:left">Loại HV</th><th>KH T10</th><th>Đạt T9 (cả tháng)</th><th>%Đạt T9</th><th>Đã đạt T10</th><th>%Đạt T10</th><th>Chỉ tiêu</th><th>SO T10</th><th>%SO</th><th>T9 đạt, T10 chưa</th><th>Gần đạt</th></tr></thead><tbody>';
-  HV10.tiers.forEach((tn,i)=>{const o=hvAgg(rs.filter(r=>r[7]===i));
-    th+=`<tr><td style="text-align:left;font-weight:600">${tn}</td><td>${fi(o.n)}</td><td>${fi(o.dat9)}</td><td>${hvP(o.dat9,o.n9)}</td><td style="font-weight:700">${fi(o.dat)}</td><td style="font-weight:700">${hvP(o.dat,o.n)}</td><td>${gFmt(o.base)}</td><td>${gFmt(o.so)}</td><td>${hvP(o.so,o.base)}</td><td>${fi(o.keep)}</td><td>${fi(o.near)}</td></tr>`;});
+  const all=hvRowsAll(), t9s={}; all.forEach(r=>{if(!r[14])return;const k=r[14][0];t9s[k]=t9s[k]||{n:0,d:0};t9s[k].n++;t9s[k].d+=r[14][3];});
+  let th='<thead><tr><th rowspan="2" style="text-align:left">Loại HV</th><th colspan="3">Tháng 9 (cả tháng · theo loại HV của T9)</th><th colspan="8">Tháng 10 (MTD · theo loại HV của T10)</th></tr><tr><th>KH T9</th><th>Đạt T9</th><th>%Đạt T9</th><th>KH T10</th><th>Đã đạt T10</th><th>%Đạt T10</th><th>Chỉ tiêu nền tảng</th><th>SO T10</th><th>%SO</th><th>T9 đạt, T10 chưa</th><th>Gần đạt</th></tr></thead><tbody>';
+  const D='<span class="fx">—</span>';
+  HV10.tiers.forEach((tn,i)=>{const q=t9s[i]||{n:0,d:0}, stale=HV_STALE&&i>=3, rr=all.filter(r=>r[7]===i), o=hvAgg(rr.filter(hvLive));
+    th+=`<tr><td style="text-align:left;font-weight:600">${tn}</td><td>${fi(q.n)}</td><td>${fi(q.d)}</td><td style="font-weight:700">${hvP(q.d,q.n)}</td><td>${fi(rr.length)}</td>`+(stale?`<td colspan="7" style="text-align:left;color:var(--muted)">chưa có số T10 (file đang lặp lại số T9)</td>`:`<td style="font-weight:700">${fi(o.dat)}</td><td style="font-weight:700">${hvP(o.dat,o.n)}</td><td>${gFmt(o.base)}</td><td>${gFmt(o.so)}</td><td>${hvP(o.so,o.base)}</td><td>${fi(o.keep)}</td><td>${fi(o.near)}</td>`)+`</tr>`;});
+  { const q=Object.values(t9s).reduce((a,x)=>(a.n+=x.n,a.d+=x.d,a),{n:0,d:0}), o=hvAgg(all.filter(hvLive));
+    th+=`<tr class="tot"><td style="text-align:left">Tổng</td><td>${fi(q.n)}</td><td>${fi(q.d)}</td><td>${hvP(q.d,q.n)}</td><td>${fi(all.length)}</td><td>${fi(o.dat)}</td><td>${hvP(o.dat,o.n)}</td><td>${gFmt(o.base)}</td><td>${gFmt(o.so)}</td><td>${hvP(o.so,o.base)}</td><td>${fi(o.keep)}</td><td>${fi(o.near)}</td></tr>`; }
   document.getElementById('hvTier').innerHTML=th+'</tbody>';
   document.getElementById('hvTreeBody').innerHTML=hvTree();
   // categories
   let ch='<thead><tr><th style="text-align:left">Ngành hàng / nhãn hàng</th><th>KH thuộc CT</th><th>KH có SO</th><th>% KH có SO</th><th>SO T10</th><th>Tỷ trọng</th><th>Cần mở mới (NEW)</th><th>Đã mở mới</th><th>Cần FOCUS</th><th>FOCUS đã có SO</th></tr></thead><tbody>';
   const block=(title,list,isb)=>{
+    if(isb&&HV_STALE){ch+=`<tr class="lvl0"><td colspan="10" style="text-align:left;font-weight:700;color:#7c5cbf">${title} — <span style="color:var(--muted);font-weight:500">chưa có số T10 (file đang lặp lại số T9)</span></td></tr>`;return;}
     const q=rs.filter(r=>(r[7]>=3)===isb); const tot=q.reduce((a,r)=>a+r[9],0)/1000;
     ch+=`<tr class="lvl0"><td colspan="10" style="text-align:left;font-weight:700;color:#7c5cbf">${title}</td></tr>`;
     list.map((nm,i)=>{let kh=0,has=0,so=0,nw=0,nwo=0,fc=0,fco=0;
@@ -2845,7 +2860,7 @@ function renderOvT10(){
   const lim=(F.vip!=='all');
   const card=(lab,val,sub,hl)=>`<div class="kpi ${hl?'hl':''}"><div class="k-lab">${lab}</div><div class="k-val">${val}</div><div class="k-sub">${sub}</div></div>`;
   const dl=(a,b,txt)=>(a==null||!b)?txt:`<span class="${a>=b?'up':'dn'}">${a>=b?'▲':'▼'} ${ovSg((a/b-1)*100).slice(1)}</span> ${txt}`;
-  const hv=hvAgg(HV10.rows.filter(r=>F.asm==='all'||hvA(r[2])===F.asm));
+  const hv=hvAgg(HV10.rows.filter(r=>(F.asm==='all'||hvA(r[2])===F.asm)&&hvLive(r)));
   document.getElementById('ovT10Kpis').innerHTML=[
     card('SO Tháng 10 (MTD)',gFmt(M.so10),`đến ${T10_META.last_date} · ${d} ngày làm việc · `+(M.tg?`chỉ tiêu ${gT(M.tg,F.oo!=='all')} · %Đạt ${fp(M.so10/M.tg*100)} · tiến độ ${fp(M.so10/M.tg*100/(d/T10_META.days_total))}`:'chưa có chỉ tiêu'),true),
     card('SO bình quân/ngày',gFmt(d10),dl(d10,s9d,`so với T9 (${gFmt(s9d)}/ngày)`)),
@@ -3350,7 +3365,7 @@ function r3Metrics(K){
   const g=GROWTH9.filter(r=>r.cat==='Total'&&inK(r.ss,r.npp)).reduce((a,r)=>(a.y+=r.so_ytd,a.ly+=r.so_ytd_ly,a),{y:0,ly:0});
   const ap=AP9.filter(r=>inK(r[2],r[1])); const a9=ap9Sum(ap); a9.b80=ap.filter(r=>!r[10]&&r[6]&&r[5]<0.8*r[6]).length;
   const aq=APQ.filter(r=>inK(r[2],r[1])).reduce((a,r)=>{for(let i=0;i<3;i++){a.e[i]+=r[5][i];a.he[i]+=r[6][i];a.o[i]+=r[7][i];}a.so+=r[9];a.n++;return a;},{e:[0,0,0],he:[0,0,0],o:[0,0,0],so:0,n:0});
-  const hv=hvAgg(HV10.rows.filter(r=>inK(MBS78_DATA.ss[r[3+1]],MBS78_DATA.npp[r[3]])&&(F.vip==='all'||MBS78_DATA.vip[r[6]]===F.vip)));
+  const hv=hvAgg(HV10.rows.filter(r=>hvLive(r)&&inK(MBS78_DATA.ss[r[3+1]],MBS78_DATA.npp[r[3]])&&(F.vip==='all'||MBS78_DATA.vip[r[6]]===F.vip)));
   const cov=DATA.filter(r=>inK(r.ss,r.npp)&&ooOk(r)).reduce((a,r)=>(a.q+=r.q,a.a8+=r.a8,a.nb+=r.nb,a),{q:0,a8:0,nb:0});
   const npps=[...new Set(T9.filter(r=>K.has(ssKey(r.ssn,r.npp))).map(r=>r.npp))];
   const tp=somDays('10')/WORKDAYS['10']*100, m10=M['10'], m9=M['9'];
@@ -3416,8 +3431,9 @@ function render360(){
   if(X.dpc!=null&&X.dpc<0)A.push(`PC/ngày giảm ${ovSg(X.dpc)} — rà tuân thủ tuyến (MCP) và tần suất ghé điểm bán.`);
   if(X.dl!=null&&X.dl<0)A.push(`LPPC giảm ${ovL(-X.dl)} dòng/đơn — đẩy bán chéo ngành (Mì, Nước giải khát, HPC) trong mỗi đơn.`);
   if(m10.mcp&&X.cover!=null&&B.cover!=null&&X.cover<B.cover)A.push(`Độ phủ T10 ${fp(X.cover)} thấp hơn Miền ${fp(B.cover)} — tập trung ${fi(Math.max(0,m10.mcp-m10.act))} quầy chưa phát sinh đơn.`);
-  const box=(t,c,arr,empty)=>`<div style="border:1px solid var(--line);border-left:4px solid ${c};border-radius:10px;padding:10px 12px"><div style="font-weight:800;color:${c};margin-bottom:6px">${t}</div>${arr.length?'<ul style="margin:0;padding-left:18px;line-height:1.55">'+arr.map(x=>`<li>${x}</li>`).join('')+'</ul>':`<div style="color:var(--muted)">${empty}</div>`}</div>`;
-  document.getElementById('r3Swot').innerHTML=lvl==='Miền'?box('Toàn Miền — điểm chính','#0369a1',[`Tiến độ T10 <b>${fp(X.t10)}</b>, SO/ngày ${ovSg(X.d10)} so với T9`,`Lũy kế 9T đạt <b>${fp(X.p9t)}</b> chỉ tiêu; tăng trưởng 9T ${ovSg(X.gr)}`,`AP 9T đạt <b>${fp(X.ape)}</b> mức E; HV đạt T10 ${fp(X.hvp)}`],'')+box('🎯 Hành động','#e8613c',A,'—'):box('✅ Điểm mạnh','#2e7d5b',S,'Chưa có chỉ số vượt chuẩn Miền rõ rệt.')+box('⚠️ Cần cải thiện','#e8613c',W,'Không có chỉ số thấp hơn chuẩn Miền rõ rệt.')+box('🎯 Hành động','#0369a1',A,'—');
+  const auto=lvl==='Miền'?{P:[`Tiến độ T10 <b>${fp(X.t10)}</b>, SO/ngày ${ovSg(X.d10)} so với T9`,`Lũy kế 9T đạt <b>${fp(X.p9t)}</b> chỉ tiêu; tăng trưởng 9T ${ovSg(X.gr)}`,`AP 9T đạt <b>${fp(X.ape)}</b> mức E; HV đạt T10 ${fp(X.hvp)}`],W:[],A:A}:{P:S,W:W,A:A};
+  r3SwotRender(auto, lvl==='Miền');
+
   // ranking
   const peers=R3.asm==='all'?FULL.ASMS.map(a=>({lab:a,sub:KV[a],u:{asm:a,ss:''}})):T9.filter(r=>r.asm===R3.asm).map(r=>({lab:r.ss,sub:r.npp,u:{asm:r.asm,ss:r.ss}}));
   document.getElementById('r3RankTitle').textContent=R3.asm==='all'?'Xếp hạng 5 ASM':'Xếp hạng SS của '+R3.asm;
@@ -3454,6 +3470,47 @@ function render360(){
      ['Quầy (Visit Schedule) · Active T8',`${fi(X.cov.q)} · ${fi(X.cov.a8)} (${r3p(X.cov.q?X.cov.a8/X.cov.q*100:null)})`,r3p(B.cov.q?B.cov.a8/B.cov.q*100:null)],['2 tháng liền không mua (T7–T8)',fi(X.cov.nb),fi(B.cov.nb)]].map(r=>`<tr><td style="text-align:left;font-weight:600">${r[0]}</td><td>${r[1]}</td><td>${r[2]}</td></tr>`).join('')+'</tbody>';
   });
 }
+
+/* ---------- Review 360: phần Điểm mạnh / Cần cải thiện / Hành động chỉnh sửa được ---------- */
+let R3AUTO=null, R3MIEN=false;
+const r3NoteKey=()=>'r360note|'+R3.asm+'|'+R3.ss+'|T'+F.month;
+function r3Load(){try{const s=localStorage.getItem(r3NoteKey());return s?JSON.parse(s):null;}catch(e){return null;}}
+function r3Save(){
+  const o={};['P','W','A'].forEach(k=>{const ul=document.querySelector(`#r3Swot ul[data-k="${k}"]`);o[k]=ul?[...ul.querySelectorAll('li .r3t')].map(x=>x.innerHTML.trim()).filter(x=>x&&x!=='<br>'):[];});
+  o.ts=new Date().toLocaleString('vi-VN');
+  try{localStorage.setItem(r3NoteKey(),JSON.stringify(o));}catch(e){}
+  const st=document.getElementById('r3SwotSt'); if(st)st.innerHTML='💾 Đã lưu lúc '+o.ts+' (trên trình duyệt này)';
+}
+function r3SwotRender(auto,mien){
+  R3AUTO=auto; R3MIEN=mien;
+  const saved=r3Load(), data=saved||auto;
+  const boxes=mien?[['P','📌 Toàn Miền — điểm chính','#0369a1'],['A','🎯 Hành động','#e8613c']]:[['P','✅ Điểm mạnh','#2e7d5b'],['W','⚠️ Cần cải thiện','#e8613c'],['A','🎯 Hành động','#0369a1']];
+  const li=x=>`<li><span class="r3t" contenteditable="true" spellcheck="false">${x}</span> <button type="button" class="r3del" title="Xoá dòng">✕</button></li>`;
+  document.getElementById('r3Swot').innerHTML=boxes.map(([k,tl,c])=>`<div style="border:1px solid var(--line);border-left:4px solid ${c};border-radius:10px;padding:10px 12px;display:flex;flex-direction:column">
+    <div style="font-weight:800;color:${c};margin-bottom:6px">${tl}</div>
+    <ul data-k="${k}" style="margin:0;padding-left:18px;line-height:1.55;flex:1">${(data[k]||[]).map(li).join('')}</ul>
+    <button type="button" class="r3add" data-k="${k}" style="margin-top:8px;align-self:flex-start;font:inherit;font-size:12.5px;font-weight:600;padding:4px 10px;border-radius:8px;border:1px dashed ${c};background:transparent;color:${c};cursor:pointer">＋ Thêm dòng</button></div>`).join('')+
+    `<div style="grid-column:1/-1;display:flex;gap:10px;align-items:center;flex-wrap:wrap;font-size:12.5px;color:var(--muted)">
+      <span>✏️ Bấm vào từng dòng để sửa trực tiếp · ✕ để xoá · ＋ để thêm. Nội dung tự lưu theo từng ASM / SS và từng tháng.</span>
+      <span id="r3SwotSt">${saved?'💾 Bản đã chỉnh sửa (lưu lúc '+(saved.ts||'')+')':'🤖 Gợi ý tự động từ số liệu'}</span>
+      <button type="button" id="r3Reset" style="font:inherit;font-size:12px;padding:3px 10px;border-radius:8px;border:1px solid var(--line);background:var(--chip);color:var(--ink);cursor:pointer">↺ Khôi phục gợi ý tự động</button>
+      <button type="button" id="r3Copy" style="font:inherit;font-size:12px;padding:3px 10px;border-radius:8px;border:1px solid var(--line);background:var(--chip);color:var(--ink);cursor:pointer">📋 Sao chép nội dung</button></div>`;
+}
+(function initR3Swot(){
+  const host=document.getElementById('r3Swot'); if(!host)return;
+  let tm=null;
+  host.addEventListener('input',()=>{clearTimeout(tm);tm=setTimeout(r3Save,400);});
+  host.addEventListener('keydown',e=>{const t=e.target.closest('.r3t');if(!t)return;
+    if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();const li=t.closest('li'),n=document.createElement('li');n.innerHTML='<span class="r3t" contenteditable="true" spellcheck="false"></span> <button type="button" class="r3del" title="Xoá dòng">✕</button>';li.after(n);n.querySelector('.r3t').focus();r3Save();}});
+  host.addEventListener('click',e=>{
+    const d=e.target.closest('.r3del'); if(d){d.closest('li').remove();r3Save();return;}
+    const a=e.target.closest('.r3add'); if(a){const ul=host.querySelector(`ul[data-k="${a.dataset.k}"]`),n=document.createElement('li');n.innerHTML='<span class="r3t" contenteditable="true" spellcheck="false"></span> <button type="button" class="r3del" title="Xoá dòng">✕</button>';ul.appendChild(n);n.querySelector('.r3t').focus();r3Save();return;}
+    if(e.target.id==='r3Reset'){try{localStorage.removeItem(r3NoteKey());}catch(x){} r3SwotRender(R3AUTO,R3MIEN);return;}
+    if(e.target.id==='r3Copy'){const txt=[...host.querySelectorAll('ul')].map(ul=>{const h=ul.previousElementSibling.innerText;return h+'\n'+[...ul.querySelectorAll('.r3t')].map(x=>'- '+x.innerText.trim()).join('\n');}).join('\n\n');
+      const head='Review 360 — '+(R3.ss||(R3.asm==='all'?'Toàn Miền':R3.asm))+' — Tháng '+F.month+'\n\n';
+      (navigator.clipboard?navigator.clipboard.writeText(head+txt):Promise.reject()).then(()=>{e.target.textContent='✓ Đã sao chép';setTimeout(()=>e.target.textContent='📋 Sao chép nội dung',1500);}).catch(()=>{});}
+  });
+})();
 (function init360(){
   document.getElementById('r3Asm').onchange=e=>{R3.asm=e.target.value;R3.ss='';render360();};
   document.getElementById('r3Ss').onchange=e=>{R3.ss=e.target.value;render360();};
