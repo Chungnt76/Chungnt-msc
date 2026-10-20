@@ -3088,6 +3088,30 @@ let rt;addEventListener('resize',()=>{clearTimeout(rt);rt=setTimeout(()=>{render
 /* ---------- Bộ lọc Phạm vi SO: Có / Không P.Meat & Bia ---------- */
 const mtRoot=n=>(n||'').replace(/\s*-\s*Chi nhánh$/,'');
 function ensureFull(){if(FULL)return;FULL={T9:T9.slice(),T10:T10.slice(),T9CH:T9CH.slice(),T10CH:T10CH.slice(),DATA:DATA.slice(),GROWTH:GROWTH.slice(),SO8T:SO8T.slice(),G9:G9.slice(),G9SS:G9SS.slice(),SOEXCL:SOEXCL.slice(),ASMS:ASMS.slice()};}
+
+/* ---------- Tăng trưởng: phân bổ theo Nhóm KH / Kênh (tỷ trọng outlet từ file phường xã) ---------- */
+let _GSH=null;
+function gShares(){
+  if(!_GSH){const T=(FULL?FULL.T9:T9),k2n={};T.forEach(r=>k2n[r.ss]=r.asm+'|'+r.npp);const ss={},np={},all={};
+    const add=(o,B)=>Object.entries(B).forEach(([k,v])=>{o[k]=o[k]||[0,0];o[k][0]+=v[0];o[k][1]+=v[1];});
+    G9W.r.forEach(r=>{const sk=G9W.k[r[0]];add(ss[sk]=ss[sk]||{},r[7]);const n=k2n[sk];if(n)add(np[n]=np[n]||{},r[7]);add(all,r[7]);});
+    _GSH={ss,np,all};}
+  const k=(F.oo==='all'?'all':F.oo)+'|'+F.vip, f=o=>{if(!o||!o['all|all'])return null;const a=o['all|all'],v=o[k]||[0,0];return [a[0]?v[0]/a[0]:0,a[1]?v[1]/a[1]:0];};
+  return {k,ss:sk=>f(_GSH.ss[sk]),np:n=>f(_GSH.np[n]),all:f(_GSH.all)};
+}
+function g9Restore(){
+  (FULL?FULL.G9:G9).forEach(r=>{if(!r._vo){Object.defineProperty(r,'_vo',{value:JSON.stringify({v26:r.v26,v25:r.v25,v24:r.v24,v23:r.v23,t8:r.t8}),enumerable:false});return;}
+    const o=JSON.parse(r._vo);['v26','v25','v24','v23','t8'].forEach(y=>{if(r[y]&&o[y])Object.keys(o[y]).forEach(c=>{r[y][c]=o[y][c];});});});
+  (FULL?FULL.G9SS:G9SS).forEach(r=>{if(!r._vo){Object.defineProperty(r,'_vo',{value:JSON.stringify(r.c),enumerable:false});return;}
+    const o=JSON.parse(r._vo);Object.keys(o).forEach(c=>{r.c[c]=o[c];});});
+}
+function g9Scale(){
+  if(F.vip==='all'&&F.oo==='all')return;
+  const S=gShares(), sc=(o,s)=>{if(!o)return;Object.keys(o).forEach(c=>{if(typeof o[c]==='number')o[c]*=s;});};
+  (FULL?FULL.G9:G9).forEach(r=>{const s=S.np(r.asm+'|'+r.npp)||S.all;sc(r.v26,s[0]);['v25','v24','v23'].forEach(y=>sc(r[y],s[1]));
+    if(r.t8)Object.keys(r.t8).forEach(c=>{const v=r.t8[c];if(Array.isArray(v))r.t8[c]=[v[0]*s[0],v[1]*s[1]];});});
+  (FULL?FULL.G9SS:G9SS).forEach(r=>{const s=S.ss(ssk3(r.asm,r.npp,r.ss))||S.np(r.asm+'|'+r.npp)||S.all;Object.keys(r.c).forEach(c=>{const v=r.c[c];if(Array.isArray(v))r.c[c]=[v[0]*s[0],v[1]*s[1],(v[2]||0)*s[0]];});});
+}
 function applyMeat(mode){
   ensureFull();
   const {T9,T10,T9CH,T10CH,DATA,GROWTH,SO8T,G9,G9SS,SOEXCL}=FULL;
@@ -3114,11 +3138,13 @@ function applyMeat(mode){
     r.so=X?r._a.so*(s[0]?s[1]/s[0]:1):r._a.so;
     const l=ly[r.asm+'|'+r.ss]||aly[r.asm]||[1,1];r.target=X?r._a.target*(l[0]?l[1]/l[0]:1):r._a.target;});
   // G9 / G9SS: Total - PMeat - Bia
+  g9Restore();
   G9.forEach(r=>{['v26','v25','v24','v23'].forEach(y=>{const o=r[y];if(!o)return;if(o._a===undefined)Object.defineProperty(o,'_a',{value:o.Total,enumerable:false,writable:true});o.Total=X?o._a-(o.PMeat||0)-(o.Bia||0):o._a;});
     if(r.t8){if(r.t8._a===undefined)Object.defineProperty(r.t8,'_a',{value:(r.t8.Total||[0,0]).slice(),enumerable:false,writable:true});
       if(r.t8.Total)r.t8.Total=X?[r.t8._a[0]-((r.t8.PMeat||[0,0])[0])-((r.t8.Bia||[0,0])[0]),r.t8._a[1]-((r.t8.PMeat||[0,0])[1])-((r.t8.Bia||[0,0])[1])]:r.t8._a.slice();}});
   G9SS.forEach(r=>{const c=r.c;if(!c||!c.Total)return;if(c._a===undefined)Object.defineProperty(c,'_a',{value:c.Total.slice(),enumerable:false,writable:true});
     c.Total=X?c.Total.map((v,i)=>c._a[i]-((c.PMeat||[0,0,0])[i])-((c.Bia||[0,0,0])[i])):c._a.slice();});
+  g9Scale();
   // SO T7-8 tab: Không P.Meat&Bia = nguồn gốc (có chỉ tiêu); Có = tổng hợp từ Tổng quan (không có chỉ tiêu)
   const inc={};DATA.forEach(r=>{const k=r.ss+'|'+mtRoot(r.npp);inc[k]=inc[k]||[0,0];inc[k][0]+=r._a.s7;inc[k][1]+=r._a.s8;});
   SOEXCL.forEach(r=>{if(!r._x)r._x={a:r.so_t7,b:r.so_t8,t:r.target};
@@ -3155,7 +3181,8 @@ function updScope(){
   const pg=curPage(), oo=F.oo!=='all', vip=F.vip!=='all', msg=[];
   const OO=F.oo==='OFF'?'Off Premise':'On Premise';
   const ytd=pg==='som'&&!document.getElementById('somYtd').hidden;
-  if((pg==='gr'||ytd)&&(oo||vip)) msg.push(`Phần này <b>chưa có số theo ${[oo?'Kênh':'',vip?'Nhóm KH':''].filter(Boolean).join(' / ')}</b> (nguồn chỉ có tổng 2 kênh, mọi nhóm KH) — đang hiển thị tổng; bộ lọc ASM và Phạm vi SO vẫn áp dụng.`+(pg==='gr'?' Riêng mục <b>Phường / Xã</b> áp dụng đúng Kênh &amp; Nhóm KH (theo từng outlet).':''));
+  if(pg==='gr'&&(oo||vip)) msg.push(`Tăng trưởng 9 tháng đang xem <b>${[vip?VIPLAB[F.vip]:'',oo?(F.oo==='OFF'?'kênh Off Premise':'kênh On Premise'):''].filter(Boolean).join(' · ')}</b>: số 9T 2026 / 2025 theo nhóm KH &amp; kênh là <b>ước tính (≈)</b> — phân bổ số của từng NPP / SS theo tỷ trọng SO của nhóm KH / kênh trong file tăng trưởng theo outlet (9T 2026 và 9T 2025 tách riêng; so với 2024 / 2023 dùng tỷ trọng 2025). Ngành hàng phân bổ cùng tỷ trọng. Mục <b>Phường / Xã</b> tính trực tiếp theo từng outlet.`);
+  if(ytd&&(oo||vip)) msg.push(`Phần này <b>chưa có số theo ${[oo?'Kênh':'',vip?'Nhóm KH':''].filter(Boolean).join(' / ')}</b> (nguồn chỉ có tổng 2 kênh, mọi nhóm KH) — đang hiển thị tổng; bộ lọc ASM và Phạm vi SO vẫn áp dụng.`+(pg==='gr'?' Riêng mục <b>Phường / Xã</b> áp dụng đúng Kênh &amp; Nhóm KH (theo từng outlet).':''));
   if((pg==='som'&&!ytd||pg==='ov')&&vip) msg.push(`Đang xem nhóm <b>${VIPLAB[F.vip]}</b>: SO, Active, PC, LPPC theo nhóm KH của điểm bán (T9–T10 gán theo danh mục phân khúc outlet). Quầy MCP T9/T10 và Chỉ tiêu theo nhóm là <b>ước tính (≈)</b> theo tỷ trọng quầy / SO T8 của nhóm trong từng SS; Số SM là tổng sale của SS. Ngành hàng T7–T8 chưa tách nhóm.`);
   if((pg==='som'&&!ytd||pg==='ov')&&oo) msg.push(`Đang xem kênh <b>${OO}</b>: SO, Active, PC, LPPC, số sale tính trực tiếp theo kênh. Quầy MCP T9/T10 và Chỉ tiêu T9 theo kênh là <b>ước tính (≈)</b> theo tỷ trọng quầy / SO T8 của từng SS.`);
   if(pg==='r360') msg.push('Review 360 dùng bộ chọn ASM / SS riêng trong tab; bộ lọc Kênh, Phạm vi SO (và Nhóm KH cho phần Hội viên) ở đầu trang vẫn áp dụng.');
