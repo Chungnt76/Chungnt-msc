@@ -133,3 +133,6 @@ window.renderT11=function(){try{init();render();}catch(e){console.error('T11',e)
   }
   window.addEventListener('load',()=>setTimeout(bind,300)); if(document.readyState==='complete')setTimeout(bind,300);
 })();
+
+/* Ẩn nút "Tháng 11" ở thanh tab trên cùng (vẫn mở được bằng nút Tháng 11 ở bộ lọc "Tháng phân tích") */
+(function(){const st=document.createElement('style');st.textContent='#nav2 button[data-k="t11"]{display:none!important}';document.head.appendChild(st);})();
