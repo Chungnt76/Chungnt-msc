@@ -17,22 +17,22 @@ const sortKeys=(map,keyFn)=>[...map.keys()];
 /* ===================== HỘI VIÊN THƯỞNG ===================== */
 const H={type:'all',asm:'all',open:{a:new Set(),n:new Set(),s:new Set()},tree:null,acc:null,sap:0.3};
 function hvAcc(){
-  const SR=HVT11.sr, acc=SR.map(()=>({n:0,dat:0,sap:0,thieu:0,pend:0,base:0,rw:0,pr:0,chua:0}));
+  const SR=HVT11.sr, acc=SR.map(()=>({n:0,dat:0,sap:0,thieu:0,pend:0,base:0,rw:0,pr:0,chua:0,ps:0}));
   HVT11.rows.forEach(r=>{
     if(H.type!=='all'&&String(r[3])!==H.type)return;
     const a=acc[r[0]],pend=r[4],base=r[6],dat=r[7]>0,thieu=Math.max(0,base-pend);
-    a.n++; a.pend+=pend; a.base+=base; a.rw+=r[9]; a.pr+=r[8]; a.thieu+=dat?0:thieu;
+    a.n++; if(pend>0)a.ps++; a.pend+=pend; a.base+=base; a.rw+=r[9]; a.pr+=r[8]; a.thieu+=dat?0:thieu;
     if(dat)a.dat++; else {a.chua++; if(base>0&&thieu<=H.sap*base)a.sap++;}
   });
   return acc;
 }
-const hvSum=(idxs)=>{const o={n:0,dat:0,sap:0,thieu:0,pend:0,base:0,rw:0,pr:0,chua:0};idxs.forEach(i=>{const a=H.acc[i];for(const k in o)o[k]+=a[k];});return o;};
+const hvSum=(idxs)=>{const o={n:0,dat:0,sap:0,thieu:0,pend:0,base:0,rw:0,pr:0,chua:0,ps:0};idxs.forEach(i=>{const a=H.acc[i];for(const k in o)o[k]+=a[k];});return o;};
 function hvRow(name,m,o){
   const lvl=o.lvl||0,pad=12+lvl*22,caret=(o.open==null)?'<span class="cx leaf">•</span>':`<span class="cx">${o.open?'▾':'▸'}</span>`;
   const at=o.ds?Object.entries(o.ds).map(([k,v])=>`data-${k}="${esc(v)}"`).join(' '):'';
   const p=m.n?m.dat/m.n*100:null;
   return `<tr class="${o.tot?'tot':'lvl'+lvl}" ${at} data-lvl="${lvl}"><td style="padding-left:${o.tot?12:pad}px">${o.tot?'':caret}<span class="nm">${esc(name)}</span></td>`+
-   `<td>${o.rank?o.rank:''}</td><td>${fi(m.n)}</td><td style="font-weight:700">${fi(m.dat)}</td><td>${p==null?dash:fp(p)}</td><td>${fi(m.chua)}</td><td>${fi(m.sap)}</td><td>${m.thieu?fmtM(m.thieu):dash}</td><td>${fmtM(m.pend)}</td><td>${m.rw?fmtM(m.rw):dash}</td></tr>`;
+   `<td>${o.rank?o.rank:''}</td><td>${fi(m.n)}</td><td style="font-weight:700">${fi(m.ps)}</td><td>${m.n?fp(m.ps/m.n*100):dash}</td><td style="font-weight:700">${fi(m.dat)}</td><td>${p==null?dash:fp(p)}</td><td>${fi(m.chua)}</td><td>${fi(m.sap)}</td><td>${m.thieu?fmtM(m.thieu):dash}</td><td>${fmtM(m.pend)}</td><td>${m.rw?fmtM(m.rw):dash}</td></tr>`;
 }
 function hvTable(){
   const T=H.tree; let h=''; const rankOf=(arr)=>arr.sort((x,y)=>(y.m.dat/(y.m.n||1))-(x.m.dat/(x.m.n||1))||y.m.dat-x.m.dat);
@@ -50,12 +50,12 @@ function hvTable(){
 }
 function hvCards(){
   const SR=HVT11.sr, scope=i=>H.asm==='all'||SR[i][2]===H.asm;
-  const g={all:{n:0,dat:0,thieu:0,sap:0},0:{n:0,dat:0,thieu:0,sap:0},1:{n:0,dat:0,thieu:0,sap:0}};
+  const g={all:{n:0,dat:0,thieu:0,sap:0,ps:0},0:{n:0,dat:0,thieu:0,sap:0,ps:0},1:{n:0,dat:0,thieu:0,sap:0,ps:0}};
   HVT11.rows.forEach(r=>{if(!scope(r[0]))return; const dat=r[7]>0,th=Math.max(0,r[6]-r[4]);
-    [g.all,g[r[3]]].forEach(o=>{o.n++; if(dat)o.dat++; else{o.thieu+=th; if(r[6]>0&&th<=H.sap*r[6])o.sap++;}});});
+    [g.all,g[r[3]]].forEach(o=>{o.n++; if(r[4]>0)o.ps++; if(dat)o.dat++; else{o.thieu+=th; if(r[6]>0&&th<=H.sap*r[6])o.sap++;}});});
   const card=(lab,val,sub,ac)=>`<div class="kpi" style="border-top:3px solid ${ac}"><div class="k-lab" style="color:${ac}">${lab}</div><div class="k-val">${val}</div><div class="k-sub">${sub}</div></div>`;
-  const grp=(title,o,ac)=>`<div style="margin-top:12px"><b style="color:${ac}">${title}</b></div><div class="kpis" style="grid-template-columns:repeat(4,1fr)">`+
-    card('Tổng hội viên',fi(o.n),'KH trong danh sách',ac)+card('Đã đạt thưởng',fi(o.dat),(o.n?fp(o.dat/o.n*100):'—')+' tổng hội viên',ac)+
+  const grp=(title,o,ac)=>`<div style="margin-top:12px"><b style="color:${ac}">${title}</b></div><div class="kpis" style="grid-template-columns:repeat(5,1fr)">`+
+    card('Tổng hội viên',fi(o.n),'KH trong danh sách',ac)+card('Đã phát sinh doanh số',fi(o.ps),(o.n?fp(o.ps/o.n*100):'—')+' tổng hội viên · DS pending > 0',ac)+card('Đã đạt thưởng',fi(o.dat),(o.n?fp(o.dat/o.n*100):'—')+' tổng hội viên',ac)+
     card('Chưa đạt',fi(o.n-o.dat),'trong đó sắp đạt: '+fi(o.sap),ac)+card('Còn thiếu đến nền',fmtM(o.thieu),'KH chưa đạt · Σ max(0, nền − DS)',ac)+'</div>';
   document.getElementById('hvtCards').innerHTML=grp('Tất cả hội viên',g.all,'#0369a1')+grp('VIP',g[0],'#0ea5e9')+grp('VIP đại sứ',g[1],'#7c5cbf');
 }
