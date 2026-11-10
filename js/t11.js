@@ -129,20 +129,32 @@ function avail(){
 window.renderT11=function(){try{init();render();avail();}catch(e){console.error('T11',e);}};
 })();
 
-/* Nút "Tháng 11" trong bộ lọc "Tháng phân tích": bấm = mở tab Tháng 11 (không đổi tháng của các tab khác) */
+/* Nút "Tháng 11" trong bộ lọc "Tháng phân tích": T11 = tab Tháng 11 + Hội viên Tết + Combo (không đổi tháng của các tab cũ) */
 (function(){
-  function sync(){
-    const fm=document.getElementById('fMonth'), pg=document.getElementById('pgT11'); if(!fm)return;
-    const on=!!(pg&&!pg.hidden);
-    [...fm.children].forEach(b=>b.classList.toggle('on',on?b.dataset.m==='11':b.dataset.m===F.month));
+  const IDS=['pgT11','pgHvt','pgCombo'];
+  const vis=id=>{const e=document.getElementById(id);return !!(e&&!e.hidden);};
+  const onT11=()=>IDS.some(vis);
+  function chip(on){
+    const c=document.getElementById('v3chips'); if(!c)return;
+    c.querySelectorAll('.chip').forEach(e=>{
+      if(e.children.length)return; const t=e.textContent;
+      if(on&&/^Tháng \d+ · MTD/.test(t)){e.dataset.orig=t; e.textContent='Tháng 11 · MTD đến hết 10/11 (hội viên) · 09/11 (combo)';}
+      else if(!on&&e.dataset.orig){e.textContent=e.dataset.orig; delete e.dataset.orig;}});
   }
+  function sync(){
+    const fm=document.getElementById('fMonth'); if(!fm)return;
+    const on=onT11();
+    [...fm.children].forEach(b=>b.classList.toggle('on',on?b.dataset.m==='11':b.dataset.m===F.month));
+    chip(on);
+  }
+  const navTo=k=>{const n=document.querySelector('#nav2 button[data-k="'+k+'"]'); if(n)n.click();};
   function bind(){
     const fm=document.getElementById('fMonth'); if(!fm||fm._t11)return; fm._t11=1;
-    fm.addEventListener('click',e=>{const b=e.target.closest('button');
-      if(b&&b.dataset.m==='11'){e.stopImmediatePropagation();e.stopPropagation();
-        const n=document.querySelector('#nav2 button[data-k="t11"]'); if(n)n.click(); setTimeout(sync,0);}
-      else{ if(b){const pg=document.getElementById('pgT11'); if(pg&&!pg.hidden)setTimeout(()=>{const o=document.querySelector('#nav2 button[data-k="ov"]'); if(o)o.click();},30);} setTimeout(sync,90);}},true);
-    const nv=document.getElementById('nav2'); if(nv)nv.addEventListener('click',()=>setTimeout(sync,60));
+    fm.addEventListener('click',e=>{const b=e.target.closest('button'); if(!b)return;
+      if(b.dataset.m==='11'){e.stopImmediatePropagation();e.stopPropagation();
+        if(!(vis('pgHvt')||vis('pgCombo')))navTo('t11'); setTimeout(sync,30);}
+      else{ if(onT11())setTimeout(()=>navTo('ov'),30); setTimeout(sync,120);}},true);
+    const nv=document.getElementById('nav2'); if(nv)nv.addEventListener('click',()=>setTimeout(sync,80));
   }
   window.addEventListener('load',()=>setTimeout(bind,300)); if(document.readyState==='complete')setTimeout(bind,300);
 })();
