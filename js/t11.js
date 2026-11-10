@@ -115,3 +115,21 @@ function init(){
 }
 window.renderT11=function(){try{init();render();}catch(e){console.error('T11',e);}};
 })();
+
+/* Nút "Tháng 11" trong bộ lọc "Tháng phân tích": bấm = mở tab Tháng 11 (không đổi tháng của các tab khác) */
+(function(){
+  function sync(){
+    const fm=document.getElementById('fMonth'), pg=document.getElementById('pgT11'); if(!fm)return;
+    const on=!!(pg&&!pg.hidden);
+    [...fm.children].forEach(b=>b.classList.toggle('on',on?b.dataset.m==='11':b.dataset.m===F.month));
+  }
+  function bind(){
+    const fm=document.getElementById('fMonth'); if(!fm||fm._t11)return; fm._t11=1;
+    fm.addEventListener('click',e=>{const b=e.target.closest('button');
+      if(b&&b.dataset.m==='11'){e.stopImmediatePropagation();e.stopPropagation();
+        const n=document.querySelector('#nav2 button[data-k="t11"]'); if(n)n.click(); setTimeout(sync,0);}
+      else{ if(b){const pg=document.getElementById('pgT11'); if(pg&&!pg.hidden)setTimeout(()=>{const o=document.querySelector('#nav2 button[data-k="ov"]'); if(o)o.click();},30);} setTimeout(sync,90);}},true);
+    const nv=document.getElementById('nav2'); if(nv)nv.addEventListener('click',()=>setTimeout(sync,60));
+  }
+  window.addEventListener('load',()=>setTimeout(bind,300)); if(document.readyState==='complete')setTimeout(bind,300);
+})();
