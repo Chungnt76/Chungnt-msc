@@ -138,7 +138,7 @@ window.renderT11=function(){try{init();render();avail();}catch(e){console.error(
     const c=document.getElementById('v3chips'); if(!c)return;
     c.querySelectorAll('.chip').forEach(e=>{
       if(e.children.length)return; const t=e.textContent;
-      if(on&&/^Tháng \d+ · MTD/.test(t)){e.dataset.orig=t; e.textContent='Tháng 11 · MTD đến hết 10/11 (hội viên) · 09/11 (combo)';}
+      if(on&&/^Tháng \d+ · MTD đến \d+\/\d+ \(/.test(t)){e.dataset.orig=t; e.textContent='Tháng 11 · MTD đến hết 10/11 (hội viên) · 09/11 (combo)';}
       else if(!on&&e.dataset.orig){e.textContent=e.dataset.orig; delete e.dataset.orig;}});
   }
   function sync(){
@@ -155,6 +155,7 @@ window.renderT11=function(){try{init();render();avail();}catch(e){console.error(
         if(!(vis('pgHvt')||vis('pgCombo')))navTo('t11'); setTimeout(sync,30);}
       else{ if(onT11())setTimeout(()=>navTo('ov'),30); setTimeout(sync,120);}},true);
     const nv=document.getElementById('nav2'); if(nv)nv.addEventListener('click',()=>setTimeout(sync,80));
+    const ch=document.getElementById('v3chips'); if(ch)new MutationObserver(()=>{if(onT11())chip(true);}).observe(ch,{childList:true,subtree:true,characterData:true});
   }
   window.addEventListener('load',()=>setTimeout(bind,300)); if(document.readyState==='complete')setTimeout(bind,300);
 })();
