@@ -73,7 +73,7 @@ function hvRender(){
   if(!document.getElementById('hvtBody'))return;
   H.acc=hvAcc();
   const m=HVT11.meta;
-  document.getElementById('hvtWarn').innerHTML=`⚠ <b>Ngày cắt dữ liệu: chưa rõ</b> — file hội viên không ghi ngày (xuất cùng lúc file Combo, dữ liệu đến 09/11 — chưa xác nhận). ${m.unmapped_sr?`<b>${m.unmapped_sr} SR mới</b> chưa có trong dữ liệu T10 nên xếp ở dòng "Chưa gán SS" (không xếp hạng).`:''}`;
+  document.getElementById('hvtWarn').innerHTML=`Ngày cắt dữ liệu: <b>hết 10/11</b> (theo anh Chung báo; file hội viên không ghi ngày). ${m.unmapped_sr?`<b>${m.unmapped_sr} SR mới</b> chưa có trong dữ liệu T10 nên xếp ở dòng "Chưa gán SS" (không xếp hạng).`:''}`;
   hvCards();
   document.getElementById('hvtBody').innerHTML=hvTable();
   hvList();
@@ -157,7 +157,7 @@ function cbRender(){
     `<b>${COMBO11.sr.filter(s=>s[2]==='Chưa gán SS').length} SR mới</b> chưa có trong dữ liệu T10 nằm ở dòng "Chưa gán SS". `;
   if(st.sa.length)w+=`<br>⚠ <b>ASM dữ liệu dừng sớm hơn</b> (không so sánh như đủ dữ liệu): ${st.sa.map(([k,d])=>esc(k)+' (đến '+d+'/11)').join(', ')}.`;
   if(st.sn.length)w+=`<br>⚠ NPP có đơn combo cuối cùng trước ${M.asof}: ${st.sn.map(([k,d])=>esc(k)+' ('+d+'/11)').join('; ')}.`;
-  document.getElementById('cbWarn').innerHTML=w;
+  w+=`<br>ℹ File combo có đơn <b>đến ngày ${M.asof}</b>; chưa có đơn ngày 10/11 — nếu anh muốn tính hết 10/11, cần xuất lại file sau khi chốt ngày.`; document.getElementById('cbWarn').innerHTML=w;
   cbCards();
   document.getElementById('cbMxHead').innerHTML='<tr><th style="text-align:left">ASM → NPP → SS → ĐDKD</th>'+Array.from({length:M.cal_days},(_,i)=>`<th style="min-width:30px;padding:6px 3px">${i+1}</th>`).join('')+'<th>KH nhận</th></tr>';
   document.getElementById('cbMx').innerHTML=cbRows('mx');
