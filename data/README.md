@@ -6,6 +6,8 @@ Mỗi file định nghĩa 1 hằng số cùng tên (`const T10 = ...`). Dạng n
 |---|---|---|
 | T9.js, T9CH.js | Sell-out theo SS / theo kênh Off-On | T9 |
 | T10.js, T10CH.js | Sell-out theo SS / theo kênh Off-On | T10 |
+| HVT11.js | Hội viên thưởng T11 (22.941 KH, QualifiedLevel, nền, DS pending) | T11 |
+| COMBO11.js | Đơn combo T11 (8 chương trình, đến 09/11) | T11 |
 | T11.js | T11, T11CH, T11_META (tab Tháng 11) | T11 (chưa có dữ liệu) |
 | DATA.js, FUNDRAW.js, SO8T.js, SOEXCL.js | MCP/Active/SO/PC theo SS | T7 – T10 |
 | MBS78_DATA.js | Hội viên Doanh nhân | T7 – T9 |
