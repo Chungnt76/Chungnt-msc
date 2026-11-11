@@ -35,10 +35,13 @@ function cards(){
   const g=k=>{const a=Z(); CBT11.rows.forEach(r=>{if(r[1]===k&&inS(r[0]))add(a,r);}); return a;};
   const card=(t,sub,col,a,note)=>`<div style="border-radius:14px;overflow:hidden;box-shadow:0 1px 4px #0002;background:var(--card,#fff);border:1px solid #e2e8f0"><div style="background:${col};color:#fff;text-align:center;padding:12px 8px"><div style="font-size:17px;font-weight:800">${t}</div><div style="font-size:11px;opacity:.85">${sub}</div></div><div style="padding:10px 14px;text-align:center"><div style="font-weight:800;color:${col.includes('#')?'#c2410c':'#c2410c'};font-size:13.5px">${note[0]}</div><div style="font-size:12px;margin:6px 0">${note[1]}</div><div style="display:grid;grid-template-columns:repeat(4,1fr);gap:4px;border-top:1px dashed #cbd5e1;padding-top:8px">`+
    [[fi(a[0]),'KH áp dụng'],[fi(a[4]),'KH đã nhận combo'],[fi(a[5]),'Suất tặng'],[pc(a[4],a[0]),'KH tham gia']].map(([v,l])=>`<div><div style="font-size:21px;font-weight:800">${v}</div><div style="font-size:11px;color:#64748b">${l}</div></div>`).join('')+`</div><div style="font-size:11.5px;color:#64748b;margin-top:6px">DS mang về (toàn đơn có combo): <b>${M(a[8])}</b></div></div></div>`;
-  document.getElementById('cbtCards').innerHTML=
-    card('KH lẻ L1 OFF','Off premise · ngoài nhóm hội viên','linear-gradient(135deg,#1e40af,#0f172a)',g(0),['TẶNG 01 CHAI TƯƠNG ỚT 250GR','đơn <b>800K</b> total Masan, có ≥100K nhãn trọng điểm (Chinsu, Nam Ngư, Kokomi, Chanté) · tối đa 2 suất/đơn'])+
-    card('Total KH L1 ON','toàn bộ quầy ON trong MCP','linear-gradient(135deg,#6d28d9,#1e1b4b)',g(1),['TẶNG 01 CHAI WAKEUP 247','đơn <b>250K</b> total Bev, có ≥80K SP mới (WK247 Amazon, Bupnon 365) · tối đa 3 suất/đơn'])+
-    card('L2 Quán ăn + Nhà hàng','nằm trong nhóm ON · VIP2 · VIP3','linear-gradient(135deg,#c2410c,#431407)',g(2),['TẶNG 01 CHAI TƯƠNG ỚT 250GR','đơn <b>500K</b> Gia vị có 200K NN STK, hoặc <b>400K</b> Gia vị có 32K TTT Nhị Ca']);
+  const c0=card('KH lẻ L1 OFF','Off premise · ngoài nhóm hội viên','linear-gradient(135deg,#1e40af,#0f172a)',g(0),['TẶNG 01 CHAI TƯƠNG ỚT 250GR','đơn <b>800K</b> total Masan, có ≥100K nhãn trọng điểm (Chinsu, Nam Ngư, Kokomi, Chanté) · tối đa 2 suất/đơn']);
+  const c1=card('Total KH L1 ON','toàn bộ quầy ON trong MCP','linear-gradient(135deg,#6d28d9,#1e1b4b)',g(1),['TẶNG 01 CHAI WAKEUP 247','đơn <b>250K</b> Bev, có ≥80K SP mới (WK247 Amazon, Bupnon 365) · tối đa 3 suất/đơn']);
+  const c2=card('L2 Quán ăn + Nhà hàng','nằm trong nhóm ON · VIP2 · VIP3','linear-gradient(135deg,#c2410c,#431407)',g(2),['TẶNG 01 CHAI TƯƠNG ỚT 250GR','đơn <b>500K</b> Gia vị có 200K NN STK, hoặc <b>400K</b> Gia vị có 32K TTT Nhị Ca']);
+  const t=g(0).map((x,i)=>x+g(1)[i]);
+  const ct=card('TỔNG OFF + ON','tập KH combo = MCP − hội viên','linear-gradient(135deg,#0369a1,#082f49)',t,['TỔNG 2 CHƯƠNG TRÌNH OFF + ON','Quán ăn + Nhà hàng nằm trong ON, không cộng thêm']);
+  const L={oo:[ct,c0,c1],0:[c0],1:[c1],2:[c2]}[S.g];
+  const el=document.getElementById('cbtCards'); el.style.gridTemplateColumns=`repeat(${L.length},minmax(0,${L.length===1?'520px':'1fr'}))`; el.innerHTML=L.join('');
 }
 function render(){
   if(typeof CBT11==='undefined'||!document.getElementById('cbtBody'))return;
