@@ -5,7 +5,7 @@
 (function(){
 const ST={on:false,orig:null,txt:new Map(),outs:new Set()};
 window.T11SHIFT=ST;
-const WD11={'7':26,'8':24,'9':27,'10':25};
+const WD11={'7':26,'8':24,'9':9,'10':25};   // khe 9 = T10 cùng kỳ 01–10/10 (9 ngày làm việc)
 const k3=r=>r.asm+'|'+r.npp+'|'+r.ssn;
 const clone=o=>Object.assign({},o);
 function baseRow(r){            // đưa dòng T9/T10 về giá trị gốc (trước bộ lọc Kênh/Nhóm KH/Phạm vi SO)
@@ -38,27 +38,32 @@ function snapshot(){
 function enter(){
   if(ST.on)return; snapshot(); const O=ST.orig, S=T11S;
   const m9={}; O.T9.forEach(r=>m9[k3(r)]=r);
-  FULL.T9=O.T10.map(r=>{const o=baseRow(r),p=m9[k3(r)];
+  const cy={}; if(typeof T10CY!=='undefined')T10CY.forEach(r=>cy[k3(r)]=r);
+  FULL.T9=O.T10.map(r=>{const o=baseRow(r),p=m9[k3(r)],c=cy[k3(r)]; if(c){o.v=c.v;['so','aso','pc','lines','sm'].forEach(f=>{o[f]=c[f];});}
     o.smm={'7':(r.smm||{})['8'],'8':p&&p.v&&p.v['a|all']?p.v['a|all'].sm:0}; o.tgm=shiftTg(r.tgm); return o;});
   FULL.T10=S.T.map(r=>{const o=clone(r); o.tgm={'10':(r.tgm||{})['11']}; delete o._a; delete o._tm; return o;});
   FULL.T9CH=O.T10CH.map(baseCH); FULL.T10CH=T11CH.map(clone);
   const dk={}; S.DATA.forEach(d=>dk[d.npp+'|'+d.ss+'|'+d.oo+'|'+d.vip]=d);
   const sv=(r,m)=>r._a&&r._a['s'+m]!=null?r._a['s'+m]:r['s'+m];
+  const CS=(typeof T10CYS!=='undefined')?T10CYS:null, cd={}; if(CS)CS.DATA.forEach(d=>cd[d.npp+'|'+d.ss+'|'+d.oo+'|'+d.vip]=d);
   const nd=O.DATA.map(r=>{const d=dk[r.npp+'|'+r.ss+'|'+r.oo+'|'+r.vip]||{a11:0,s11:0,xs11:0,q11:0,nbT10:0,nb11:0};
+    const c=cd[r.npp+'|'+r.ss+'|'+r.oo+'|'+r.vip];
     const o={asm:r.asm,npp:r.npp,ss:r.ss,oo:r.oo,vip:r.vip,
       q:(r.q10!=null?r.q10:(r._q!=null?r._q:r.q)),q10:d.q11,nb:r.nb,nb9:d.nbT10,nb10:d.nb11,
-      a7:r.a8,a8:r.a9,a9:r.a10,a10:d.a11,s7:sv(r,8),s8:sv(r,9),s9:sv(r,10),s10:d.s11,
-      xs7:r.xs8,xs8:r.xs9,xs9:r.xs10,xs10:d.xs11};return o;});
+      a7:r.a8,a8:r.a9,a9:c?c.a11:r.a10,a10:d.a11,s7:sv(r,8),s8:sv(r,9),s9:c?c.s11:sv(r,10),s10:d.s11,
+      xs7:r.xs8,xs8:r.xs9,xs9:c?c.xs11:r.xs10,xs10:d.xs11};return o;});
   FULL.DATA=nd; DATA.length=0; nd.forEach(r=>DATA.push(r));
   FUNDRAW.length=0;
-  O.FUND.forEach(r=>{const mo=+r.month.slice(5); if(mo>=8&&mo<=10){const o=clone(r);o.month='2026-0'+(mo-1);FUNDRAW.push(o);}});
+  O.FUND.forEach(r=>{const mo=+r.month.slice(5); if(mo>=8&&mo<=(CS?9:10)){const o=clone(r);o.month='2026-0'+(mo-1);FUNDRAW.push(o);}});
+  if(CS)CS.FR.forEach(r=>{const o=clone(r);o.month='2026-09';FUNDRAW.push(o);});
   S.FR.forEach(r=>{const o=clone(r);o.month='2026-10';FUNDRAW.push(o);});
   CATD.length=0;
-  O.CATD.forEach(r=>{const mo=+r[1]; if(mo>=8&&mo<=10){const o=r.slice();o[1]=String(mo-1);CATD.push(o);}});
+  O.CATD.forEach(r=>{const mo=+r[1]; if(mo>=8&&mo<=(CS?9:10)){const o=r.slice();o[1]=String(mo-1);CATD.push(o);}});
+  if(CS)CS.CATD.forEach(r=>{const o=r.slice();o[1]='9';CATD.push(o);});
   S.CATD.forEach(r=>{const o=r.slice();o[1]='10';CATD.push(o);});
   rebuildCat();
-  DDK.m['7']=O.m['8'];DDK.m['8']=O.m['9'];DDK.m['9']=O.m['10'];DDK.m['10']=S.DDK.rows;
-  DDK.p.length=O.pn; S.DDK.newp.forEach(p=>DDK.p.push(p));
+  DDK.m['7']=O.m['8'];DDK.m['8']=O.m['9'];DDK.m['9']=CS?CS.DDK.rows:O.m['10'];DDK.m['10']=S.DDK.rows;
+  DDK.p.length=O.pn; S.DDK.newp.forEach(p=>DDK.p.push(p)); if(CS)CS.DDK.newp.forEach(p=>DDK.p.push(p));
   DDK.q=Object.assign({},O.q,S.DDK.q);
   rebuildDDK();
   Object.assign(T10_META,{mtd_days:T11_META.mtd_days,last_date:T11_META.last_date,has_data:true,days_total:T11_META.days_total});
@@ -91,7 +96,7 @@ function hdr(on){
 }
 /* ---- cộng 1 vào nhãn tháng (T7..T10 → T8..T11) trong các tab chạy bằng khe tháng ---- */
 const RE=/((?<![A-Za-zÀ-ỹ0-9])T|[Tt]háng |THÁNG )(7|8|9|10)(?!\d)/g;
-const sh=s=>s.replace(RE,(m,p,n)=>p+(+n+1));
+const sh=s=>s.replace(RE,(m,p,n)=>p+(+n+1)).replace(/T10 \(cả tháng\)|T10 cả tháng/g,'T10 cùng kỳ (01–10/10)');
 const ROOTS=['pgOv','pgSoM','pgPc','pgCat','pgR360','v3chips','context','tblNote'];
 let OBS=null;
 function tr(node){
