@@ -5171,15 +5171,15 @@ applyMeat('all');document.querySelector('#fMonth button[data-m="10"]').click();u
   const LS={get(k){try{return JSON.parse(localStorage.getItem('v2_'+k));}catch(e){return null;}},set(k,v){try{localStorage.setItem('v2_'+k,JSON.stringify(v));}catch(e){}}};
 
   /* ---------- 1. Header + thanh tab + bộ lọc ---------- */
-  /* Time gone luôn hiển thị Tháng 11 theo ngày thực (giờ VN): ngày làm việc = T2–T7, tính đến hôm nay */
+  /* Time gone luôn hiển thị Tháng 11 theo ngày thực (giờ VN): ngày làm việc = T2–T7, tính đến hết hôm qua (dữ liệu trễ 1 ngày) */
   const TG11=(()=>{const tot=(typeof T11_META!=='undefined'&&T11_META.days_total)||25;let n=new Date(new Date().toLocaleString('en-US',{timeZone:'Asia/Ho_Chi_Minh'}));let y=n.getFullYear(),m=n.getMonth();
     if(y!==2026||m!==10){return {d:(typeof T11_META!=='undefined'?T11_META.mtd_days:0),t:tot,lbl:null};}
-    let d=0;for(let i=1;i<=n.getDate();i++){if(new Date(y,m,i).getDay()!==0)d++;} d=Math.min(d,tot);return {d,t:tot,lbl:String(n.getDate()).padStart(2,'0')+'/11'};})();
+    let d=0;for(let i=1;i<n.getDate();i++){if(new Date(y,m,i).getDay()!==0)d++;} d=Math.min(d,tot);return {d,t:tot,lbl:String(n.getDate()-1).padStart(2,"0")+"/11"};})();
   const tgPct=TG11.d/TG11.t*100;
   const ring=p=>{const r=24,c=2*Math.PI*r,o=c*(1-Math.min(100,p)/100);return `<svg viewBox="0 0 58 58" aria-hidden="true"><circle cx="29" cy="29" r="${r}" fill="none" stroke="var(--line)" stroke-width="6"/><circle cx="29" cy="29" r="${r}" fill="none" stroke="var(--sky)" stroke-width="6" stroke-linecap="round" stroke-dasharray="${c.toFixed(1)}" stroke-dashoffset="${o.toFixed(1)}" transform="rotate(-90 29 29)"/></svg>`;};
   const hdr=document.createElement('header'); hdr.className='h2';
   hdr.innerHTML=`<div class="brand"><div class="logo">MSC</div><div style="min-width:0"><div class="eyebrow">Masan Consumer · Kênh GT · Miền Trung</div><h1>Sell-out Miền Trung <span>· Gộp KPI Nền tảng</span></h1><div class="sub">Tháng 7–9 đủ tháng & Tháng 10 MTD · <b>88.876</b> quầy · <b>5</b> ASM · Off/On Premise · Lẻ · VIP3 · VIP5 · VIP Sỉ</div></div></div>
-  <div class="tg" title="Time gone tháng 11 = số ngày làm việc (T2–T7) đã qua tính đến hôm nay ÷ ${TG11.t}">${ring(tgPct)}<div><div class="tv">${fp(tgPct)}</div><div class="tl">Time gone T11 · ${TG11.d}/${TG11.t} ngày làm việc</div><div class="tl">Dữ liệu T11 MTD đến <b>${T11_META.last_date}</b></div></div></div>
+  <div class="tg" title="Time gone tháng 11 = số ngày làm việc (T2–T7) đã qua tính đến hết hôm qua (dữ liệu trễ 1 ngày) ÷ ${TG11.t}">${ring(tgPct)}<div><div class="tv">${fp(tgPct)}</div><div class="tl">Time gone T11 · ${TG11.d}/${TG11.t} ngày làm việc</div><div class="tl">Dữ liệu T11 MTD đến <b>${T11_META.last_date}</b></div></div></div>
   <div class="hdrbtns"></div>`;
   const hb=hdr.querySelector('.hdrbtns'); ['themeBtn','fsBtn','focusBtn','presBtn'].forEach(id=>{const b=document.getElementById(id);if(b)hb.appendChild(b);});
   wrap.insertBefore(hdr,wrap.firstChild);
