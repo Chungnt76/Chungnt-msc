@@ -1330,86 +1330,13 @@ body.presenting .nav2,body.pfocus-open .nav2{z-index:10}
   <div id="pgGp" hidden>
   </div>
   <div id="pgHvt" hidden>
-  <div class="panel" style="margin-top:14px;border-top:3px solid #0ea5e9">
-    <div class="tbl-head"><div><h3 style="display:inline;color:#7c5cbf">🏆 Hội viên Tết — Tháng 11/2026</h3> <span class="pnote" style="display:inline">— theo dõi hội viên đạt thưởng trong tháng (khác tab "Hội viên Doanh nhân": tab đó so sánh CAT/BRAND giữa các kỳ)</span></div></div>
-    <div class="t8norm" id="hvtWarn"></div>
-    <div class="flt2" style="display:flex;flex-wrap:wrap;gap:14px;margin:10px 0">
-      <div class="fg"><label>Loại hội viên</label><div class="seg" id="hvtType"><button data-v="all" class="on">Tất cả</button><button data-v="0">VIP</button><button data-v="1">VIP đại sứ</button></div></div>
-      <div class="fg"><label>ASM</label><div class="seg" id="hvtAsm"></div></div>
-    </div>
-    <div class="pnote">Bộ lọc Kênh / Nhóm KH / Tháng không áp dụng cho tab này (file hội viên không có các chiều đó); bộ lọc dùng riêng ở trên.</div>
+  <div id="hvv11"></div>
   </div>
-  <div class="panel" style="margin-top:14px">
-    <div class="tbl-head"><div><h3 style="display:inline;color:#7c5cbf">1. Hội viên doanh nhân — Tháng 11/2026</h3> <span class="pnote" style="display:inline">— chỉ tiêu nền · thực đạt · % đạt · NV1 / NV2 · theo bộ lọc ASM và loại hội viên ở trên</span></div></div>
-    <div id="hvtCards"></div>
-    <div class="pnote" style="margin-top:8px">Chỉ tiêu nền = <b>basesale</b> · Thực đạt = <b>DS Masan (không NET &amp; Bia)</b> của KH trong tháng · %đạt = Thực đạt / Chỉ tiêu nền. <b>NV1</b> = DS ≥ 95% chỉ tiêu nền (Mức 1 1,2% · Mức 2 ≥100% 1,5% · Mức 3 ≥105% 2,0%). <b>NV2</b>: VIP Đại sứ = mua đủ 4 nhãn trọng điểm (Chanté, Chinsu, Kokomi, Nam Ngư), mỗi nhãn ≥150k; VIP còn lại = có 500k đến từ 4 nhãn. <b>Đủ điều kiện thưởng</b> = đạt NV1 và NV2 (khớp cột QualifiedLevel của file).</div>
-  </div>
-  <div class="panel" style="margin-top:14px">
-    <div class="tbl-head"><div><h3 style="display:inline;color:#7c5cbf">2. Đạt Nhiệm vụ 1 (doanh số) – chưa đạt Nhiệm vụ 2 (4 nhãn trọng điểm) — phân loại VIP / VIP Đại sứ</h3></div></div>
-    <div style="overflow-x:auto"><table class="t8asmtbl"><thead><tr><th style="text-align:left" rowspan="2">Nhóm</th><th rowspan="2">Tổng KH</th><th rowspan="2">Đạt NV1 (DS)</th><th rowspan="2">Đạt NV2 (nhãn)</th><th rowspan="2">Đủ NV1+NV2 (được thưởng)</th><th rowspan="2" style="color:var(--accent)">Đạt NV1 – chưa đạt NV2</th><th rowspan="2">% trên KH đạt NV1</th><th rowspan="2">Chưa NV1 – đạt NV2</th><th rowspan="2">Chưa đạt cả 2</th><th colspan="5" style="text-align:center">KH đạt NV1 chưa NV2 còn thiếu…</th><th rowspan="2">DS của nhóm này (Tr)</th></tr><tr><th>Chanté &lt;150k</th><th>Chinsu &lt;150k</th><th>Kokomi &lt;150k</th><th>Nam Ngư &lt;150k</th><th>Thiếu đến 500k (Tr)</th></tr></thead><tbody id="hvtNvBody"></tbody></table></div>
-    <div class="pnote" style="margin-top:8px">VIP Đại sứ: đếm số KH còn thiếu từng nhãn (DS nhãn &lt;150k, 1 KH có thể thiếu nhiều nhãn) · VIP: tổng DS còn thiếu để đủ 500k từ 4 nhãn.</div>
-  </div>
-  <div class="panel" style="margin-top:14px">
-    <div class="tbl-head"><div><h3 style="display:inline;color:#7c5cbf">3. Hội viên doanh nhân theo ASM → NPP → SS → ĐDKD</h3> <span class="pnote" style="display:inline">(Triệu, DS Masan) — bấm dòng ASM / NPP / SS để khoan sâu đến ĐDKD · sắp theo % TH giảm dần</span></div><div class="tabseg" id="hvtCtl"><button data-a="expand">⊞ Mở tất cả</button><button data-a="collapse">⊟ Thu gọn</button></div></div>
-    <div style="overflow-x:auto"><table class="t8asmtbl"><thead><tr><th rowspan="2" style="text-align:left;vertical-align:middle">ASM → NPP → SS (SUP) → ĐDKD</th><th colspan="3" rowspan="1" style="background:#2563eb!important;color:#fff!important;text-align:center">Khách hàng hội viên</th><th colspan="4" rowspan="1" style="background:#16a34a!important;color:#fff!important;text-align:center">Doanh số so với chỉ tiêu nền (Tr)</th><th colspan="3" rowspan="1" style="background:#7c3aed!important;color:#fff!important;text-align:center">Số KH theo mức đạt</th><th colspan="1" rowspan="1" style="background:#dc2626!important;color:#fff!important;text-align:center">VIP Đại sứ</th><th colspan="1" rowspan="1" style="background:#1e293b!important;color:#fff!important;text-align:center">KH đủ ĐK xét thưởng</th><th colspan="4" rowspan="1" style="background:#3b82f6!important;color:#fff!important;text-align:center">Phân loại KH (Type)</th><th colspan="3" rowspan="1" style="background:#8b5cf6!important;color:#fff!important;text-align:center">Nhiệm vụ</th><th colspan="1" rowspan="1" style="background:#059669!important;color:#fff!important;text-align:center">Thưởng ước tính</th></tr><tr><th style="background:#2563eb22!important;color:#0f172a!important;white-space:normal">Tổng KH</th><th style="background:#2563eb22!important;color:#0f172a!important;white-space:normal">Đã mua</th><th style="background:#2563eb22!important;color:#0f172a!important;white-space:normal">% mua</th><th style="background:#16a34a22!important;color:#0f172a!important;white-space:normal">CT nền</th><th style="background:#16a34a22!important;color:#0f172a!important;white-space:normal">Thực hiện</th><th style="background:#16a34a22!important;color:#0f172a!important;white-space:normal">% TH</th><th style="background:#16a34a22!important;color:#0f172a!important;white-space:normal">Còn thiếu đến 105%</th><th style="background:#7c3aed22!important;color:#0f172a!important;white-space:normal">≥95% (M1)</th><th style="background:#7c3aed22!important;color:#0f172a!important;white-space:normal">≥100% (M2)</th><th style="background:#7c3aed22!important;color:#0f172a!important;white-space:normal">≥105% (M3)</th><th style="background:#dc262622!important;color:#0f172a!important;white-space:normal">Đủ 4 nhãn ≥150k</th><th style="background:#1e293b22!important;color:#0f172a!important;white-space:normal">NV1 + NV2</th><th style="background:#3b82f622!important;color:#0f172a!important;white-space:normal">VIP3</th><th style="background:#3b82f622!important;color:#0f172a!important;white-space:normal">VIP5</th><th style="background:#3b82f622!important;color:#0f172a!important;white-space:normal">VIP Sỉ</th><th style="background:#3b82f622!important;color:#0f172a!important;white-space:normal">Lẻ</th><th style="background:#8b5cf622!important;color:#0f172a!important;white-space:normal">Đạt NV1 (DS)</th><th style="background:#8b5cf622!important;color:#0f172a!important;white-space:normal">Đạt NV2 (nhãn)</th><th style="background:#8b5cf622!important;color:#0f172a!important;white-space:normal">NV1 đạt – NV2 chưa</th><th style="background:#05966922!important;color:#0f172a!important;white-space:normal">đ</th></tr></thead><tbody id="hvtBody"></tbody></table></div>
-    <div class="pnote" style="margin-top:8px">Thực hiện = DS đã xác nhận + đơn chờ (cùng định nghĩa với các thẻ phía trên; dòng nhỏ là phần đã xác nhận). Số KH đạt NV1/NV2 và thưởng xét theo DS đã xác nhận. · Thưởng ước tính = DS × 1,2% / 1,5% / 2,0% theo mức đạt, chỉ tính KH đủ điều kiện (chưa áp cap SKU trọng yếu 110% — file không có DS theo SKU)</div>
-  </div>
-  <div class="panel" style="margin-top:14px">
-    <div class="tbl-head"><div><h3 style="display:inline;color:#7c5cbf">4. Danh sách KH đạt NV1 nhưng chưa đạt NV2</h3> <span class="pnote" style="display:inline" id="hvtNvN"></span></div></div>
-    <div style="overflow-x:auto"><table class="t8asmtbl"><thead><tr><th>#</th><th style="text-align:left">ĐDKD</th><th style="text-align:left">SS</th><th style="text-align:left">NPP</th><th style="text-align:left">ASM</th><th style="text-align:left">Khách hàng</th><th>Loại</th><th>DS (Tr)</th><th>% đạt nền</th><th>Chanté</th><th>Chinsu</th><th>Kokomi</th><th>Nam Ngư</th><th style="text-align:left">Cần bổ sung</th></tr></thead><tbody id="hvtNvList"></tbody></table></div>
-    <div class="pnote" style="margin-top:8px">Việc cần làm: đưa đủ nhãn còn thiếu (≥150k/nhãn với VIP Đại sứ; đủ 500k từ 4 nhãn với VIP) để KH được tính thưởng.</div>
-  </div>
-  <div class="panel" style="margin-top:14px">
-    <div class="tbl-head"><div><h3 style="display:inline;color:#7c5cbf">5. Danh sách KH sắp đạt NV1</h3> <span class="pnote" style="display:inline" id="hvtListN"></span></div></div>
-    <div style="overflow-x:auto"><table class="t8asmtbl"><thead><tr><th>#</th><th style="text-align:left">ĐDKD</th><th style="text-align:left">SS</th><th style="text-align:left">NPP</th><th style="text-align:left">ASM</th><th style="text-align:left">Khách hàng</th><th>Loại</th><th>DS (Tr)</th><th>Chỉ tiêu nền</th><th>Còn thiếu đến 95%</th><th>% đạt nền</th></tr></thead><tbody id="hvtList"></tbody></table></div>
-    <div class="pnote" style="margin-top:8px">Điều kiện: chưa đạt 95% chỉ tiêu nền và còn thiếu ≤ 30% chỉ tiêu nền · sắp theo còn thiếu tăng dần.</div>
-  </div>
+  <div id="pgTds" hidden>
+  <div id="tdsv11"></div>
   </div>
   <div id="pgCombo" hidden>
-  <div class="panel" style="margin-top:14px;border-top:3px solid #0ea5e9">
-    <div class="tbl-head"><div><h3 style="display:inline;color:#0369a1">🎟️ Combo đơn hàng — Tracking tháng 11/2026</h3> <span class="pnote" style="display:inline">— KH lẻ OFF · KH ON · Quán ăn + Nhà hàng · khoan sâu ASM → NPP → SS → ĐDKD</span></div></div>
-    <div class="flt2" style="display:flex;flex-wrap:wrap;gap:14px;margin:10px 0">
-      <div class="fg"><label>Chương trình</label><div class="seg" id="cbtGrp"><button data-v="oo" class="on">Tổng OFF + ON</button><button data-v="0">KH lẻ OFF</button><button data-v="1">KH ON</button><button data-v="2">Quán ăn + Nhà hàng</button></div></div>
-      <div class="fg"><label>ASM</label><div class="seg" id="cbtAsm"></div></div>
-    </div>
-    <div id="cbtCards" style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px"></div>
-  </div>
-  <div class="panel" style="margin-top:14px">
-    <div class="tbl-head"><div><h3 style="display:inline;color:#0369a1">Summary combo theo ASM → NPP → SS → ĐDKD</h3> <span class="pnote" style="display:inline">— bấm dòng để khoan sâu (triệu đồng)</span></div><div class="tabseg" id="cbtCtl"><button data-a="expand">Mở hết</button><button data-a="collapse">Thu gọn</button></div></div>
-    <div style="overflow-x:auto"><table class="t8asmtbl" style="font-size:12px"><thead>
-      <tr><th rowspan="2" style="text-align:left">ASM / NPP / SS / ĐDKD</th><th colspan="4" style="background:#1d4ed8;color:#fff">Danh sách KH combo</th><th colspan="5" style="background:#15803d;color:#fff">Thực hiện combo</th><th colspan="3" style="background:#475569;color:#fff">Nhóm KH đã nhận combo</th><th rowspan="2" style="background:#0369a1;color:#fff">DS mang về</th></tr>
-      <tr><th>Số lượng KH</th><th>CTSO</th><th>DS MTD</th><th>% chỉ tiêu</th><th>KH đã mua</th><th>% KH mua</th><th>KH đã nhận</th><th>Suất combo</th><th>% KH tham gia</th><th>CTSO nhóm</th><th>DS MTD nhóm</th><th>% chỉ tiêu</th></tr></thead><tbody id="cbtBody"></tbody></table></div>
-    <div class="pnote" style="margin-top:8px" id="cbtNote"></div>
-  </div>
-  <div class="panel" style="margin-top:14px;border-top:3px solid #0ea5e9">
-    <div class="tbl-head"><div><h3 style="display:inline;color:#7c5cbf">🎟️ Combo — Tháng 11/2026</h3> <span class="pnote" style="display:inline">— đơn nhận combo theo chương trình MBS_CT COMBO · KH combo OFF / ON / Nhà hàng</span></div></div>
-    <div class="t8norm" id="cbWarn"></div>
-    <div class="flt2" style="display:flex;flex-wrap:wrap;gap:14px;margin:10px 0">
-      <div class="fg"><label>Nhóm combo</label><div class="seg" id="cbGrp"><button data-v="oo" class="on">OFF + ON (tổng)</button><button data-v="0">Chỉ OFF</button><button data-v="1">Chỉ ON</button><button data-v="2">Nhà hàng</button><button data-v="all">Tất cả</button></div></div>
-      <div class="fg"><label>ASM</label><div class="seg" id="cbAsm"></div></div>
-    </div>
-    <div class="pnote">Bộ lọc Kênh / Nhóm KH / Tháng không áp dụng (file combo không có các chiều đó). Combo nhận diện theo file chương trình; không đặt trần.</div>
-  </div>
-  <div class="panel" style="margin-top:14px">
-    <div class="tbl-head"><div><h3 style="display:inline;color:#7c5cbf">1. Thẻ tổng — đơn, suất, KH nhận, DS</h3></div></div>
-    <div id="cbCards"></div>
-    <div class="pnote" style="margin-top:8px">Số đơn = KH × ngày × mã chương trình · Số suất = Σ SumQTY_REWARD · KH đã nhận = số KH duy nhất · DS hàng combo = Σ RETAILER_AMOUNT (doanh số tính trước chiết khấu của hàng đủ điều kiện combo, không gồm hàng khuyến mại).</div>
-  </div>
-  <div class="panel" style="margin-top:14px">
-    <div class="tbl-head"><div><h3 style="display:inline;color:#7c5cbf">2. Combo theo ngày × đơn vị</h3> <span class="pnote" style="display:inline">— số KH nhận combo mỗi ngày · bấm dòng để khoan sâu</span></div><div class="tabseg" id="cbCtl"><button data-a="expand">⊞ Mở tất cả</button><button data-a="collapse">⊟ Thu gọn</button></div></div>
-    <div style="overflow-x:auto"><table class="t8asmtbl" style="font-size:11px"><thead id="cbMxHead"></thead><tbody id="cbMx"></tbody></table></div>
-    <div class="pnote" style="margin-top:8px"><span style="background:#d1fae5;padding:1px 6px;border-radius:4px">xanh</span> = có KH nhận combo · <span style="background:#fee2e2;padding:1px 6px;border-radius:4px">đỏ</span> = chưa có · CN = Chủ nhật không có đơn · · = chưa đến ngày.</div>
-  </div>
-  <div class="panel" style="margin-top:14px">
-    <div class="tbl-head"><div><h3 style="display:inline;color:#7c5cbf">3. Theo đơn vị — KH nhận, chỉ tiêu, tiến độ, ngoài tuyến</h3></div></div>
-    <div style="overflow-x:auto"><table class="t8asmtbl"><thead><tr><th style="text-align:left">ASM → NPP → SS → ĐDKD</th><th>KH đã nhận</th><th>Số đơn</th><th>Số suất</th><th>DS hàng combo</th><th>Combo ngoài tuyến</th><th>Chỉ tiêu KH combo (CTSO)</th><th>% đạt CTSO</th><th>DS lũy kế nhóm KH đã mua</th><th>Chênh so tiến độ thời gian</th></tr></thead><tbody id="cbBody"></tbody></table></div>
-    <div class="pnote" style="margin-top:8px"><b>Combo ngoài tuyến</b> = đơn combo của KH vào ngày không có lịch viếng (cột T2–T7 của MCP = N, hoặc Chủ nhật), hiển thị: số đơn · % trên tổng đơn. <b>CTSO, DS lũy kế của nhóm KH đã mua</b> (cần đơn hàng thô T11) và các cột phụ thuộc: <b>Thiếu dữ liệu</b> — file combo không có chỉ tiêu; chênh so tiến độ = % đạt CTSO − % ngày công đã qua khi có CTSO.</div>
-  </div>
-  <div class="panel" style="margin-top:14px">
-    <div class="tbl-head"><div><h3 style="display:inline;color:#7c5cbf">4. Chương trình combo trong file</h3></div></div>
-    <div style="overflow-x:auto"><table class="t8asmtbl"><thead><tr><th>Nhóm</th><th style="text-align:left">Tên chương trình</th><th>Thời gian</th></tr></thead><tbody id="cbPromos"></tbody></table></div>
-  </div>
-  </div>
+  <div id="cbv11"></div>  </div>
   <div id="pgT11" hidden>
   <div id="t11Avail"></div>
   <div class="panel" style="margin-top:14px;border-top:3px solid #0ea5e9">
@@ -1602,11 +1529,37 @@ window.__z=function(b){var t=atob(b),u=new Uint8Array(t.length);for(var i=0;i<t.
 <script src="data/GP11.js?v=1794370702"></script>
 <script src="data/CBT11.js?v=1794366953"></script>
 <script src="data/COMBO11.js?v=1794366030"></script>
+<script src="data/TDS11.js?v=202611111630"></script>
 <script src="js/t11x.js?v=1794382904"></script>
 <script src="js/cbt.js?v=1794369064"></script>
 <script src="js/gp.js?v=1794374970"></script>
 <script src="js/t11s.js?v=1794384541"></script>
 <script src="js/t11.js?v=202611111400"></script>
+<link rel="stylesheet" href="css/combo2.css?v=202611111730">
+<script src="js/combo2.js?v=202611111700"></script>
+<script src="js/hvt2.js?v=202611111730"></script>
+<script src="js/tds2.js?v=202611111700"></script>
+<script src="js/mt-lib.js?v=202611111700"></script>
+<script src="js/mt-load.js?v=202611111700"></script>
+<script type="text/plain" id="huong-dan-claude-t11">
+HƯỚNG DẪN CHO CLAUDE — CẬP NHẬT 3 TAB "Hội viên Tết", "Tăng doanh số", "Combo" (tháng 11) TRÊN TRANG NÀY
+Repo: chungnt76/Chungnt-msc (GitHub Pages). Không tạo link mới, không đổi tên index.html.
+Khi người dùng gửi file Excel mới và nhờ cập nhật:
+1. Lấy repo (git clone hoặc file người dùng gửi). npm i xlsx@0.18.5
+2. node tools/update_t11.js <repo> --asof dd/mm <các file .xlsx>
+   - Tự nhận file: PROMOTION - OUTLET DETAIL → data/COMBO11.js + data/CBT11.js (KH nhận/suất)
+                   PERFORMANCE CHI TIẾT THEO NHÃN HÀNG (HỘI VIÊN) → data/HVT11.js
+                   data tăng doanh số (MBS ONTOP) → data/TDS11.js
+   - --asof = ngày dữ liệu của file hội viên / tăng DS (file không ghi ngày; hỏi người dùng nếu chưa rõ). Combo tự lấy ngày đơn lớn nhất.
+   - Script tự đổi số ?v= của các file data đã thay trong index.html.
+3. Kiểm tra bằng trình duyệt headless: mở 3 tab, không NaN/undefined, tổng dòng = cộng dòng con.
+4. Giao lại các file đã đổi (data/*.js + index.html) để người dùng up đè lên GitHub; nếu phiên có quyền push repo thì commit thẳng.
+Người dùng tự làm được trên trang: mở tab → "⇪ Nạp file Excel mới" → "⤓ Tải dữ liệu cập nhật" (.zip chứa data/*.js) → up đè thư mục data.
+Quy tắc: Combo 3 tệp KH không trùng (OFF · ON trừ Quán ăn/Nhà hàng · Quán ăn + Nhà hàng), KH hội viên loại khỏi đơn combo.
+Hội viên: NV1 = newsale (cột L) ≥95% chỉ tiêu nền (M1/M2/M3 = 95/100/105%); NV2 = SALE2 (cột J): Đại sứ mỗi nhãn Chanté/Chinsu/Kokomi/Nam Ngư ≥150k, VIP tổng 4 nhãn ≥500k.
+Tăng DS: chỉ tiêu = DS nền × (Mì 120%, Chanté 115%, Cà phê 130%, Bia 120%); đạt = DS thực hiện ≥ chỉ tiêu; thưởng = điểm ONTOP ÷ 100.
+Mã: js/mt-lib.js (dựng dữ liệu), js/mt-load.js (nút nạp file), js/combo2.js, js/hvt2.js, js/tds2.js (giao diện), css/combo2.css.
+</script>
 <script>
 const GROWTH_CATS = [{"key":"BEV","label":"Nước giải khát (BEV)"},{"key":"Bia","label":"Bia"},{"key":"CaPhe","label":"Cà phê"},{"key":"GiaVi","label":"Gia vị"},{"key":"HPC","label":"HPC"},{"key":"Mi","label":"Mì"},{"key":"PMeat","label":"P.Meat"},{"key":"Nutrition","label":"Nutrition"},{"key":"Khac","label":"Khác (Ready Meals, HMR…)"},{"key":"Total","label":"Tổng hợp toàn ngành"}];
 const GROWTH_EXCL = {"BEV":{"total_rows":521,"distinct_wards":484,"merged_fragment_wards":37,"unmatched_wards":2,"out_of_scope_wards":0,"excluded_wards":0,"excluded_ytd_ly_value":0.0,"new_territory_wards":17,"new_territory_ytd_value":1275392567.14136,"included_wards":482},"Bia":{"total_rows":485,"distinct_wards":483,"merged_fragment_wards":2,"unmatched_wards":1,"out_of_scope_wards":0,"excluded_wards":165,"excluded_ytd_ly_value":475312000.20168006,"new_territory_wards":71,"new_territory_ytd_value":672343007.97,"included_wards":317},"CaPhe":{"total_rows":495,"distinct_wards":482,"merged_fragment_wards":13,"unmatched_wards":0,"out_of_scope_wards":0,"excluded_wards":5,"excluded_ytd_ly_value":3814800.0,"new_territory_wards":22,"new_territory_ytd_value":291520600.0,"included_wards":477},"GiaVi":{"total_rows":517,"distinct_wards":484,"merged_fragment_wards":33,"unmatched_wards":2,"out_of_scope_wards":0,"excluded_wards":0,"excluded_ytd_ly_value":0.0,"new_territory_wards":18,"new_territory_ytd_value":1083670487.9980001,"included_wards":482},"HPC":{"total_rows":496,"distinct_wards":482,"merged_fragment_wards":14,"unmatched_wards":0,"out_of_scope_wards":0,"excluded_wards":0,"excluded_ytd_ly_value":0.0,"new_territory_wards":23,"new_territory_ytd_value":349760732.0,"included_wards":482},"Mi":{"total_rows":515,"distinct_wards":483,"merged_fragment_wards":32,"unmatched_wards":1,"out_of_scope_wards":0,"excluded_wards":0,"excluded_ytd_ly_value":0.0,"new_territory_wards":17,"new_territory_ytd_value":2605908507.44159,"included_wards":482},"PMeat":{"total_rows":509,"distinct_wards":483,"merged_fragment_wards":26,"unmatched_wards":1,"out_of_scope_wards":0,"excluded_wards":0,"excluded_ytd_ly_value":0.0,"new_territory_wards":18,"new_territory_ytd_value":491180915.3824799,"included_wards":482},"Total":{"total_rows":526,"distinct_wards":484,"merged_fragment_wards":42,"unmatched_wards":2,"out_of_scope_wards":0,"excluded_wards":0,"excluded_ytd_ly_value":0.0,"new_territory_wards":16,"new_territory_ytd_value":5602912129.183431,"included_wards":482}};
@@ -2080,7 +2033,7 @@ function initGrowthUI(){
     const b=e.target.closest('button');if(!b)return;
     [...e.currentTarget.children].forEach(x=>x.classList.toggle('on',x===b));
     const pg=b.dataset.pg, map={ov:'pgOv',gr:'pgGrow',som:'pgSoM',hv:'pgMbs78',apq:'pgApq',ap9:'pgAp9',r360:'pgR360',plan:'pgPlan',on7:'pgOn7'};
-    ['pgOv','pgGrow','pgSoM','pgMbs78','pgSo','pgT9','pgT10','pgT11','pgGp','pgHvt','pgCombo','pgApq','pgAp9','pgR360','pgPlan','pgOn7'].forEach(id=>{const el=document.getElementById(id);if(el)el.hidden=true;});
+    ['pgOv','pgGrow','pgSoM','pgMbs78','pgSo','pgT9','pgT10','pgT11','pgGp','pgHvt','pgTds','pgCombo','pgApq','pgAp9','pgR360','pgPlan','pgOn7'].forEach(id=>{const el=document.getElementById(id);if(el)el.hidden=true;});
     document.getElementById(map[pg]).hidden=false;
     if(pg==='gr')renderG9Trend(); if(pg==='som')renderSoM(); if(pg==='hv'){renderT10HV();hvSync();} if(pg==='apq')renderApq(); if(pg==='ap9')renderAp9(); if(pg==='r360')render360(); if(pg==='plan')renderPlan(); if(pg==='on7')renderOn7();
   };
@@ -5237,6 +5190,7 @@ applyMeat('all');document.querySelector('#fMonth button[data-m="10"]').click();u
     {k:'gr',ic:'🚀',t:'Tăng trưởng 10T',old:'gr',pg:'pgGrow',d:'10T 2026 so với 2025 / 2024 / 2023, CAGR, đóng góp pp, NPP top/bottom 5, phường/xã âm → outlet'},
     {k:'hv',ic:'🏅',t:'Hội viên',old:'hv',pg:'pgMbs78',d:'Hội viên Doanh nhân Masan T9 → T10 · CAT/BRAND · giữ đạt / rớt / mới đạt · lý do chưa đạt'},
     {k:'hvt',ic:'🏆',t:'Hội viên Tết',old:'ov',pg:'pgHvt',d:'T11: hội viên VIP / VIP đại sứ đạt thưởng, sắp đạt, còn thiếu đến nền · ASM → NPP → SS → ĐDKD'},
+    {k:'tds',ic:'📊',t:'Tăng doanh số',old:'ov',pg:'pgTds',d:'T11: gắn kết tăng doanh số Mì, Chanté, Cà phê, Bia · KH đạt chỉ tiêu, thưởng dự kiến · ASM → NPP → SS → ĐDKD'},
     {k:'combo',ic:'🎟️',t:'Combo',old:'ov',pg:'pgCombo',d:'T11: KH nhận combo OFF / ON / Nhà hàng theo ngày, theo đơn vị, ngoài tuyến'},
     {k:'ap',ic:'🎯',t:'AP Quý 4',old:null,pg:null,d:'Chỉ tiêu E/HE/O tháng 10–12 · thực hiện AP 9 tháng · Plan 6 chỉ tiêu nền tảng'},
     {k:'on7',ic:'🍹',t:'Kênh On 7 loại hình',old:'on7',pg:'pgOn7',d:'ASO/MCP, %ASO, VPO từng loại hình · chỉ tiêu 30 ASO/ĐDKD · DS Trà Búp Non'},
@@ -5258,7 +5212,7 @@ applyMeat('all');document.querySelector('#fMonth button[data-m="10"]').click();u
   /* ---------- 2. Trang mới & tiêu đề từng tab ---------- */
   const mk=(id,html)=>{const d=document.createElement('div');d.id=id;d.hidden=true;if(html)d.innerHTML=html;return d;};
   const pgOv=$('#pgOv');
-  ['pgOv','pgGrow','pgSoM','pgMbs78','pgSo','pgT9','pgT10','pgT11','pgGp','pgHvt','pgCombo','pgApq','pgAp9','pgR360','pgPlan','pgOn7','pgGr','pgG9','pgT8'].forEach(id=>{const e=document.getElementById(id);if(e&&!wrap.contains(e))wrap.appendChild(e);});
+  ['pgOv','pgGrow','pgSoM','pgMbs78','pgSo','pgT9','pgT10','pgT11','pgGp','pgHvt','pgTds','pgCombo','pgApq','pgAp9','pgR360','pgPlan','pgOn7','pgGr','pgG9','pgT8'].forEach(id=>{const e=document.getElementById(id);if(e&&!wrap.contains(e))wrap.appendChild(e);});
   const pgPc=mk('pgPc'), pgCat=mk('pgCat'), apBar=mk('apBar');
   pgOv.after(pgPc); pgPc.after(pgCat); pgCat.after(apBar);
   const head=n=>`<div class="pghead"><div><h2>${n.ic} ${n.t}</h2><p>${n.d}</p></div><div class="legend3"><span><i style="background:var(--green)"></i>Đạt / tăng (≥ 100%)</span><span><i style="background:var(--amber)"></i>Theo dõi (80–99%)</span><span><i style="background:var(--red)"></i>Báo động (&lt; 80% / giảm)</span></div></div>`;
@@ -5468,7 +5422,7 @@ applyMeat('all');document.querySelector('#fMonth button[data-m="10"]').click();u
   addFocus();
 
   /* ---------- 9. Router ---------- */
-  const ALLPG=['pgOv','pgGrow','pgSoM','pgMbs78','pgSo','pgT9','pgT10','pgT11','pgGp','pgHvt','pgCombo','pgApq','pgAp9','pgR360','pgPlan','pgOn7','pgPc','pgCat','apBar'];
+  const ALLPG=['pgOv','pgGrow','pgSoM','pgMbs78','pgSo','pgT9','pgT10','pgT11','pgGp','pgHvt','pgTds','pgCombo','pgApq','pgAp9','pgR360','pgPlan','pgOn7','pgPc','pgCat','apBar'];
   let CUR='ov', APCUR=LS.get('apsub')||'apq';
   function go(k,sub){
     const n=NAV.find(x=>x.k===k)||NAV[0]; CUR=n.k; if(n.k==='ap'&&sub)APCUR=sub;
@@ -5477,7 +5431,7 @@ applyMeat('all');document.querySelector('#fMonth button[data-m="10"]').click();u
     if(n.k==='ap'){apBar.hidden=false;document.getElementById(APS.find(s=>s.k===APCUR).pg).hidden=false;$$('#apSub button').forEach(b=>b.classList.toggle('on',b.dataset.s===APCUR));LS.set('apsub',APCUR);}
     else document.getElementById(n.pg).hidden=false;
     $$('#nav2 button').forEach(b=>b.classList.toggle('on',b.dataset.k===n.k));
-    if(n.k==='t11')renderT11(); if(n.k==='gp')renderGp(); if(n.k==='hvt')renderHvt(); if(n.k==='combo')renderCombo(); if(n.k==='pc')renderPc(); if(n.k==='cat')renderCatKpi(); if(n.k==='hv')syncHv(); if(n.k==='r360')tagR3(); runX();
+    if(n.k==='t11')renderT11(); if(n.k==='gp')renderGp(); if(n.k==='hvt')renderHvt(); if(n.k==='combo')renderCombo(); if(n.k==='tds'&&window.renderTds)window.renderTds(); if(n.k==='pc')renderPc(); if(n.k==='cat')renderCatKpi(); if(n.k==='hv')syncHv(); if(n.k==='r360')tagR3(); runX();
     LS.set('tab',n.k); window.dispatchEvent(new Event('resize'));
   }
   window.v2go=go;
