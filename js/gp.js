@@ -382,4 +382,12 @@ function openPrint(){
   ov.hidden=false;
 }
 window.renderGp=function(){try{render();}catch(e){console.error('GP',e);}};
+window.gpExport=function(){
+  const D=drv(), A=agg().ss, out=[];
+  D.R.forEach(x=>{const t=ssTier(x), a=A.find(z=>z.asm===x.asm&&z.ss===x.ss)||{}, sr=GP11.rows.filter(q=>{const m=srOf(q[0]);return m[2]===x.asm&&m[4]===x.ss;}).length;
+    out.push({asm:x.asm,npp:x.npp,ss:x.ss,srn:sr,mcp:x.mcp,aso:x.m.aso,pc:x.m.pc,li:x.m.li,so:x.m.so,tg:a.tg||0,B:x.B,
+      cypc:x.cy.pc,cyli:x.cy.li,cyso:x.cy.so,gf:t.q.frq,gl:t.q.lp,gs:t.q.spl,w:t.w,hv:t.h.hv,cb:t.h.cb});});
+  return {rows:out,meta:{d:D.d,rem:D.rem,k:D.k,hc:par('hc'),P50:D.P50,last:T11_META.last_date}};
+};
+
 })();

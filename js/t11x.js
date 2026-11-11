@@ -138,6 +138,10 @@ window.renderHvt=function(){try{hvInit();hvRender();}catch(e){console.error('HVT
 const grpOk=g=>C.grp==='all'||(C.grp==='oo'?g!==2:g===C.grp);
 const C={grp:'oo',asm:'all',open:{a:new Set(),n:new Set(),s:new Set()},tree:null,acc:null};
 const cmb=()=>COMBO11.meta;
+/* KH hội viên nằm ngoài tập KH combo (khớp tab tracking): loại khỏi đơn combo */
+if(typeof HVT11!=='undefined'&&!COMBO11.__nohv){const hs=new Set(HVT11.rows.map(r=>String(r[1]))); COMBO11.rows=COMBO11.rows.filter(r=>!hs.has(String(r[1]))); COMBO11.__nohv=1;}
+/* SR mới chưa gán SS: lấy ASM/NPP/SS từ tập MCP (khớp tab tracking) */
+if(typeof CBT11!=='undefined'&&!COMBO11.__fix){const m=new Map(CBT11.sr.map(x=>[String(x[0]),x])); COMBO11.sr.forEach(x=>{ if(x[2]==='Chưa gán SS'){const y=m.get(String(x[0])); if(y&&y[2]&&y[2]!=='Chưa gán SS'){x[2]=y[2];x[3]=y[3];x[4]=y[4];}}}); COMBO11.__fix=1;}
 function cbAcc(){
   const SR=COMBO11.sr, acc=SR.map(()=>({don:0,suat:0,kh:new Set(),amt:0,ngoai:0,days:new Map()}));
   COMBO11.rows.forEach(r=>{ if(!grpOk(r[3]))return;
@@ -185,11 +189,14 @@ function cbCards(){
   const grp=(t,o,ac)=>`<div style="margin-top:12px"><b style="color:${ac}">${t}</b></div><div class="kpis" style="grid-template-columns:repeat(4,1fr)">`+card('Số đơn combo',fi(o.don),'KH × ngày × chương trình',ac)+card('Số suất',fi(o.suat),'Σ SumQTY_REWARD',ac)+card('KH đã nhận combo',fi(o.kh.size),'KH duy nhất',ac)+card('DS hàng combo',fmtM(o.amt),'Σ RETAILER_AMOUNT (chưa gồm DS nhóm KH ngoài combo)',ac)+'</div>';
   const A=(()=>{const o={don:0,suat:0,kh:new Set(),amt:0};COMBO11.rows.forEach(r=>{if(!scope(r[0])||!grpOk(r[3]))return;o.don++;o.suat+=r[6];o.kh.add(r[1]);o.amt+=r[8];});return o;})();
   let U=0,DSF=0; const gs=C.grp==='oo'?[0,1]:C.grp==='all'?[0,1,2]:[C.grp];
-  COMBO11.sr.forEach((x,i)=>{if(!scope(i))return; const e=(COMBO11.ex||[])[i]||[0,0,0,0,0]; if(gs.some(g=>g===0))U+=e[0]; if(gs.some(g=>g>0))U+=e[1]; gs.forEach(g=>DSF+=e[2+g]);});
+  COMBO11.sr.forEach((x,i)=>{if(!scope(i))return; const e=(COMBO11.ex||[])[i]||[0,0,0,0,0]; gs.forEach(g=>DSF+=e[2+g]);});
+  /* KH được tham gia = tập KH combo (MCP − hội viên − vãng lai), cùng số với tab tracking */
+  const ug=(C.grp===0||C.grp===1||C.grp===2)?[C.grp]:[0,1];
+  if(typeof CBT11!=='undefined')CBT11.rows.forEach(r=>{ if(!ug.includes(r[1]))return; const a=CBT11.sr[r[0]][2]; if(C.asm==='all'||a===C.asm)U+=r[2]; });
   const gl={oo:'OFF + ON gộp (tracking tổng)',all:'Tất cả gồm Nhà hàng',0:'KH combo OFF',1:'KH combo ON',2:'KH combo Nhà hàng'}[C.grp];
   const ac='#0369a1';
   document.getElementById('cbCards').innerHTML=`<div style="margin-top:12px"><b style="color:${ac}">Tổng quan combo MTD đến ${cmb().asof} · ${gl}</b></div><div class="kpis" style="grid-template-columns:repeat(4,1fr)">`+
-    card('Số KH được tham gia',fi(U),'KH có phát sinh đơn MTD theo kênh '+(C.grp==='oo'?'Off + On premise':C.grp===0?'Off premise':C.grp===2||C.grp===1?'On premise':'Off + On premise'),ac)+
+    card('Số KH được tham gia',fi(U),'tập KH combo = MCP − hội viên − vãng lai ('+(C.grp==='oo'||C.grp==='all'?'Off + On premise':C.grp===0?'Off premise':'On premise')+')',ac)+
     card('Số KH đã mua combo',fi(A.kh.size),U?fp(A.kh.size/U*100)+' KH tham gia · '+fi(A.don)+' đơn combo':'KH duy nhất',ac)+
     card('Số suất đã mua',fi(A.suat),U?'Bình quân '+(A.suat/Math.max(1,A.kh.size)).toFixed(2).replace('.',',')+' suất/KH':'Σ SumQTY_REWARD',ac)+
     card('Doanh số mang về',fmtM(DSF),'Toàn bộ DS các đơn có combo (sau CK) · riêng dòng hàng đủ ĐK combo: '+fmtM(A.amt),ac)+'</div>';
@@ -205,7 +212,7 @@ function cbRender(){
   const M=cmb(); C.acc=cbAcc();
   const st=cbStale(), pct=M.wd_passed/M.wd_total*100;
   let w=`Dữ liệu combo <b>đến hết ngày ${M.asof}</b> (ngày công ${M.wd_passed}/${M.wd_total} = tiến độ thời gian ${fp(pct)}) · ${COMBO11.promos.length} chương trình đang chạy. `+
-    `<b>${COMBO11.sr.filter(s=>s[2]==='Chưa gán SS').length} SR mới</b> chưa có trong dữ liệu T10 nằm ở dòng "Chưa gán SS". `;
+    (COMBO11.sr.some(s=>s[2]==='Chưa gán SS')?`<b>${COMBO11.sr.filter(s=>s[2]==='Chưa gán SS').length} SR mới</b> chưa có trong dữ liệu T10 nằm ở dòng "Chưa gán SS". `:'Tập KH combo = MCP − hội viên − vãng lai, khớp với bảng tracking phía trên. ');
   if(st.sa.length)w+=`<br>⚠ <b>ASM dữ liệu dừng sớm hơn</b> (không so sánh như đủ dữ liệu): ${st.sa.map(([k,d])=>esc(k)+' (đến '+d+'/11)').join(', ')}.`;
   if(st.sn.length)w+=`<br>⚠ NPP có đơn combo cuối cùng trước ${M.asof}: ${st.sn.map(([k,d])=>esc(k)+' ('+d+'/11)').join('; ')}.`;
   w+=`<br>ℹ File combo có đơn <b>đến ngày ${M.asof}</b>; chưa có đơn ngày 10/11 — nếu anh muốn tính hết 10/11, cần xuất lại file sau khi chốt ngày.`; document.getElementById('cbWarn').innerHTML=w;
