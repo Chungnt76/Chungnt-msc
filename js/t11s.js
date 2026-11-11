@@ -5,6 +5,7 @@
 (function(){
 const ST={on:false,orig:null,txt:new Map(),outs:new Set()};
 window.T11SHIFT=ST;
+const KCY=9/27;   // chỉ tiêu T10 quy về cùng kỳ 01–10/10: 9/27 ngày làm việc
 const WD11={'7':26,'8':24,'9':9,'10':25};   // khe 9 = T10 cùng kỳ 01–10/10 (9 ngày làm việc)
 const k3=r=>r.asm+'|'+r.npp+'|'+r.ssn;
 const clone=o=>Object.assign({},o);
@@ -40,12 +41,17 @@ function enter(){
   const m9={}; O.T9.forEach(r=>m9[k3(r)]=r);
   const cy={}; if(typeof T10CY!=='undefined')T10CY.forEach(r=>cy[k3(r)]=r);
   FULL.T9=O.T10.map(r=>{const o=baseRow(r),p=m9[k3(r)],c=cy[k3(r)]; if(c){o.v=c.v;['so','aso','pc','lines','sm'].forEach(f=>{o[f]=c[f];});}
-    o.smm={'7':(r.smm||{})['8'],'8':p&&p.v&&p.v['a|all']?p.v['a|all'].sm:0}; o.tgm=shiftTg(r.tgm); return o;});
+    o.smm={'7':(r.smm||{})['8'],'8':p&&p.v&&p.v['a|all']?p.v['a|all'].sm:0}; o.tgm=shiftTg(r.tgm);
+    if(c&&o.tgm['9']){o.tgm['9']=o.tgm['9'].map(x=>(x||0)*KCY);} if(c&&o.target)o.target=o.target*KCY; return o;});
   FULL.T10=S.T.map(r=>{const o=clone(r); o.tgm={'10':(r.tgm||{})['11']}; delete o._a; delete o._tm; return o;});
   FULL.T9CH=O.T10CH.map(baseCH); FULL.T10CH=T11CH.map(clone);
   const dk={}; S.DATA.forEach(d=>dk[d.npp+'|'+d.ss+'|'+d.oo+'|'+d.vip]=d);
   const sv=(r,m)=>r._a&&r._a['s'+m]!=null?r._a['s'+m]:r['s'+m];
-  const CS=(typeof T10CYS!=='undefined')?T10CYS:null, cd={}; if(CS)CS.DATA.forEach(d=>cd[d.npp+'|'+d.ss+'|'+d.oo+'|'+d.vip]=d);
+  const CS=(typeof T10CYS!=='undefined')?T10CYS:null, cd={};
+  if(CS&&!CS._tg){CS._tg=1; const om={}; (O.m['10']||[]).forEach(r=>om[r[0]]=r);
+    CS.DDK.rows.forEach(r=>{const q=om[r[0]]; if(q){r[2]=Math.round((q[2]||0)*KCY); r[3]=Math.round((q[3]||0)*KCY);}});
+    const oc={}; O.CATD.forEach(r=>{if(+r[1]===10)oc[r[0]+'|'+r[2]+'|'+r[3]]=r;});
+    CS.CATD.forEach(r=>{const q=oc[r[0]+'|'+r[2]+'|'+r[3]]; if(q&&r[3]==='all')r[8]=Math.round((q[8]||0)*KCY);});} if(CS)CS.DATA.forEach(d=>cd[d.npp+'|'+d.ss+'|'+d.oo+'|'+d.vip]=d);
   const nd=O.DATA.map(r=>{const d=dk[r.npp+'|'+r.ss+'|'+r.oo+'|'+r.vip]||{a11:0,s11:0,xs11:0,q11:0,nbT10:0,nb11:0};
     const c=cd[r.npp+'|'+r.ss+'|'+r.oo+'|'+r.vip];
     const o={asm:r.asm,npp:r.npp,ss:r.ss,oo:r.oo,vip:r.vip,
@@ -96,13 +102,15 @@ function hdr(on){
 }
 /* ---- cộng 1 vào nhãn tháng (T7..T10 → T8..T11) trong các tab chạy bằng khe tháng ---- */
 const RE=/((?<![A-Za-zÀ-ỹ0-9])T|[Tt]háng |THÁNG )(7|8|9|10)(?!\d)/g;
-const sh=s=>s.replace(RE,(m,p,n)=>p+(+n+1)).replace(/T10 \(cả tháng\)|T10 cả tháng/g,'T10 cùng kỳ (01–10/10)');
+const sh=s=>s.replace(RE,(m,p,n)=>p+(+n+1)).replace(/T10 \(cả tháng\)|T10 cả tháng/g,'T10 cùng kỳ (01–10/10)').replace(/(T10|[Tt]háng 10)(?!\d)(?! cùng)(?!–T11)(?!\s*→)/g,'$1 cùng kỳ');
 const ROOTS=['pgOv','pgSoM','pgPc','pgCat','pgR360','v3chips','context','tblNote'];
-let OBS=null;
+let OBS=null; const POKE=new Set();
 function tr(node){
-  if(node.nodeType!==3)return; const v=node.nodeValue; if(ST.txt.has(node)&&ST.txt.get(node).out===v)return;
-  if(ST.outs.has(v))return;               // bản sao của chữ đã dịch (v3 copy từ thẻ gốc) → không dịch lần 2
-  const o=sh(v); if(o!==v){ST.txt.set(node,{orig:v,out:o}); ST.outs.add(o); node.nodeValue=o;}
+  if(node.nodeType!==3)return; const v=node.nodeValue; const nm=x=>x.replace(/^[^A-Za-z0-9À-ỹ]+/,''); if(ST.txt.has(node)&&nm(ST.txt.get(node).out)===nm(v))return;   // đã dịch (kể cả khi script khác bỏ emoji đầu dòng)
+  if(node.parentElement&&node.parentElement.closest('#v3kpis,#pcTblA,#pcTblB'))return;   // bản sao của chữ đã dịch (v3 / mirror copy từ nguồn) → không dịch lần 2
+  if(node.parentElement&&node.parentElement.closest('#pgR360')){const h=node.parentElement.closest('li,p,.k-lab,.k-sub,td,th')||node.parentElement; if(/\bHV\b|Hội viên|HỘI VIÊN|hội viên/.test(h.textContent))return;}   // số Hội viên trong R360 vẫn là T10 (chưa có chương trình T11 ở khung này) → giữ nhãn T10
+  const o=sh(v); if(o!==v){ST.txt.set(node,{orig:v,out:o}); node.nodeValue=o;
+    const src=node.parentElement&&node.parentElement.closest('#somTbl,#tbl'); if(src){POKE.add(src); if(!POKE.t)POKE.t=setTimeout(()=>{POKE.t=0;POKE.forEach(t=>{const b=t.tBodies[0];if(b){const x=document.createTextNode('');b.appendChild(x);x.remove();}});POKE.clear();},0);}}
 }
 function walk(n){
   if(n.nodeType===3){tr(n);return;}
@@ -120,5 +128,16 @@ function stopTr(){
 try{const rt=DDK.p.map(p=>p[0]).concat(T11S.DDK.newp.map(p=>p[0])),so={};
   T11S.DDK.rows.forEach(r=>{const v=r[4]['a|all|all'];so[rt[r[0]]]=v?v[0]:0;});
   APQ.forEach(r=>{r[10]=so[r[3]]||0;});}catch(e){console.error('APQ T11',e);}
+/* PC & LPPC (bảng Δ): ghi rõ tháng ở đầu cột — lấy nhãn từ bảng PC/ngày cùng tab */
+(function(){let busy=false;
+  function fix(){ if(busy)return; const a=document.getElementById('pcTblA'),b=document.getElementById('pcTblB'); if(!a||!b||!a.tHead||!b.tHead)return;
+    const hs=[...a.tHead.rows[0].cells].map(c=>c.textContent.replace(/\s+/g,' ').trim()); const pa=hs.filter(t=>/^PC\/ngày /i.test(t)).map(t=>t.replace(/^PC\/ngày /i,'').replace(/ \(MTD\)/,''));
+    const cur=hs.filter(t=>/^PC\/ngày /i.test(t)).slice(-1)[0]; if(pa.length<2||!cur)return;
+    const lab=pa[0]+' → '+pa[1]+(/cùng kỳ/.test(pa[0])?' · lũy kế 9 → 8 ngày':''); busy=true;
+    try{[...b.tHead.querySelectorAll('th')].forEach(th=>{ if(!/^(PC|LPPC) — /.test(th.firstChild&&th.firstChild.nodeValue?th.firstChild.nodeValue.trim():th.textContent.trim()))return;
+      let sub=th.querySelector('.thsub'); if(!sub){sub=document.createElement('div');sub.className='thsub';th.appendChild(sub);} if(sub.textContent!==lab)sub.textContent=lab;});}finally{busy=false;}}
+  function bind(){const a=document.getElementById('pcTblA'),b=document.getElementById('pcTblB'); if(!a||!b||a._pf)return; a._pf=1;
+    [a,b].forEach(t=>new MutationObserver(()=>setTimeout(fix,0)).observe(t,{childList:true,subtree:true,characterData:true})); fix();}
+  window.addEventListener('load',()=>setTimeout(bind,500)); if(document.readyState==='complete')setTimeout(bind,500);})();
 window.t11shiftEnter=enter; window.t11shiftExit=exit; window.t11shiftWalk=()=>{if(ST.on)startTr();};
 })();
