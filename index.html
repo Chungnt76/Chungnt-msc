@@ -1365,6 +1365,21 @@ body.presenting .nav2,body.pfocus-open .nav2{z-index:10}
   </div>
   <div id="pgCombo" hidden>
   <div class="panel" style="margin-top:14px;border-top:3px solid #0ea5e9">
+    <div class="tbl-head"><div><h3 style="display:inline;color:#0369a1">🎟️ Combo đơn hàng — Tracking tháng 11/2026</h3> <span class="pnote" style="display:inline">— KH lẻ OFF · KH ON · Quán ăn + Nhà hàng · khoan sâu ASM → NPP → SS → ĐDKD</span></div></div>
+    <div class="flt2" style="display:flex;flex-wrap:wrap;gap:14px;margin:10px 0">
+      <div class="fg"><label>Chương trình</label><div class="seg" id="cbtGrp"><button data-v="oo" class="on">Tổng OFF + ON</button><button data-v="0">KH lẻ OFF</button><button data-v="1">KH ON</button><button data-v="2">Quán ăn + Nhà hàng</button></div></div>
+      <div class="fg"><label>ASM</label><div class="seg" id="cbtAsm"></div></div>
+    </div>
+    <div id="cbtCards" style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px"></div>
+  </div>
+  <div class="panel" style="margin-top:14px">
+    <div class="tbl-head"><div><h3 style="display:inline;color:#0369a1">Summary combo theo ASM → NPP → SS → ĐDKD</h3> <span class="pnote" style="display:inline">— bấm dòng để khoan sâu (triệu đồng)</span></div><div class="tabseg" id="cbtCtl"><button data-a="expand">Mở hết</button><button data-a="collapse">Thu gọn</button></div></div>
+    <div style="overflow-x:auto"><table class="t8asmtbl" style="font-size:12px"><thead>
+      <tr><th rowspan="2" style="text-align:left">ASM / NPP / SS / ĐDKD</th><th colspan="4" style="background:#1d4ed8;color:#fff">Danh sách KH combo</th><th colspan="5" style="background:#15803d;color:#fff">Thực hiện combo</th><th colspan="3" style="background:#475569;color:#fff">Nhóm KH đã mua</th><th rowspan="2" style="background:#0369a1;color:#fff">DS mang về</th></tr>
+      <tr><th>Số lượng KH</th><th>CTSO</th><th>DS MTD</th><th>% chỉ tiêu</th><th>KH đã mua</th><th>% KH mua</th><th>KH đã nhận</th><th>Suất combo</th><th>% KH tham gia</th><th>CTSO nhóm</th><th>DS MTD nhóm</th><th>%</th></tr></thead><tbody id="cbtBody"></tbody></table></div>
+    <div class="pnote" style="margin-top:8px" id="cbtNote"></div>
+  </div>
+  <div class="panel" style="margin-top:14px;border-top:3px solid #0ea5e9">
     <div class="tbl-head"><div><h3 style="display:inline;color:#7c5cbf">🎟️ Combo — Tháng 11/2026</h3> <span class="pnote" style="display:inline">— đơn nhận combo theo chương trình MBS_CT COMBO · KH combo OFF / ON / Nhà hàng</span></div></div>
     <div class="t8norm" id="cbWarn"></div>
     <div class="flt2" style="display:flex;flex-wrap:wrap;gap:14px;margin:10px 0">
@@ -1582,8 +1597,10 @@ window.__z=function(b){var t=atob(b),u=new Uint8Array(t.length);for(var i=0;i<t.
 <script src="data/T11.js?v=202611111400"></script>
 <script src="data/T11S.js?v=202611111400"></script>
 <script src="data/HVT11.js?v=202611111400"></script>
+<script src="data/CBT11.js?v=1794366400"></script>
 <script src="data/COMBO11.js?v=1794366030"></script>
 <script src="js/t11x.js?v=1794366035"></script>
+<script src="js/cbt.js?v=1794366400"></script>
 <script src="js/t11s.js?v=202611111400"></script>
 <script src="js/t11.js?v=202611111400"></script>
 <script>
