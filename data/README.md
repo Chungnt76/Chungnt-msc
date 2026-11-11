@@ -18,3 +18,8 @@ Mỗi file định nghĩa 1 hằng số cùng tên (`const T10 = ...`). Dạng n
 | GROWTH.js, G9.js, G9SS.js, G9W.js | Tăng trưởng 10T | – |
 
 Cập nhật dữ liệu mới: ghi lại đúng file tương ứng, rồi đổi số `?v=` trong index.html để trình duyệt tải bản mới.
+
+## Chế độ Tháng 11 cho các tab cũ
+- `data/T11S.js` (T11S): DATA/FUNDRAW/CATD/DDK của T11 (sinh từ raw đơn hàng + Visit Schedule + TARGETACTUAL).
+- `js/t11s.js`: khi chọn "Tháng 11" ở các tab Tổng quan / SO & Chỉ tiêu / PC & LPPC / Ngành hàng / Review 360, dữ liệu được dịch khe tháng (khe7←T8, khe8←T9, khe9←T10, khe10←T11) và nhãn tháng +1; chọn tháng khác thì khôi phục nguyên trạng.
+- Cập nhật số T11 mới: chạy lại `tools/build_t11.py` + `tools/build_t11s.py` rồi ghi `data/T11.js`, `data/T11S.js`.

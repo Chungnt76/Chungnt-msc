@@ -20,8 +20,8 @@ function mrg(a,b){ if(!a)return b; if(!b)return a;
   if(a.tgm||b.tgm){o.tgm={};const t1=(a.tgm||{})['11']||[0,0],t2=(b.tgm||{})['11']||[0,0];o.tgm['11']=[t1[0]+t2[0],t1[1]+t2[1]];}
   return o;}
 const put=(m,r)=>{const k=k3(r);m[k]=MERGE.has(r.ssn)?mrg(m[k],r):r;};
-const src9=()=>(typeof FULL!=='undefined'&&FULL)?FULL.T9:T9;
-const src10=()=>(typeof FULL!=='undefined'&&FULL)?FULL.T10:T10;
+const src9=()=>window.T11ORIG?T11ORIG.T9:((typeof FULL!=='undefined'&&FULL)?FULL.T9:T9);
+const src10=()=>window.T11ORIG?T11ORIG.T10:((typeof FULL!=='undefined'&&FULL)?FULL.T10:T10);
 let MAPS=null;
 function maps(){
   if(MAPS)return MAPS;
@@ -153,22 +153,44 @@ window.renderT11=function(){try{init();render();avail();}catch(e){console.error(
       if(on&&/^Tháng \d+ · MTD đến \d+\/\d+ \(/.test(t)){e.dataset.orig=t; e.textContent='Tháng 11 · MTD đến hết 10/11 (hội viên) · 09/11 (combo)';}
       else if(!on&&e.dataset.orig){e.textContent=e.dataset.orig; delete e.dataset.orig;}});
   }
+  const shiftOn=()=>!!(window.T11SHIFT&&T11SHIFT.on);
+  const SUP=['pgOv','pgSoM','pgPc','pgCat','pgR360'];            // tab chạy được chế độ Tháng 11 (dịch khe tháng)
+  const NOTE={pgGrow:'Tăng trưởng 10T là lũy kế 10 tháng so cùng kỳ 2025/2024/2023 — chưa có số cùng kỳ T11 nên chưa chạy được Tháng 11. Số T11 xem ở tab Tháng 11.',
+    pgApq:'AP Quý 4: đang xem Tháng 11 — SO T11 sell-out MTD đến 10/11 so với chỉ tiêu AP tháng 11 (đổi tháng ở bộ chọn riêng của tab).',pgAp9:'Thực hiện AP 9 tháng — không theo bộ lọc tháng.',pgPlan:'Plan AP Quý 4 — không theo bộ lọc tháng.',pgOn7:'Kênh On 7 loại hình chưa có số T11 (cần file chi tiết loại hình T11).'};
+  function banner(){
+    let b=document.getElementById('t11Banner2'); const on=shiftOn()||onT11();
+    const pg=Object.keys(NOTE).find(k=>vis(k)); const msg=(on&&pg)?NOTE[pg]:'';
+    if(!b){if(!msg)return; b=document.createElement('div'); b.id='t11Banner2'; b.className='note'; b.style.cssText='margin:8px 0;padding:10px 14px;border-radius:10px;background:#fff7ed;border:1px solid #fdba74;color:#9a3412;font-size:13px';
+      const flt=document.querySelector('.flt'); if(flt)flt.appendChild(b);}
+    if(b){b.hidden=!msg; b.textContent=msg;}
+  }
   function sync(){
     const fm=document.getElementById('fMonth'); if(!fm)return;
-    const on=onT11();
+    const on=onT11()||shiftOn();
     [...fm.children].forEach(b=>b.classList.toggle('on',on?b.dataset.m==='11':b.dataset.m===F.month));
-    chip(on);
+    chip(onT11()); banner();
   }
   const navTo=k=>{const n=document.querySelector('#nav2 button[data-k="'+k+'"]'); if(n)n.click();};
   function bind(){
     const fm=document.getElementById('fMonth'); if(!fm||fm._t11)return; fm._t11=1;
     fm.addEventListener('click',e=>{const b=e.target.closest('button'); if(!b)return;
       if(b.dataset.m==='11'){e.stopImmediatePropagation();e.stopPropagation();
-        if(!(vis('pgHvt')||vis('pgCombo')))navTo('t11'); setTimeout(sync,30);}
-      else{ if(onT11())setTimeout(()=>navTo('ov'),30); setTimeout(sync,120);}},true);
-    const nv=document.getElementById('nav2'); if(nv)nv.addEventListener('click',()=>setTimeout(sync,80));
+        if(onT11()){setTimeout(sync,30);return;}
+        if(vis('pgMbs78')){navTo('hvt');setTimeout(sync,60);return;}
+        if(SUP.some(vis)){try{t11shiftEnter();}catch(er){console.error(er);} }
+        else if(!NOTE_PAGES()){navTo('t11');}
+        setTimeout(sync,60);}
+      else{ if(shiftOn()){try{t11shiftExit();}catch(er){console.error(er);}}
+        if(onT11())setTimeout(()=>navTo('ov'),30); setTimeout(sync,120);}},true);
+    const nv=document.getElementById('nav2');
+    if(nv){nv.addEventListener('click',e=>{const bt=e.target.closest('button'); if(!bt)return;
+        if(bt.dataset.k==='hv'&&(shiftOn()||onT11())){e.stopImmediatePropagation();e.stopPropagation();navTo('hvt');setTimeout(sync,60);return;}
+        if(bt.dataset.k==='ap'&&(shiftOn()||onT11()))setTimeout(()=>{const b=document.querySelector('#apqM button[data-m="1"]');if(b)b.click();},150);
+        setTimeout(sync,80);},true);
+      nv.addEventListener('click',()=>setTimeout(sync,120));}
     const ch=document.getElementById('v3chips'); if(ch)new MutationObserver(()=>{if(onT11())chip(true);}).observe(ch,{childList:true,subtree:true,characterData:true});
   }
+  const NOTE_PAGES=()=>Object.keys(NOTE).some(vis);
   window.addEventListener('load',()=>setTimeout(bind,300)); if(document.readyState==='complete')setTimeout(bind,300);
 })();
 
