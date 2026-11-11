@@ -16,67 +16,108 @@ const leaves=(x)=>x instanceof Map?[...x.values()].flatMap(leaves):x;
 const sortKeys=(map,keyFn)=>[...map.keys()];
 /* ===================== HỘI VIÊN THƯỞNG ===================== */
 const H={type:'all',asm:'all',open:{a:new Set(),n:new Set(),s:new Set()},tree:null,acc:null,sap:0.3};
+const NV2_BRAND=150000, NV2_TOTAL=500000, BR=['Chanté','Chinsu','Kokomi','Nam Ngư'];
+/* 1 dòng KH → các chỉ số theo chương trình T11: NV1 = DS ≥ 95% chỉ tiêu nền; NV2 = Đại sứ: đủ 4 nhãn ≥150k · VIP: 500k từ 4 nhãn */
+function kh(r){
+  const base=r[6], ds=r[5], b=[r[10],r[11],r[12],r[13]], t=r[3], pct=base?ds/base:0;
+  const m1=pct>=0.95, m2=pct>=1, m3=pct>=1.05, sum4=b[0]+b[1]+b[2]+b[3];
+  const nv2=t===1?b.every(x=>x>=NV2_BRAND):sum4>=NV2_TOTAL, ok=m1&&nv2, rate=m3?0.02:m2?0.015:m1?0.012:0;
+  return {base,ds,b,t,pct,m1,m2,m3,nv2,ok,sum4,vc:r[14],ps:ds>0,thuong:ok?ds*rate:0,mi105:Math.max(0,1.05*base-ds),dai4:t===1&&nv2};
+}
+const emptyAcc=()=>({n:0,ps:0,base:0,ds:0,mi:0,m1:0,m2:0,m3:0,dai4:0,ok:0,vc:[0,0,0,0],nv1:0,nv2:0,nv1x:0,th:0,dsx:0});
+function addKh(a,k){
+  a.n++; if(k.ps)a.ps++; a.base+=k.base; a.ds+=k.ds; a.mi+=k.mi105; if(k.m1)a.m1++; if(k.m2)a.m2++; if(k.m3)a.m3++; if(k.dai4)a.dai4++; if(k.ok)a.ok++;
+  a.vc[k.vc]++; if(k.m1)a.nv1++; if(k.nv2)a.nv2++; if(k.m1&&!k.nv2){a.nv1x++;a.dsx+=k.ds;} a.th+=k.thuong;}
 function hvAcc(){
-  const SR=HVT11.sr, acc=SR.map(()=>({n:0,dat:0,sap:0,thieu:0,pend:0,base:0,rw:0,pr:0,chua:0,ps:0}));
-  HVT11.rows.forEach(r=>{
-    if(H.type!=='all'&&String(r[3])!==H.type)return;
-    const a=acc[r[0]],pend=r[4],base=r[6],dat=r[7]>0,thieu=Math.max(0,base-pend);
-    a.n++; if(pend>0)a.ps++; a.pend+=pend; a.base+=base; a.rw+=r[9]; a.pr+=r[8]; a.thieu+=dat?0:thieu;
-    if(dat)a.dat++; else {a.chua++; if(base>0&&thieu<=H.sap*base)a.sap++;}
-  });
+  const SR=HVT11.sr, acc=SR.map(emptyAcc);
+  HVT11.rows.forEach(r=>{ if(H.type!=='all'&&String(r[3])!==H.type)return; addKh(acc[r[0]],kh(r)); });
   return acc;
 }
-const hvSum=(idxs)=>{const o={n:0,dat:0,sap:0,thieu:0,pend:0,base:0,rw:0,pr:0,chua:0,ps:0};idxs.forEach(i=>{const a=H.acc[i];for(const k in o)o[k]+=a[k];});return o;};
+const hvSum=(idxs)=>{const o=emptyAcc();idxs.forEach(i=>{const a=H.acc[i];for(const k in o){if(k==='vc')a.vc.forEach((v,j)=>o.vc[j]+=v);else o[k]+=a[k];}});return o;};
+const Tr=v=>v?gFmt(v):dash, pc=(a,b)=>b?fp(a/b*100):dash;
+function pctCell(v){return v==null?dash:`<span style="font-weight:700;color:${v>=100?'var(--green)':(v>=95?'#0369a1':(v<60?'var(--accent)':'var(--ink)'))}">${fp(v)}</span>`;}
 function hvRow(name,m,o){
   const lvl=o.lvl||0,pad=12+lvl*22,caret=(o.open==null)?'<span class="cx leaf">•</span>':`<span class="cx">${o.open?'▾':'▸'}</span>`;
   const at=o.ds?Object.entries(o.ds).map(([k,v])=>`data-${k}="${esc(v)}"`).join(' '):'';
-  const p=m.n?m.dat/m.n*100:null;
+  const th=m.th?fi(Math.round(m.th)):dash;
   return `<tr class="${o.tot?'tot':'lvl'+lvl}" ${at} data-lvl="${lvl}"><td style="padding-left:${o.tot?12:pad}px">${o.tot?'':caret}<span class="nm">${esc(name)}</span></td>`+
-   `<td>${o.rank?o.rank:''}</td><td>${fi(m.n)}</td><td style="font-weight:700">${fi(m.ps)}</td><td>${m.n?fp(m.ps/m.n*100):dash}</td><td style="font-weight:700">${fi(m.dat)}</td><td>${p==null?dash:fp(p)}</td><td>${fi(m.chua)}</td><td>${fi(m.sap)}</td><td>${m.thieu?fmtM(m.thieu):dash}</td><td>${fmtM(m.pend)}</td><td>${m.rw?fmtM(m.rw):dash}</td></tr>`;
+   `<td>${fi(m.n)}</td><td style="font-weight:700">${fi(m.ps)}</td><td>${pc(m.ps,m.n)}</td>`+
+   `<td>${Tr(m.base)}</td><td style="font-weight:700">${Tr(m.ds)}</td><td>${pctCell(m.base?m.ds/m.base*100:null)}</td><td>${Tr(m.mi)}</td>`+
+   `<td>${fi(m.m1)}</td><td>${fi(m.m2)}</td><td>${fi(m.m3)}</td>`+
+   `<td>${fi(m.dai4)}</td><td style="font-weight:800;color:#0f172a">${fi(m.ok)}</td>`+
+   `<td>${fi(m.vc[1])}</td><td>${fi(m.vc[2])}</td><td>${fi(m.vc[3])}</td><td>${fi(m.vc[0])}</td>`+
+   `<td>${fi(m.nv1)}</td><td>${fi(m.nv2)}</td><td style="font-weight:700;color:${m.nv1x?'var(--accent)':'inherit'}">${fi(m.nv1x)}</td><td>${th}</td></tr>`;
 }
 function hvTable(){
-  const T=H.tree; let h=''; const rankOf=(arr)=>arr.sort((x,y)=>(y.m.dat/(y.m.n||1))-(x.m.dat/(x.m.n||1))||y.m.dat-x.m.dat);
+  const T=H.tree; let h=''; const rankOf=(arr)=>arr.sort((x,y)=>(y.m.base?y.m.ds/y.m.base:0)-(x.m.base?x.m.ds/x.m.base:0));
   const asmList=ASM_ALL().filter(a=>T.has(a)&&(H.asm==='all'||H.asm===a));
   const A=asmList.map(a=>({k:a,m:hvSum(leaves(T.get(a)))})).filter(x=>x.m.n>0); rankOf(A); A.sort((x,y)=>(x.k==='Chưa gán SS')-(y.k==='Chưa gán SS'));
-  A.forEach((x,ai)=>{const ao=H.open.a.has(x.k); h+=hvRow(x.k,x.m,{lvl:0,open:ao,ds:{a:x.k},rank:x.k==='Chưa gán SS'?'':ai+1}); if(!ao)return;
+  A.forEach(x=>{const ao=H.open.a.has(x.k); h+=hvRow(x.k,x.m,{lvl:0,open:ao,ds:{a:x.k}}); if(!ao)return;
     const N=[...T.get(x.k).keys()].map(n=>({k:n,m:hvSum(leaves(T.get(x.k).get(n)))})).filter(y=>y.m.n>0); rankOf(N);
-    N.forEach((y,ni)=>{const no=H.open.n.has(x.k+'|'+y.k); h+=hvRow(y.k,y.m,{lvl:1,open:no,ds:{a:x.k,n:y.k},rank:ni+1}); if(!no)return;
+    N.forEach(y=>{const no=H.open.n.has(x.k+'|'+y.k); h+=hvRow(y.k,y.m,{lvl:1,open:no,ds:{a:x.k,n:y.k}}); if(!no)return;
       const S=[...T.get(x.k).get(y.k).keys()].map(s=>({k:s,m:hvSum(leaves(T.get(x.k).get(y.k).get(s)))})).filter(z=>z.m.n>0); rankOf(S);
-      S.forEach((z,si)=>{const so=H.open.s.has(x.k+'|'+y.k+'|'+z.k); h+=hvRow(z.k,z.m,{lvl:2,open:so,ds:{a:x.k,n:y.k,s:z.k},rank:si+1}); if(!so)return;
+      S.forEach(z=>{const so=H.open.s.has(x.k+'|'+y.k+'|'+z.k); h+=hvRow(z.k,z.m,{lvl:2,open:so,ds:{a:x.k,n:y.k,s:z.k}}); if(!so)return;
         const D=T.get(x.k).get(y.k).get(z.k).map(i=>({i,m:hvSum([i])})).filter(d=>d.m.n>0); rankOf(D);
-        D.forEach((d,di)=>{h+=hvRow(HVT11.sr[d.i][1],d.m,{lvl:3,open:null,rank:di+1});});});});});
+        D.forEach(d=>{h+=hvRow(HVT11.sr[d.i][1],d.m,{lvl:3,open:null});});});});});
   const tot=hvSum(A.flatMap(x=>leaves(T.get(x.k))));
   return h+hvRow('Toàn Miền'+(H.asm==='all'?'':' (theo bộ lọc)'),tot,{tot:true});
 }
+/* thẻ KPI theo mẫu "Hội viên doanh nhân": Tất cả · Brand VIP · VIP Đại sứ */
 function hvCards(){
   const SR=HVT11.sr, scope=i=>H.asm==='all'||SR[i][2]===H.asm;
-  const g={all:{n:0,dat:0,thieu:0,sap:0,ps:0},0:{n:0,dat:0,thieu:0,sap:0,ps:0},1:{n:0,dat:0,thieu:0,sap:0,ps:0}};
-  HVT11.rows.forEach(r=>{if(!scope(r[0]))return; const dat=r[7]>0,th=Math.max(0,r[6]-r[4]);
-    [g.all,g[r[3]]].forEach(o=>{o.n++; if(r[4]>0)o.ps++; if(dat)o.dat++; else{o.thieu+=th; if(r[6]>0&&th<=H.sap*r[6])o.sap++;}});});
-  const card=(lab,val,sub,ac)=>`<div class="kpi" style="border-top:3px solid ${ac}"><div class="k-lab" style="color:${ac}">${lab}</div><div class="k-val">${val}</div><div class="k-sub">${sub}</div></div>`;
-  const grp=(title,o,ac)=>`<div style="margin-top:12px"><b style="color:${ac}">${title}</b></div><div class="kpis" style="grid-template-columns:repeat(5,1fr)">`+
-    card('Tổng hội viên',fi(o.n),'KH trong danh sách',ac)+card('Đã phát sinh doanh số',fi(o.ps),(o.n?fp(o.ps/o.n*100):'—')+' tổng hội viên · DS pending > 0',ac)+card('Đã đạt thưởng',fi(o.dat),(o.n?fp(o.dat/o.n*100):'—')+' tổng hội viên',ac)+
-    card('Chưa đạt',fi(o.n-o.dat),'trong đó sắp đạt: '+fi(o.sap),ac)+card('Còn thiếu đến nền',fmtM(o.thieu),'KH chưa đạt · Σ max(0, nền − DS)',ac)+'</div>';
-  document.getElementById('hvtCards').innerHTML=grp('Tất cả hội viên',g.all,'#0369a1')+grp('VIP',g[0],'#0ea5e9')+grp('VIP đại sứ',g[1],'#7c5cbf');
+  const g={all:emptyAcc(),0:emptyAcc(),1:emptyAcc()};
+  HVT11.rows.forEach(r=>{if(!scope(r[0]))return; const k=kh(r); addKh(g.all,k); addKh(g[r[3]],k);});
+  const card=(lab,val,sub,ac,bar)=>`<div class="kpi" style="border-top:3px solid ${ac}"><div class="k-lab">${lab}</div><div class="k-val" style="color:${ac}">${val}</div>${bar!=null?`<div style="height:5px;border-radius:99px;background:#e2e8f0;margin:4px 0"><div style="height:5px;border-radius:99px;background:${ac};width:${Math.min(100,bar)}%"></div></div>`:''}<div class="k-sub">${sub}</div></div>`;
+  const grp=(title,o,ac,nv2lab)=>`<div style="margin:14px 0 6px;display:flex;align-items:center;gap:8px"><span style="background:${ac};color:#fff;border-radius:6px;padding:2px 8px;font-size:11px;font-weight:700">★</span><b style="color:#334155;letter-spacing:.4px">${title} · ${fi(o.n)} KH</b></div><div class="kpis" style="grid-template-columns:repeat(5,1fr)">`+
+    card('Số KH · đã mua',fi(o.n),`Đã mua ${fi(o.ps)} (${pc(o.ps,o.n)}) · chưa mua ${fi(o.n-o.ps)}`,'#2563eb')+
+    card('Doanh số / chỉ tiêu nền',o.base?fp(o.ds/o.base*100):'—',`${Tr(o.ds)} / ${Tr(o.base)} · mục tiêu Mức 3 (105%): ${Tr(o.base*1.05)}`,'#d97706',o.base?o.ds/o.base*100:0)+
+    card('NV1 · KH đạt ≥95% chỉ tiêu nền',fi(o.m1),`Mức 2 (≥100%): ${fi(o.m2)} · Mức 3 (≥105%): ${fi(o.m3)}`,'#dc2626')+
+    card('NV2 · '+nv2lab,fi(o.nv2)+' / '+fi(o.n),`KH đủ điều kiện thưởng (NV1 + NV2): <b>${fi(o.ok)}</b>`,'#7c3aed')+
+    card('Đạt NV1 – chưa đạt NV2',fi(o.nv1x),`DS đã đạt nền nhưng chưa được thưởng: ${Tr(o.dsx)}`,'#e11d48')+'</div>';
+  document.getElementById('hvtCards').innerHTML=grp('TẤT CẢ HỘI VIÊN',g.all,'#0369a1','đủ nhãn trọng điểm')+grp('BRAND VIP',g[0],'#2563eb','đủ 500k từ 4 nhãn')+grp('VIP ĐẠI SỨ',g[1],'#ea580c','đủ 4 nhãn ≥150k');
+  return g;
+}
+/* bảng: KH đạt NV1 (doanh số) nhưng chưa đạt NV2 (4 nhãn) — tách VIP / VIP đại sứ */
+function hvNv(g){
+  const SR=HVT11.sr, scope=i=>H.asm==='all'||SR[i][2]===H.asm;
+  const mk=()=>({n:0,nv1:0,nv2:0,ok:0,x:0,y:0,z:0,miss:[0,0,0,0],gap:0,dsx:0});
+  const o={0:mk(),1:mk()};
+  HVT11.rows.forEach(r=>{if(!scope(r[0]))return; const k=kh(r),a=o[r[3]]; a.n++; if(k.m1)a.nv1++; if(k.nv2)a.nv2++; if(k.ok)a.ok++;
+    if(k.m1&&!k.nv2){a.x++;a.dsx+=k.ds; if(r[3]===1)k.b.forEach((v,i)=>{if(v<NV2_BRAND)a.miss[i]++;}); else a.gap+=Math.max(0,NV2_TOTAL-k.sum4);}
+    else if(!k.m1&&k.nv2)a.y++; else if(!k.m1&&!k.nv2)a.z++;});
+  const row=(lab,a,cls,vip)=>`<tr class="${cls||''}"><td style="text-align:left;font-weight:700">${lab}</td><td>${fi(a.n)}</td><td>${fi(a.nv1)}</td><td>${fi(a.nv2)}</td><td style="font-weight:800">${fi(a.ok)}</td><td style="font-weight:800;color:var(--accent)">${fi(a.x)}</td><td>${a.nv1?fp(a.x/a.nv1*100):dash}</td><td>${fi(a.y)}</td><td>${fi(a.z)}</td>`+
+    (vip===1?a.miss.map(v=>`<td>${fi(v)}</td>`).join('')+'<td>'+dash+'</td>':(vip===0?`<td>${dash}</td><td>${dash}</td><td>${dash}</td><td>${dash}</td><td>${a.gap?gFmt(a.gap):dash}</td>`:`<td colspan="5">${dash}</td>`))+`<td>${Tr(a.dsx)}</td></tr>`;
+  const tot=mk(); [0,1].forEach(t=>{for(const k in tot){if(k==='miss')continue;tot[k]+=o[t][k];}});
+  document.getElementById('hvtNvBody').innerHTML=row('VIP (Brand VIP)',o[0],'',0)+row('VIP Đại sứ',o[1],'',1)+row('Tổng',tot,'tot',2);
+}
+/* danh sách KH đạt NV1 nhưng chưa NV2 (hành động: bổ sung nhãn) */
+function hvNvList(){
+  const SR=HVT11.sr, L=[];
+  HVT11.rows.forEach(r=>{ if(H.asm!=='all'&&SR[r[0]][2]!==H.asm)return; if(H.type!=='all'&&String(r[3])!==H.type)return;
+    const k=kh(r); if(k.m1&&!k.nv2)L.push([k,r]);});
+  L.sort((a,b)=>b[0].ds-a[0].ds);
+  document.getElementById('hvtNvN').textContent=fi(L.length)+' KH đạt NV1 chưa đạt NV2 (hiển thị 100 KH có DS lớn nhất)';
+  document.getElementById('hvtNvList').innerHTML=L.slice(0,100).map(([k,r],i)=>{const s=SR[r[0]];
+    const need=r[3]===1?BR.filter((n,j)=>k.b[j]<NV2_BRAND).join(', '):('còn thiếu '+gFmt(NV2_TOTAL-k.sum4)+' từ 4 nhãn');
+    return `<tr><td>${i+1}</td><td style="text-align:left">${esc(s[1])}</td><td style="text-align:left">${esc(s[4])}</td><td style="text-align:left">${esc(s[3])}</td><td style="text-align:left">${esc(s[2])}</td><td style="text-align:left">${esc(r[2])} <span class="kv">· ${esc(r[1])}</span></td><td>${r[3]?'VIP đại sứ':'VIP'}</td><td>${gFmt(k.ds)}</td><td>${fp(k.pct*100)}</td>`+k.b.map(v=>`<td style="${r[3]===1&&v<NV2_BRAND?'color:var(--accent);font-weight:700':''}">${v?gFmt(v):dash}</td>`).join('')+`<td style="text-align:left">${esc(need)}</td></tr>`;}).join('');
 }
 function hvList(){
   const SR=HVT11.sr, L=[];
   HVT11.rows.forEach(r=>{ if(H.asm!=='all'&&SR[r[0]][2]!==H.asm)return; if(H.type!=='all'&&String(r[3])!==H.type)return;
-    if(r[7]>0||r[6]<=0)return; const th=Math.max(0,r[6]-r[4]); if(th<=H.sap*r[6])L.push([th,r]);});
-  L.sort((a,b)=>a[0]-b[0]||b[1][4]-a[1][4]);
-  const top=L.slice(0,100);
-  document.getElementById('hvtListN').textContent=fi(L.length)+' KH sắp đạt (hiển thị 100 KH thiếu ít nhất)';
-  document.getElementById('hvtList').innerHTML=top.map(([th,r],i)=>{const s=SR[r[0]];
-    return `<tr><td>${i+1}</td><td style="text-align:left">${esc(s[1])}</td><td style="text-align:left">${esc(s[4])}</td><td style="text-align:left">${esc(s[3])}</td><td style="text-align:left">${esc(s[2])}</td><td style="text-align:left">${esc(r[2])} <span class="kv">· ${esc(r[1])}</span></td><td>${r[3]?'VIP đại sứ':'VIP'}</td><td>${fmtM(r[4])}</td><td>${fmtM(r[6])}</td><td style="font-weight:700;color:var(--accent)">${th?fmtM(th):'Đủ nền'}</td><td>${fp(r[4]/r[6]*100)}</td></tr>`;}).join('')||'<tr><td colspan="11">Không có KH thỏa điều kiện</td></tr>';
+    const k=kh(r); if(k.m1||k.base<=0)return; const th=Math.max(0,0.95*k.base-k.ds); if(th<=H.sap*k.base)L.push([th,r,k]);});
+  L.sort((a,b)=>a[0]-b[0]||b[1][5]-a[1][5]);
+  document.getElementById('hvtListN').textContent=fi(L.length)+' KH sắp đạt NV1 (hiển thị 100 KH thiếu ít nhất)';
+  document.getElementById('hvtList').innerHTML=L.slice(0,100).map(([th,r,k],i)=>{const s=SR[r[0]];
+    return `<tr><td>${i+1}</td><td style="text-align:left">${esc(s[1])}</td><td style="text-align:left">${esc(s[4])}</td><td style="text-align:left">${esc(s[3])}</td><td style="text-align:left">${esc(s[2])}</td><td style="text-align:left">${esc(r[2])} <span class="kv">· ${esc(r[1])}</span></td><td>${r[3]?'VIP đại sứ':'VIP'}</td><td>${gFmt(k.ds)}</td><td>${gFmt(k.base)}</td><td style="font-weight:700">${gFmt(th)}</td><td>${fp(k.pct*100)}</td></tr>`;}).join('');
 }
 function hvRender(){
   if(!document.getElementById('hvtBody'))return;
   H.acc=hvAcc();
   const m=HVT11.meta;
-  document.getElementById('hvtWarn').innerHTML=`Ngày cắt dữ liệu: <b>hết 10/11</b> (theo anh Chung báo; file hội viên không ghi ngày). ${m.unmapped_sr?`<b>${m.unmapped_sr} SR mới</b> chưa có trong dữ liệu T10 nên xếp ở dòng "Chưa gán SS" (không xếp hạng).`:''}`;
-  hvCards();
+  document.getElementById('hvtWarn').innerHTML=`Ngày cắt dữ liệu: <b>hết 10/11</b> (theo anh Chung báo; file hội viên không ghi ngày). ${m.unmapped_sr?`<b>${m.unmapped_sr} SR mới</b> chưa có trong dữ liệu T10 nên xếp ở dòng "Chưa gán SS".`:''}`;
+  const g=hvCards(); hvNv(g);
   document.getElementById('hvtBody').innerHTML=hvTable();
-  hvList();
+  hvNvList(); hvList();
   [['hvtType','type'],['hvtAsm','asm']].forEach(([id,k])=>[...document.getElementById(id).children].forEach(b=>b.classList.toggle('on',b.dataset.v===H[k])));
 }
 function hvInit(){

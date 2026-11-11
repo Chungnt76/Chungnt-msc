@@ -129,7 +129,7 @@ function avail(){
   const el=document.getElementById('t11Avail'); if(!el)return;
   const card=(l,v,sb,ac)=>`<div class="kpi" style="border-top:3px solid ${ac}"><div class="k-lab" style="color:${ac}">${l}</div><div class="k-val">${v}</div><div class="k-sub">${sb}</div></div>`;
   let h='<div class="panel" style="margin-top:14px;border-top:3px solid #7c5cbf"><div class="tbl-head"><div><h3 style="display:inline;color:#7c5cbf">📌 Số liệu Tháng 11 đã có (MTD)</h3> <span class="pnote" style="display:inline">— SO / Active / PC / LPPC đã cập nhật đến hết 10/11; Hội viên Tết và Combo đã có số</span></div></div><div class="kpis" style="grid-template-columns:repeat(4,1fr)">';
-  if(typeof HVT11!=='undefined'){let n=0,d=0,sp=0,ps=0;HVT11.rows.forEach(r=>{n++;if(r[4]>0)ps++;if(r[7]>0)d++;else if(r[6]>0&&r[6]-r[4]<=0.3*r[6])sp++;});
+  if(typeof HVT11!=='undefined'){let n=0,d=0,sp=0,ps=0;HVT11.rows.forEach(r=>{n++;if(r[5]>0)ps++;if(r[7]>0)d++;else if(r[6]>0&&r[5]<0.95*r[6]&&0.95*r[6]-r[5]<=0.3*r[6])sp++;});
     h+=card('Hội viên Tết · đạt',fi(d),fp(n?d/n*100:0)+' của '+fi(n)+' hội viên · sắp đạt '+fi(sp)+' · phát sinh DS '+fi(ps),'#0369a1');}
   if(typeof COMBO11!=='undefined'){const kh=new Set();let su=0,ng=0;COMBO11.rows.forEach(r=>{kh.add(r[1]);su+=r[6];if(!r[9])ng++;});
     h+=card('Combo · KH đã nhận',fi(kh.size),fi(COMBO11.rows.length)+' đơn · '+fi(su)+' suất','#0ea5e9')+card('Combo ngoài tuyến',fp(ng/COMBO11.rows.length*100),fi(ng)+' đơn','#7c5cbf')+card('Dữ liệu combo đến hết',COMBO11.meta.asof,'ngày công '+COMBO11.meta.wd_passed+'/'+COMBO11.meta.wd_total,'#2e7d5b');}
