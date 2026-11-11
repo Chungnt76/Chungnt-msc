@@ -182,7 +182,8 @@ function cbCards(){
   const agg=g=>{const o={don:0,suat:0,kh:new Set(),amt:0};COMBO11.rows.forEach(r=>{if(!scope(r[0]))return;if(g!=='all'&&r[3]!==g)return;o.don++;o.suat+=r[6];o.kh.add(r[1]);o.amt+=r[8];});return o;};
   const card=(lab,val,sub,ac)=>`<div class="kpi" style="border-top:3px solid ${ac}"><div class="k-lab" style="color:${ac}">${lab}</div><div class="k-val">${val}</div><div class="k-sub">${sub}</div></div>`;
   const grp=(t,o,ac)=>`<div style="margin-top:12px"><b style="color:${ac}">${t}</b></div><div class="kpis" style="grid-template-columns:repeat(4,1fr)">`+card('Số đơn combo',fi(o.don),'KH × ngày × chương trình',ac)+card('Số suất',fi(o.suat),'Σ SumQTY_REWARD',ac)+card('KH đã nhận combo',fi(o.kh.size),'KH duy nhất',ac)+card('DS hàng combo',fmtM(o.amt),'Σ RETAILER_AMOUNT (chưa gồm DS nhóm KH ngoài combo)',ac)+'</div>';
-  document.getElementById('cbCards').innerHTML=grp('Tất cả combo',agg('all'),'#0369a1')+grp('KH combo OFF',agg(0),'#0ea5e9')+grp('KH combo ON',agg(1),'#7c5cbf')+grp('KH combo Nhà hàng',agg(2),'#2e7d5b');
+  const A=agg('all'), U=(typeof HVT11!=='undefined'?HVT11.rows:[]).filter(r=>C.asm==='all'||HVT11.sr[r[0]][2]===C.asm).length, per=A.suat?A.amt/A.suat:0;
+  document.getElementById('cbCards').innerHTML=grp('Tổng quan combo (gộp tất cả chương trình)',A,'#0369a1')+`<div style="margin-top:12px"><b style="color:#b45309">Plan ước tính · nếu mọi KH trong danh sách hội viên (${fi(U)} KH) mua 1 suất</b></div><div class="kpis" style="grid-template-columns:repeat(4,1fr)">`+card('DS bình quân / suất',fmtM(per),'DS hàng combo ÷ số suất đã mua','#b45309')+card('Plan DS (ước tính)',fmtM(per*U),fi(U)+' KH × 1 suất × DS/suất','#b45309')+card('Đã đạt',fmtM(A.amt),A.kh.size?fi(A.kh.size)+' KH đã mua':'','#b45309')+card('Còn lại so với plan',fmtM(Math.max(0,per*U-A.amt)),'⚠ Ước tính; chưa có danh sách KH được tham gia combo','#b45309')+'</div>';
 }
 function cbStale(){
   const SR=COMBO11.sr,M=cmb(),la=new Map(),ln=new Map();
