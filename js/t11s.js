@@ -44,7 +44,11 @@ function enter(){
     o.smm={'7':(r.smm||{})['8'],'8':p&&p.v&&p.v['a|all']?p.v['a|all'].sm:0}; o.tgm=shiftTg(r.tgm);
     if(c&&o.tgm['9']){o.tgm['9']=o.tgm['9'].map(x=>(x||0)*KCY);} if(c&&o.target)o.target=o.target*KCY; return o;});
   FULL.T10=S.T.map(r=>{const o=clone(r); o.tgm={'10':(r.tgm||{})['11']}; delete o._a; delete o._tm; return o;});
-  FULL.T9CH=O.T10CH.map(baseCH); FULL.T10CH=T11CH.map(clone);
+  const cyCH=r=>{const o=baseCH(r), c=cy[k3(r)]; if(!c||!c.v)return o; const f=k=>{const b=c.v[k]||{}; return {so:b.so||0,aso:b.aso||0,pc:b.pc||0};};
+    const A=f('a|'+r.oo); o.so=A.so;o.aso=A.aso;o.pc=A.pc;o.x=f('x|'+r.oo);
+    if(r.vv){o.vv={}; Object.keys(r.vv).forEach(g=>{o.vv[g]=Object.assign({},r.vv[g],f('a|'+r.oo+'|'+g),{x:f('x|'+r.oo+'|'+g)});});}
+    return o;};            // T10 cùng kỳ (01–10/10) theo kênh: lấy từ T10CY, không dùng cả tháng T10
+  FULL.T9CH=O.T10CH.map(cyCH); FULL.T10CH=T11CH.map(clone);
   const dk={}; S.DATA.forEach(d=>dk[d.npp+'|'+d.ss+'|'+d.oo+'|'+d.vip]=d);
   const sv=(r,m)=>r._a&&r._a['s'+m]!=null?r._a['s'+m]:r['s'+m];
   const CS=(typeof T10CYS!=='undefined')?T10CYS:null, cd={};
@@ -102,7 +106,8 @@ function hdr(on){
 }
 /* ---- cộng 1 vào nhãn tháng (T7..T10 → T8..T11) trong các tab chạy bằng khe tháng ---- */
 const RE=/((?<![A-Za-zÀ-ỹ0-9])T|[Tt]háng |THÁNG )(7|8|9|10)(?!\d)/g;
-const sh=s=>s.replace(RE,(m,p,n)=>p+(+n+1)).replace(/T10 \(cả tháng\)|T10 cả tháng/g,'T10 cùng kỳ (01–10/10)').replace(/(T10|[Tt]háng 10)(?!\d)(?! cùng)(?!–T11)(?!\s*→)/g,'$1 cùng kỳ');
+const sh=s=>s.replace(RE,(m,p,n)=>p+(+n+1)).replace(/T10 \(cả tháng\)|T10 cả tháng/g,'T10 cùng kỳ (01–10/10)').replace(/(T10|[Tt]háng 10|THÁNG 10)(?!\d)(?! cùng)(?! CÙNG)(?!–T11)(?!\s*→)/g,'$1 cùng kỳ');
+ST.sh=sh;
 const ROOTS=['pgOv','pgSoM','pgPc','pgCat','pgR360','v3chips','context','tblNote'];
 let OBS=null; const POKE=new Set();
 function tr(node){

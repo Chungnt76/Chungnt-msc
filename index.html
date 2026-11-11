@@ -1605,7 +1605,7 @@ window.__z=function(b){var t=atob(b),u=new Uint8Array(t.length);for(var i=0;i<t.
 <script src="js/t11x.js?v=1794382904"></script>
 <script src="js/cbt.js?v=1794369064"></script>
 <script src="js/gp.js?v=1794374970"></script>
-<script src="js/t11s.js?v=202611111400"></script>
+<script src="js/t11s.js?v=1794384541"></script>
 <script src="js/t11.js?v=202611111400"></script>
 <script>
 const GROWTH_CATS = [{"key":"BEV","label":"Nước giải khát (BEV)"},{"key":"Bia","label":"Bia"},{"key":"CaPhe","label":"Cà phê"},{"key":"GiaVi","label":"Gia vị"},{"key":"HPC","label":"HPC"},{"key":"Mi","label":"Mì"},{"key":"PMeat","label":"P.Meat"},{"key":"Nutrition","label":"Nutrition"},{"key":"Khac","label":"Khác (Ready Meals, HMR…)"},{"key":"Total","label":"Tổng hợp toàn ngành"}];
@@ -4313,7 +4313,7 @@ function render360(){
   if(worst&&worst.g<0)W.push(`Ngành <b>${CAT_LBL[worst.c]}</b> giảm ${ovSg(worst.g)} SO/ngày so với T9`);
   if(X.need!=null&&m10.tg>m10.so)A.push(`Cần <b>${gFmt(X.need)}/ngày</b> trong ${WORKDAYS['10']-somDays('10')} ngày làm việc còn lại để đủ chỉ tiêu T10 (đang bán ${gFmt(m10.so/m10.days)}/ngày, cần tăng ${fp((X.need/(m10.so/m10.days)-1)*100)}).`);
   if(gapc&&gapc.gap>0)A.push(`Ưu tiên ngành <b>${CAT_LBL[gapc.c]}</b>: còn thiếu ${gFmt(gapc.gap)} so với chỉ tiêu T10 (${fp(gapc.m.so/gapc.m.tg*100)} đạt).`);
-  if(X.hv.keep)A.push(`Hội viên: giữ thưởng cho <b>${fi(X.hv.keep)}</b> KH đã đạt T9 nhưng chưa đạt T10; chốt <b>${fi(X.hv.near)}</b> KH đã ≥80% nền tảng.`);
+  if(X.hv.keep)A.push(`Hội viên: giữ thưởng cho <b>${fi(X.hv.keep)}</b> KH đã đạt tháng trước nhưng chưa đạt tháng này; chốt <b>${fi(X.hv.near)}</b> KH đã ≥80% nền tảng.`);
   if(X.a9.b80)A.push(`AP: kèm cặp <b>${fi(X.a9.b80)}</b> ĐDKD dưới 80% mức E lũy kế 9T; thiếu ${gFmt(Math.max(0,X.a9.e-X.a9.so))} để đạt E.`);
   if(X.dpc!=null&&X.dpc<0)A.push(`PC/ngày giảm ${ovSg(X.dpc)} — rà tuân thủ tuyến (MCP) và tần suất ghé điểm bán.`);
   if(X.dl!=null&&X.dl<0)A.push(`LPPC giảm ${ovL(-X.dl)} dòng/đơn — đẩy bán chéo ngành (Mì, Nước giải khát, HPC) trong mỗi đơn.`);
@@ -5620,7 +5620,8 @@ applyMeat('all');document.querySelector('#fMonth button[data-m="10"]').click();u
     // 3. cần can thiệp
     const iss=[],sts=[];
     if(!single){const bad=sc.map(a=>({a,x:calc([a])})).filter(z=>z.x.tien!=null&&z.x.tien<80);if(bad.length){iss.push(`<b>${bad.length}/${sc.length} ASM</b> dưới 80% tiến độ: ${bad.map(z=>esc(shortASM(z.a))).join(', ')}`);sts.push('bad');}}
-    if(F.oo!=='OFF'){const on=agg(rowsOf(sc,'ON'));if(on.q){const p=act(on)/on.q*100;if(p<70){iss.push(`Kênh On chỉ <span class="neg">${fp(p)}</span> quầy active (ngưỡng 70%), còn ${fi(on.q-act(on))} quầy chưa phát sinh`);sts.push('bad');}else if(p<85){iss.push(`Kênh On ${fp(p)} quầy active, cần theo dõi`);sts.push('warn');}}}
+    if(F.oo!=='OFF'&&window.T11SHIFT&&T11SHIFT.on){const on=agg(rowsOf(sc,'ON'));if(on.q){const p=act(on)/on.q*100,pp=on.a9/on.q*100;if(p<pp-1){iss.push(`Kênh On ${fp(p)} quầy active (01–10/11), thấp hơn cùng kỳ tháng trước ${fp(pp)} (${sg(p-pp)} điểm), còn ${fi(on.q-act(on))} quầy chưa phát sinh`);sts.push('bad');}else{iss.push(`Kênh On ${fp(p)} quầy active (01–10/11), ngang cùng kỳ tháng trước ${fp(pp)}`);sts.push('warn');}}}
+    else if(F.oo!=='OFF'){const on=agg(rowsOf(sc,'ON'));if(on.q){const p=act(on)/on.q*100;if(p<70){iss.push(`Kênh On chỉ <span class="neg">${fp(p)}</span> quầy active (ngưỡng 70%), còn ${fi(on.q-act(on))} quầy chưa phát sinh`);sts.push('bad');}else if(p<85){iss.push(`Kênh On ${fp(p)} quầy active, cần theo dõi`);sts.push('warn');}}}
     const nb=nbv(o); if(o.q&&nb/o.q>0.1){iss.push(`<b>${fi(nb)}</b> quầy ${NBLAB().replace(/^\w/,c=>c.toLowerCase())} (${fp(nb/o.q*100)} tổng quầy)`);sts.push('warn');}
     items.push({st:iss.length?worst(sts):'ok',html:iss.length?'Cần can thiệp: '+iss.join(' · ')+'.':'Chưa có ASM hoặc kênh nào dưới ngưỡng cảnh báo.'});
     const overall=worst(items.map(i=>i.st));
@@ -5650,7 +5651,9 @@ applyMeat('all');document.querySelector('#fMonth button[data-m="10"]').click();u
     const old=$$('#kpis .kpi').map(k=>({lab:(k.querySelector('.k-lab')||{}).textContent||'',val:(k.querySelector('.k-val')||{}).innerHTML||'',sub:(k.querySelector('.k-sub')||{}).innerHTML||''}));
     const find=re=>old.find(x=>re.test(x.lab));
     const order=[[/^Chỉ tiêu/,stOf(m.tot.tien)],[/^SO tháng/,''],[/^Active/,''],[/^% Đạt/,''],[/^(2 tháng|Chưa mua)/,''],[/^VPO/,'']];
-    $('#v3kpis').innerHTML=order.map(([re,st])=>{const c=find(re);return c?`<div class="v3k ${st||'brand'}"><div class="l">${c.lab}</div><div class="v">${c.val}</div><div class="s">${c.sub}</div></div>`:'';}).join('');
+    const tl=s=>(window.T11SHIFT&&T11SHIFT.on&&T11SHIFT.sh)?T11SHIFT.sh(s):s;   // chế độ Tháng 11: cộng 1 nhãn tháng ngay khi sao chép thẻ
+    const nm=l=>l.replace(/^Chỉ tiêu tháng/,'% Đạt chỉ tiêu tháng').replace(/^% Đạt$/,'% Quầy active');
+    $('#v3kpis').innerHTML=order.map(([re,st])=>{const c=find(re);return c?`<div class="v3k ${st||'brand'}"><div class="l">${esc(nm(tl(c.lab)))}</div><div class="v">${c.val}</div><div class="s">${tl(c.sub)}</div></div>`:'';}).join('');
     scoreboard(m);
   }
   function scoreboard(m,el){el=el||$('#v3score');
