@@ -22,11 +22,11 @@ function kh(r){
   const base=r[6], ds=r[5], b=[r[10],r[11],r[12],r[13]], t=r[3], pct=base?ds/base:0;
   const m1=pct>=0.95, m2=pct>=1, m3=pct>=1.05, sum4=b[0]+b[1]+b[2]+b[3];
   const nv2=t===1?b.every(x=>x>=NV2_BRAND):sum4>=NV2_TOTAL, ok=m1&&nv2, rate=m3?0.02:m2?0.015:m1?0.012:0;
-  return {base,ds,b,t,pct,m1,m2,m3,nv2,ok,sum4,vc:r[14],ps:ds>0,thuong:ok?ds*rate:0,mi105:Math.max(0,1.05*base-ds),dai4:t===1&&nv2};
+  return {base,ds,b,t,pct,m1,m2,m3,nv2,ok,sum4,vc:r[14],pd:r[4]||0,ps:ds>0,thuong:ok?ds*rate:0,mi105:Math.max(0,1.05*base-ds),dai4:t===1&&nv2};
 }
-const emptyAcc=()=>({n:0,ps:0,base:0,ds:0,mi:0,m1:0,m2:0,m3:0,dai4:0,ok:0,vc:[0,0,0,0],nv1:0,nv2:0,nv1x:0,th:0,dsx:0});
+const emptyAcc=()=>({n:0,ps:0,base:0,ds:0,pd:0,mi:0,m1:0,m2:0,m3:0,dai4:0,ok:0,vc:[0,0,0,0],nv1:0,nv2:0,nv1x:0,th:0,dsx:0});
 function addKh(a,k){
-  a.n++; if(k.ps)a.ps++; a.base+=k.base; a.ds+=k.ds; a.mi+=k.mi105; if(k.m1)a.m1++; if(k.m2)a.m2++; if(k.m3)a.m3++; if(k.dai4)a.dai4++; if(k.ok)a.ok++;
+  a.n++; if(k.ps)a.ps++; a.base+=k.base; a.ds+=k.ds; a.pd+=k.pd; a.mi+=k.mi105; if(k.m1)a.m1++; if(k.m2)a.m2++; if(k.m3)a.m3++; if(k.dai4)a.dai4++; if(k.ok)a.ok++;
   a.vc[k.vc]++; if(k.m1)a.nv1++; if(k.nv2)a.nv2++; if(k.m1&&!k.nv2){a.nv1x++;a.dsx+=k.ds;} a.th+=k.thuong;}
 function hvAcc(){
   const SR=HVT11.sr, acc=SR.map(emptyAcc);
@@ -62,7 +62,7 @@ function hvTable(){
   const tot=hvSum(A.flatMap(x=>leaves(T.get(x.k))));
   return h+hvRow('Toàn Miền'+(H.asm==='all'?'':' (theo bộ lọc)'),tot,{tot:true});
 }
-/* thẻ KPI theo mẫu "Hội viên doanh nhân": Tất cả · Brand VIP · VIP Đại sứ */
+/* thẻ KPI theo mẫu "Hội viên doanh nhân": Tất cả · VIP · VIP Đại sứ */
 function hvCards(){
   const SR=HVT11.sr, scope=i=>H.asm==='all'||SR[i][2]===H.asm;
   const g={all:emptyAcc(),0:emptyAcc(),1:emptyAcc()};
@@ -70,11 +70,11 @@ function hvCards(){
   const card=(lab,val,sub,ac,bar)=>`<div class="kpi" style="border-top:3px solid ${ac}"><div class="k-lab">${lab}</div><div class="k-val" style="color:${ac}">${val}</div>${bar!=null?`<div style="height:5px;border-radius:99px;background:#e2e8f0;margin:4px 0"><div style="height:5px;border-radius:99px;background:${ac};width:${Math.min(100,bar)}%"></div></div>`:''}<div class="k-sub">${sub}</div></div>`;
   const grp=(title,o,ac,nv2lab)=>`<div style="margin:14px 0 6px;display:flex;align-items:center;gap:8px"><span style="background:${ac};color:#fff;border-radius:6px;padding:2px 8px;font-size:11px;font-weight:700">★</span><b style="color:#334155;letter-spacing:.4px">${title} · ${fi(o.n)} KH</b></div><div class="kpis" style="grid-template-columns:repeat(5,1fr)">`+
     card('Số KH · đã mua',fi(o.n),`Đã mua ${fi(o.ps)} (${pc(o.ps,o.n)}) · chưa mua ${fi(o.n-o.ps)}`,'#2563eb')+
-    card('Doanh số / chỉ tiêu nền',o.base?fp(o.ds/o.base*100):'—',`${Tr(o.ds)} / ${Tr(o.base)} · mục tiêu Mức 3 (105%): ${Tr(o.base*1.05)}`,'#d97706',o.base?o.ds/o.base*100:0)+
+    card('Thực hiện / chỉ tiêu nền',o.base?fp((o.ds+o.pd)/o.base*100):'—',`<b>${Tr(o.ds+o.pd)}</b> / ${Tr(o.base)} = đã xác nhận ${Tr(o.ds)} + đơn chờ ${Tr(o.pd)} · xét NV1 theo DS đã xác nhận (${fp(o.base?o.ds/o.base*100:0)})`,'#d97706',o.base?(o.ds+o.pd)/o.base*100:0)+
     card('NV1 · KH đạt ≥95% chỉ tiêu nền',fi(o.m1),`Mức 2 (≥100%): ${fi(o.m2)} · Mức 3 (≥105%): ${fi(o.m3)}`,'#dc2626')+
     card('NV2 · '+nv2lab,fi(o.nv2)+' / '+fi(o.n),`KH đủ điều kiện thưởng (NV1 + NV2): <b>${fi(o.ok)}</b>`,'#7c3aed')+
     card('Đạt NV1 – chưa đạt NV2',fi(o.nv1x),`DS đã đạt nền nhưng chưa được thưởng: ${Tr(o.dsx)}`,'#e11d48')+'</div>';
-  document.getElementById('hvtCards').innerHTML=grp('TẤT CẢ HỘI VIÊN',g.all,'#0369a1','đủ nhãn trọng điểm')+grp('BRAND VIP',g[0],'#2563eb','đủ 500k từ 4 nhãn')+grp('VIP ĐẠI SỨ',g[1],'#ea580c','đủ 4 nhãn ≥150k');
+  document.getElementById('hvtCards').innerHTML=grp('TẤT CẢ HỘI VIÊN',g.all,'#0369a1','đủ nhãn trọng điểm')+grp('NHÓM VIP',g[0],'#2563eb','đủ 500k từ 4 nhãn')+grp('VIP ĐẠI SỨ',g[1],'#ea580c','đủ 4 nhãn ≥150k');
   return g;
 }
 /* bảng: KH đạt NV1 (doanh số) nhưng chưa đạt NV2 (4 nhãn) — tách VIP / VIP đại sứ */
@@ -88,7 +88,7 @@ function hvNv(g){
   const row=(lab,a,cls,vip)=>`<tr class="${cls||''}"><td style="text-align:left;font-weight:700">${lab}</td><td>${fi(a.n)}</td><td>${fi(a.nv1)}</td><td>${fi(a.nv2)}</td><td style="font-weight:800">${fi(a.ok)}</td><td style="font-weight:800;color:var(--accent)">${fi(a.x)}</td><td>${a.nv1?fp(a.x/a.nv1*100):dash}</td><td>${fi(a.y)}</td><td>${fi(a.z)}</td>`+
     (vip===1?a.miss.map(v=>`<td>${fi(v)}</td>`).join('')+'<td>'+dash+'</td>':(vip===0?`<td>${dash}</td><td>${dash}</td><td>${dash}</td><td>${dash}</td><td>${a.gap?gFmt(a.gap):dash}</td>`:`<td colspan="5">${dash}</td>`))+`<td>${Tr(a.dsx)}</td></tr>`;
   const tot=mk(); [0,1].forEach(t=>{for(const k in tot){if(k==='miss')continue;tot[k]+=o[t][k];}});
-  document.getElementById('hvtNvBody').innerHTML=row('VIP (Brand VIP)',o[0],'',0)+row('VIP Đại sứ',o[1],'',1)+row('Tổng',tot,'tot',2);
+  document.getElementById('hvtNvBody').innerHTML=row('VIP',o[0],'',0)+row('VIP Đại sứ',o[1],'',1)+row('Tổng',tot,'tot',2);
 }
 /* danh sách KH đạt NV1 nhưng chưa NV2 (hành động: bổ sung nhãn) */
 function hvNvList(){
@@ -182,8 +182,9 @@ function cbCards(){
   const agg=g=>{const o={don:0,suat:0,kh:new Set(),amt:0};COMBO11.rows.forEach(r=>{if(!scope(r[0]))return;if(g!=='all'&&r[3]!==g)return;o.don++;o.suat+=r[6];o.kh.add(r[1]);o.amt+=r[8];});return o;};
   const card=(lab,val,sub,ac)=>`<div class="kpi" style="border-top:3px solid ${ac}"><div class="k-lab" style="color:${ac}">${lab}</div><div class="k-val">${val}</div><div class="k-sub">${sub}</div></div>`;
   const grp=(t,o,ac)=>`<div style="margin-top:12px"><b style="color:${ac}">${t}</b></div><div class="kpis" style="grid-template-columns:repeat(4,1fr)">`+card('Số đơn combo',fi(o.don),'KH × ngày × chương trình',ac)+card('Số suất',fi(o.suat),'Σ SumQTY_REWARD',ac)+card('KH đã nhận combo',fi(o.kh.size),'KH duy nhất',ac)+card('DS hàng combo',fmtM(o.amt),'Σ RETAILER_AMOUNT (chưa gồm DS nhóm KH ngoài combo)',ac)+'</div>';
-  const A=agg('all'), U=(typeof HVT11!=='undefined'?HVT11.rows:[]).filter(r=>C.asm==='all'||HVT11.sr[r[0]][2]===C.asm).length, per=A.suat?A.amt/A.suat:0;
-  document.getElementById('cbCards').innerHTML=grp('Tổng quan combo (gộp tất cả chương trình)',A,'#0369a1')+`<div style="margin-top:12px"><b style="color:#b45309">Plan ước tính · nếu mọi KH trong danh sách hội viên (${fi(U)} KH) mua 1 suất</b></div><div class="kpis" style="grid-template-columns:repeat(4,1fr)">`+card('DS bình quân / suất',fmtM(per),'DS hàng combo ÷ số suất đã mua','#b45309')+card('Plan DS (ước tính)',fmtM(per*U),fi(U)+' KH × 1 suất × DS/suất','#b45309')+card('Đã đạt',fmtM(A.amt),A.kh.size?fi(A.kh.size)+' KH đã mua':'','#b45309')+card('Còn lại so với plan',fmtM(Math.max(0,per*U-A.amt)),'⚠ Ước tính; chưa có danh sách KH được tham gia combo','#b45309')+'</div>';
+  const A=agg('all'); const pm=new Map(); COMBO11.rows.forEach(r=>{if(!scope(r[0]))return; let o=pm.get(r[4]); if(!o){o={kh:new Set(),suat:0,amt:0};pm.set(r[4],o);} o.kh.add(r[1]); o.suat+=r[6]; o.amt+=r[8];});
+  let U=0,plan=0; pm.forEach(o=>{U+=o.kh.size; plan+=o.kh.size*(o.suat?o.amt/o.suat:0);}); const per=U?plan/U:0;
+  document.getElementById('cbCards').innerHTML=grp('Tổng quan combo (gộp tất cả chương trình)',A,'#0369a1')+`<div style="margin-top:12px"><b style="color:#b45309">Plan · nếu mọi KH trong danh sách combo (${fi(U)} KH-chương trình) mua 1 suất</b></div><div class="kpis" style="grid-template-columns:repeat(4,1fr)">`+card('DS bình quân / suất',fmtM(per),'bình quân gia quyền theo KH','#b45309')+card('Plan DS',fmtM(plan),'Σ KH × 1 suất × DS/suất từng CT','#b45309')+card('Đã đạt',fmtM(A.amt),A.kh.size?fi(A.kh.size)+' KH đã mua':'','#b45309')+card('Chênh lệch so với plan',fmtM(plan-A.amt),'Plan theo DS/suất từng chương trình','#b45309')+'</div>';
 }
 function cbStale(){
   const SR=COMBO11.sr,M=cmb(),la=new Map(),ln=new Map();
