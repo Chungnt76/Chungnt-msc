@@ -7,17 +7,28 @@ const dash='<span class="fx">—</span>';
 const mx=()=>T11_META||{};
 const d11=()=>(mx().has_data&&mx().mtd_days>0)?mx().mtd_days:null;
 const dTot=()=>mx().days_total||25;
-const k3=r=>r.asm+'|'+r.npp+'|'+r.ssn;
+const ALIAS={'Võ Minh Huy':'Lê Văn Lực','Mai Văn Khanh':'Phùng Anh Minh'};           // SS đã nghỉ → gộp vào SS nhận
+const MERGE=new Set(['Võ Minh Huy','Mai Văn Khanh','Lê Văn Lực','Phùng Anh Minh']);
+const bn=n=>String(n).replace(' - Chi nhánh','');
+const cs=r=>ALIAS[r.ssn]||r.ssn;
+const k3=r=>MERGE.has(r.ssn)?(r.asm+'|'+bn(r.npp)+'|'+cs(r)):(r.asm+'|'+r.npp+'|'+r.ssn);
+function mrg(a,b){ if(!a)return b; if(!b)return a;
+  const o=Object.assign({},a); o.v={}; const ks=new Set(Object.keys(a.v||{}).concat(Object.keys(b.v||{})));
+  ks.forEach(k=>{const x=(a.v||{})[k]||{},y=(b.v||{})[k]||{};o.v[k]={};['so','aso','pc','lines','sm'].forEach(f=>{o.v[k][f]=(x[f]||0)+(y[f]||0);});});
+  o.target=(a.target||0)+(b.target||0);
+  if(a.tgm||b.tgm){o.tgm={};const t1=(a.tgm||{})['11']||[0,0],t2=(b.tgm||{})['11']||[0,0];o.tgm['11']=[t1[0]+t2[0],t1[1]+t2[1]];}
+  return o;}
+const put=(m,r)=>{const k=k3(r);m[k]=MERGE.has(r.ssn)?mrg(m[k],r):r;};
 const src9=()=>(typeof FULL!=='undefined'&&FULL)?FULL.T9:T9;
 const src10=()=>(typeof FULL!=='undefined'&&FULL)?FULL.T10:T10;
 let MAPS=null;
 function maps(){
   if(MAPS)return MAPS;
   const m9={},m10={},m11={},seen={},list=[];
-  src9().forEach(r=>{m9[k3(r)]=r;});
-  src10().forEach(r=>{m10[k3(r)]=r;});
-  (T11||[]).forEach(r=>{m11[k3(r)]=r;});
-  src10().concat(src9(),T11||[]).forEach(r=>{const k=k3(r);if(!seen[k]){seen[k]=1;list.push({asm:r.asm,npp:r.npp,ssn:r.ssn,ss:r.ss||r.ssn,k});}});
+  src9().forEach(r=>put(m9,r));
+  src10().forEach(r=>put(m10,r));
+  (T11||[]).forEach(r=>put(m11,r));
+  src10().concat(src9(),T11||[]).forEach(r=>{const k=k3(r);if(!seen[k]){seen[k]=1;const mm=MERGE.has(r.ssn);list.push({asm:r.asm,npp:mm?bn(r.npp):r.npp,ssn:cs(r),ss:mm?cs(r):(r.ss||r.ssn),k});}});
   MAPS={m9,m10,m11,list}; return MAPS;
 }
 const vkey=(oo)=>S.meat+'|'+(oo||S.oo)+(S.vip==='all'?'':'|'+S.vip);
