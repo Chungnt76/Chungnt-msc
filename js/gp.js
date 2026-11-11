@@ -57,6 +57,35 @@ function cats(){
   return Object.keys(CATN).map(k=>({k,n:CATN[k],a:a[k]||0,b:b[k]||0})).filter(x=>x.b>0).map(x=>Object.assign(x,{g:x.a/x.b-1})).sort((p,q)=>p.g-q.g);
 }
 function apq(a){const o={e:0,he:0,o:0}; APQ.forEach(r=>{ if(a!=='all'&&r[0]!==a)return; o.e+=r[5][2]; o.he+=r[6][2]; o.o+=r[7][2];}); return o;}
+/* ---- cấp NPP / SS / SR (T11 theo SS; GP11 theo SR; HVT11 theo KH) ---- */
+const BM=()=>GP11.meta.bench;
+const srOf=i=>CBT11.sr[i];                      // [mã, tên, asm, npp, ss]
+let AGG=null;
+function agg(){
+  if(AGG)return AGG; const k=accel().k;
+  const ss={}, npp={};
+  T11.forEach(r=>{ const so=(r.v['a|all']||{}).so||0, tg=((r.tgm||{})['11']||[r.target||0])[0]||0;
+    const ks=r.asm+'|'+r.ssn, kn=r.asm+'|'+r.npp;
+    const o=ss[ks]||(ss[ks]={asm:r.asm,npp:r.npp,ss:r.ssn,so:0,tg:0,drop:0,dropSO:0,srn:0,srv:0,hv:0,hvGap:0});
+    o.so+=so;o.tg+=tg; const p=npp[kn]||(npp[kn]={asm:r.asm,npp:r.npp,so:0,tg:0}); p.so+=so;p.tg+=tg;});
+  GP11.rows.forEach(r=>{const m=srOf(r[0]); const o=ss[m[2]+'|'+m[4]]; if(!o)return; o.drop+=r[4]; o.dropSO+=r[5]; o.srn+=r[1]; o.srv+=r[2];});
+  HVT11.rows.forEach(r=>{const m=HVT11.sr[r[0]]; const o=ss[m[2]+'|'+m[4]]; if(!o)return; const base=r[6],ds=r[5];
+    if(base>0&&ds/base<0.95&&(0.95*base-ds)<=0.3*base){o.hv++;o.hvGap+=0.95*base-ds;}});
+  const d=T11_META.mtd_days, rem=T11_META.days_total-d;
+  const fx=o=>{o.fc=o.so+(o.so/d)*k*rem; o.short=Math.max(0,o.tg-o.fc); o.cur=o.so/d; o.need=rem?Math.max(0,o.tg-o.so)/rem:0; return o;};
+  AGG={ss:Object.values(ss).map(fx),npp:Object.values(npp).map(fx)}; return AGG;
+}
+function gp11(){   // tổng cơ hội cấp SR theo phạm vi
+  const o={mcp:0,a11:0,a10:0,drop:0,dropSO:0,near:0,nearGap:0,so11:0,so10:0,srn:0,srv:0};
+  GP11.rows.forEach(r=>{const m=srOf(r[0]); if(!sc(m[2]))return; o.mcp+=r[1];o.a11+=r[2];o.a10+=r[3];o.drop+=r[4];o.dropSO+=r[5];o.so11+=r[6];o.so10+=r[7];o.near+=r[8];o.nearGap+=r[9];o.srn+=r[1]; o.srv+=r[2];});
+  return o;}
+function hvMore(){
+  const o={sapGap:0,chuaBase:0,chua:0}; HVT11.rows.forEach(r=>{ if(!sc(HVT11.sr[r[0]][2]))return; const base=r[6],ds=r[5];
+    if(base>0&&ds/base<0.95&&(0.95*base-ds)<=0.3*base)o.sapGap+=0.95*base-ds; if(!(ds>0)){o.chua++;o.chuaBase+=base;} }); return o;}
+/* tham số giả định (sửa được, lưu trên trình duyệt) */
+const PAR={hc:70,lift:10,lift2:5,cmb:40,hvs:50,hvc:15,hvb:30,cat:50,dor:10,near:30};
+const par=k=>{const v=pn(LS.g('par|'+k)); return v==null?PAR[k]:v;};
+const parIn=k=>inp('par|'+k,nf(par(k),0),'',56);
 /* ---- giao diện ---- */
 const TH='background:#0369A1;color:#fff;padding:7px 8px;font-size:12px;text-align:right';
 const THL=TH.replace('text-align:right','text-align:left');
@@ -101,41 +130,87 @@ function block3(c){
   return `<div style="overflow-x:auto"><table class="t8asmtbl"><thead><tr><th style="${THL}">Mốc</th><th style="${TH}">Ngày công lũy kế</th><th style="${TH}">SO/ngày mục tiêu (tỷ)</th><th style="${TH}">SO lũy kế mục tiêu (tỷ)</th><th style="${TH}">%Đạt chỉ tiêu</th><th style="${TH}">Thực tế lũy kế (tỷ)</th><th style="${TH}">Thực tế ÷ mốc</th><th style="${TH}">Kết quả</th></tr></thead><tbody>${h}</tbody></table></div>
   <div class="pnote" style="margin-top:6px">Đường về đích: giữ SO/ngày cần đều trên các ngày công còn lại để chạm 100% ngày 30/11. Mục tiêu mốc là <b>ước tính</b> theo đường này, không phải chỉ tiêu chính thức. Cột Thực tế tự điền khi dữ liệu T11 đã đến đúng ngày mốc (hoặc khi đã mở tab vào đúng ngày đó). Tô xanh đạt mốc · vàng 85–99% · đỏ dưới 85%.</div>`;
 }
-function plans(c,hv,cb,cat,nb){
-  const A=n=>core(n), hai=A('Nguyễn Thanh Hải'), vinh=A('Đặng Quang Vinh');
-  const weak=cat.filter(x=>x.g<0).map(x=>x.n+' '+nf(x.g*100,1)+'%').join(' · ')||'không có ngành thấp hơn';
-  const g=k=>cat.find(x=>x.k===k); const f=k=>g(k)?nf(g(k).g*100,1)+'%':'—';
+const topN=(arr,key,n)=>arr.slice().sort((p,q)=>q[key]-p[key]).slice(0,n);
+function plans(c,hv,cb,cat,nb,g){
+  const hai=core('Nguyễn Thanh Hải'), vinh=core('Đặng Quang Vinh'), A=agg();
+  const npp=a=>topN(A.npp.filter(x=>x.asm===a),'short',2).map(x=>x.npp+' (thiếu '+ty(x.short)+' tỷ)').join(', ');
+  const asmSr=a=>{let m0=0,a0=0,dr=0; GP11.rows.forEach(r=>{const m=srOf(r[0]); if(m[2]!==a)return; m0+=r[1]; a0+=r[2]; dr+=r[4];}); return {m:m0,a:a0,dr};};
+  const sh=asmSr('Nguyễn Thanh Hải'), sv=asmSr('Đặng Quang Vinh');
+  const f=k=>{const x=cat.find(y=>y.k===k); return x?nf(x.g*100,1)+'%':'—';};
+  const ssTop=topN(A.ss.filter(x=>sc(x.asm)&&x.hv>0),'hv',3).map(x=>x.ss+' ('+x.hv+' KH)').join(', ');
   const want=0.35, more=Math.max(0,Math.round(want*cb.n-cb.nhan));
   return [
-   ['a','Cứu số Gia Lai và Quảng Ngãi: làm việc với NPP TM Gia Lai, lấp ĐDKD vacant, rà lại tuyến','ASM Hải (Gia Lai) · ASM Vinh (Quảng Ngãi)',`%Đạt MTD Gia Lai ${pc(hai.mtd,hai.tg)} · Quảng Ngãi ${pc(vinh.mtd,vinh.tg)} (time gone ${pc(hai.d,hai.D)}) · SO/ngày cần ${ty(hai.need)} / ${ty(vinh.need)} tỷ`,'14/11'],
-   ['b','Hội viên Tết: ưu tiên KH đạt NV1 chưa đạt NV2 và KH sắp đạt; xác nhận đơn chờ trong 24 giờ','5 ASM',`${nf(hv.nv1x,0)} KH đạt NV1 chưa NV2 · ${nf(hv.sap,0)} KH sắp đạt NV1 · đơn chờ ${ty(hv.pend)} tỷ`,'Hằng ngày · chốt 30/11'],
-   ['c','Combo: nâng tỷ lệ KH L1 Off nhận combo lên khoảng 35%','5 ASM',`KH L1 Off nhận combo ${pc(cb.nhan,cb.n)} (${nf(cb.nhan,0)}/${nf(cb.n,0)}) → mục tiêu ~35%: thêm ~${nf(more,0)} KH`,'21/11'],
-   ['d','Ngành hàng: dồn Gia vị và Mì, kéo lại HPC, giữ Cà phê ở mức khả thi','ASM + ngành hàng',`SO/ngày so T10 cùng kỳ: Gia vị ${f('GiaVi')} · Mì ${f('Mi')} · HPC ${f('HPC')} · Cà phê ${f('CaPhe')}`,'14/11'],
-   ['e','Đánh thức quầy Off 2 tháng liền không mua và quầy chưa phát sinh','SS',`${nf(nb.v,0)} quầy Off không mua T9–T10 (dữ liệu mới nhất có sẵn)`,'21/11'],
-   ['f','Họp chốt SO/ngày mỗi sáng, đối chiếu dashboard cuối ngày','RSM + 5 ASM',`SO/ngày hiện tại ${ty(c.cur)} tỷ so với cần ${ty(c.need)} tỷ`,'Hằng ngày từ '+(Number(T11_META.last_date.split('/')[0])+2)+'/11']];
+   ['a','Cứu số Gia Lai và Quảng Ngãi','ASM Hải lo NPP TM Gia Lai: chốt trong 12/11 danh sách ĐDKD vacant/thiếu và người kèm tuyến; rà lại tuyến có quầy không phát sinh; ĐDKD ưu tiên phủ danh sách quầy rơi (khối 4). ASM Vinh làm tương tự cho Quảng Ngãi.','ASM Hải (Gia Lai) · ASM Vinh (Quảng Ngãi)',`%Đạt MTD Gia Lai ${pc(hai.mtd,hai.tg)} · Quảng Ngãi ${pc(vinh.mtd,vinh.tg)} (time gone ${pc(hai.d,hai.D)}). NPP thiếu nhiều nhất: Gia Lai ${npp('Nguyễn Thanh Hải')}; Quảng Ngãi ${npp('Đặng Quang Vinh')}. Quầy MCP đã mua T11: Gia Lai ${pc(sh.a,sh.m)}, Quảng Ngãi ${pc(sv.a,sv.m)} · quầy rơi: ${nf(sh.dr,0)} / ${nf(sv.dr,0)}`,'Chốt kế hoạch 12/11 · kiểm tra 14/11'],
+   ['b','Hội viên Tết: chốt KH sắp đạt và KH đạt NV1 chưa đạt NV2','SS gọi/nhắn từng KH trong danh sách (tab Hội viên Tết, mục 4 và 5): nhắc thiếu nhãn nào, chốt đơn bù; ASM xác nhận đơn chờ trong 24 giờ; ưu tiên SS có nhiều KH sắp đạt.','5 ASM · SS',`${nf(hv.nv1x,0)} KH đạt NV1 chưa NV2 · ${nf(hv.sap,0)} KH sắp đạt NV1 · đơn chờ ${ty(hv.pend)} tỷ. SS nhiều KH sắp đạt nhất: ${ssTop||'—'}`,'Hằng ngày · chốt 28/11'],
+   ['c','Combo: nâng tỷ lệ KH L1 Off nhận combo lên khoảng 35%','ĐDKD chào combo đúng ngưỡng đơn 800K cho KH Off chưa nhận; ưu tiên KH có đơn 500–800K (chỉ cần nâng đơn lên ngưỡng). SS theo dõi số KH nhận mỗi ngày.','5 ASM · SS',`KH L1 Off nhận combo ${pc(cb.nhan,cb.n)} (${nf(cb.nhan,0)}/${nf(cb.n,0)}) → ~35% cần thêm ${nf(more,0)} KH, bình quân ${nf(more/Math.max(1,c.rem),0)} KH/ngày công · KH có đơn 500–800K chưa nhận: ${nf(g.near,0)}`,'21/11'],
+   ['d','Ngành hàng: dồn Gia vị và Mì, kéo lại HPC, giữ Cà phê ở mức khả thi','ASM + NPP đặt mục tiêu ngành theo SO/ngày cần: Gia vị, Mì dồn đơn lớn; HPC rà tồn kho, trưng bày và đơn thiếu; Cà phê giữ nhịp, không kéo thêm.','5 ASM · NPP',`SO/ngày so T10 cùng kỳ: Gia vị ${f('GiaVi')} · Mì ${f('Mi')} · HPC ${f('HPC')} · Cà phê ${f('CaPhe')}`,'14/11 chốt mục tiêu ngành'],
+   ['e','Đánh thức quầy Off 2 tháng liền không mua và quầy chưa phát sinh','SS xuất danh sách theo SR; SR thăm trong 5 ngày công đầu, ưu tiên quầy có SO kỳ trước lớn (khối 4); báo kết quả cuối ngày.','SS · SR',`${nf(nb.v,0)} quầy Off không mua T9–T10 · ${nf(g.drop,0)} quầy đã mua đầu T10 nhưng chưa mua đầu T11 (SO kỳ trước ${ty(g.dropSO)} tỷ) · ${nf((g.mcp-g.a11)-g.drop,0)} quầy chưa mua cả hai kỳ`,'21/11'],
+   ['f','Họp chốt SO/ngày mỗi sáng, đối chiếu dashboard cuối ngày','Họp 15 phút đầu ngày: đối chiếu SO/ngày hôm trước với mức cần, chốt SS/NPP hụt và việc trong ngày; cuối ngày đối chiếu số trên dashboard.','RSM + 5 ASM',`SO/ngày hiện tại ${ty(c.cur)} tỷ, cần ${ty(c.need)} tỷ (thiếu ${ty(Math.max(0,c.need-c.cur))} tỷ mỗi ngày)`,'Hằng ngày từ '+(Number(T11_META.last_date.split('/')[0])+1)+'/11']];
 }
-function block4(c,hv,cb,cat,nb){
-  const P=plans(c,hv,cb,cat,nb); const opts=['Chưa làm','Đang làm','Xong'];
-  return `<div style="overflow-x:auto"><table class="t8asmtbl"><thead><tr><th style="${THL}">#</th><th style="${THL}">Giải pháp</th><th style="${THL}">Phụ trách</th><th style="${THL}">KPI đo (số live)</th><th style="${THL}">Hạn</th><th style="${THL}">Trạng thái</th></tr></thead><tbody>`+
+function block4(c,hv,cb,cat,nb,g){
+  const P=plans(c,hv,cb,cat,nb,g); const opts=['Chưa làm','Đang làm','Xong'];
+  return `<div style="overflow-x:auto"><table class="t8asmtbl"><thead><tr><th style="${THL}">#</th><th style="${THL}">Giải pháp</th><th style="${THL}">Việc cụ thể</th><th style="${THL}">Phụ trách</th><th style="${THL}">KPI đo (số live)</th><th style="${THL}">Hạn</th><th style="${THL}">Trạng thái</th></tr></thead><tbody>`+
   P.map((p,i)=>{const cur=LS.g('st|'+p[0])||opts[0]; const bg=cur==='Xong'?'#d1fae5':cur==='Đang làm'?'#fef3c7':'#f1f5f9';
-    return `<tr><td>${i+1}</td><td style="text-align:left;white-space:normal;min-width:260px">${esc(p[1])}</td><td style="text-align:left;white-space:normal">${esc(p[2])}</td><td style="text-align:left;white-space:normal;min-width:260px">${esc(p[3])}</td><td style="text-align:left;white-space:nowrap">${esc(p[4])}</td><td><select data-gpst="${p[0]}" style="border:1px solid #38BDF8;border-radius:6px;padding:4px 6px;background:${bg};font:inherit;color:#0f172a">${opts.map(o=>`<option${o===cur?' selected':''}>${o}</option>`).join('')}</select></td></tr>`;}).join('')+`</tbody></table></div>`;
+    return `<tr><td>${i+1}</td><td style="text-align:left;white-space:normal;min-width:170px"><b>${esc(p[1])}</b></td><td style="text-align:left;white-space:normal;min-width:260px">${esc(p[2])}</td><td style="text-align:left;white-space:normal">${esc(p[3])}</td><td style="text-align:left;white-space:normal;min-width:260px">${esc(p[4])}</td><td style="text-align:left;white-space:normal">${esc(p[5])}</td><td><select data-gpst="${p[0]}" style="border:1px solid #38BDF8;border-radius:6px;padding:4px 6px;background:${bg};font:inherit;color:#0f172a">${opts.map(o=>`<option${o===cur?' selected':''}>${o}</option>`).join('')}</select></td></tr>`;}).join('')+`</tbody></table></div>`;
 }
-function oppRows(c,hv,cb,cat,nb){
-  const neg=cat.filter(x=>x.g<0);
-  const brk=Object.keys(nb.by).map(a=>(SHORT[a]||a)+' '+nf(nb.by[a],0)).join(' · ');
-  return [
-   ['hvchua','Hội viên chưa mua (chưa phát sinh DS T11)',nf(hv.chua,0)+' KH',`trên ${nf(hv.n,0)} KH hội viên`,'ví dụ: số KH kích hoạt × tỷ lệ mua × DS bình quân/KH'],
-   ['hvsap','Hội viên sắp đạt NV1 (còn thiếu ≤30% chỉ tiêu nền)',nf(hv.sap,0)+' KH','thiếu đến 95% nền ≤ 30% nền','ví dụ: số KH kéo lên đạt × phần DS còn thiếu bình quân'],
-   ['hvnv','KH đạt NV1 chưa đạt NV2 (thiếu nhãn trọng điểm)',nf(hv.nv1x,0)+' KH','đã đủ doanh số, thiếu 4 nhãn','ví dụ: số KH × DS nhãn còn thiếu để đủ NV2'],
-   ['cbo','KH L1 Off chưa nhận combo',nf(cb.n-cb.nhan,0)+' KH',`${nf(cb.n,0)} KH áp dụng · đã nhận ${nf(cb.nhan,0)}`,'ví dụ: KH chuyển nhận × DS mang về bình quân/KH (xem tab Combo)'],
-   ['nb','Quầy Off 2 tháng liền không mua (T9–T10)',nf(nb.v,0)+' quầy',brk,'ví dụ: số quầy đánh thức × tỷ lệ mua lại × SO/quầy/tháng'],
-   ['cat','Ngành hàng có SO/ngày thấp hơn T10 cùng kỳ',nf(neg.length,0)+' ngành',neg.map(x=>x.n+' '+nf(x.g*100,1)+'%').join(' · ')||'không có','ví dụ: (SO/ngày T10 cùng kỳ − SO/ngày hiện tại) × ngày công còn lại × tỷ lệ kéo lại']];
+/* ---- điểm nóng: NPP / SS / quầy cụ thể ---- */
+function block4b(c){
+  const A=agg(), N=topN(A.npp.filter(x=>sc(x.asm)),'short',8), S4=topN(A.ss.filter(x=>sc(x.asm)),'short',10);
+  const lh=(h,l)=>`<th style="${l?THL:TH}">${h}</th>`;
+  const t1=`<table class="t8asmtbl"><thead><tr>${lh('ASM',1)}${lh('NPP',1)}${lh('SO MTD (tỷ)')}${lh('%Đạt')}${lh('SO/ngày hiện → cần (tỷ)')}${lh('Thiếu dự kiến (tỷ, ước tính)')}</tr></thead><tbody>`+N.map(x=>`<tr><td style="text-align:left">${esc(SHORT[x.asm]||x.asm)}</td><td style="text-align:left">${esc(x.npp)}</td><td>${ty(x.so)}</td><td><b>${pc(x.so,x.tg)}</b></td><td>${ty(x.cur)} → ${ty(x.need)}</td><td><b>${ty(x.short)}</b></td></tr>`).join('')+`</tbody></table>`;
+  const t2=`<table class="t8asmtbl"><thead><tr>${lh('ASM',1)}${lh('NPP',1)}${lh('SS',1)}${lh('%Đạt')}${lh('Thiếu dự kiến (tỷ)')}${lh('Quầy rơi (SO kỳ trước)')}${lh('Quầy MCP đã mua T11')}${lh('HV sắp đạt (thiếu, tr)')}</tr></thead><tbody>`+S4.map(x=>`<tr><td style="text-align:left">${esc(SHORT[x.asm]||x.asm)}</td><td style="text-align:left">${esc(x.npp)}</td><td style="text-align:left"><b>${esc(x.ss)}</b></td><td>${pc(x.so,x.tg)}</td><td><b>${ty(x.short)}</b></td><td>${nf(x.drop,0)} (${ty(x.dropSO)} tỷ)</td><td>${nf(x.srv,0)}/${nf(x.srn,0)} (${pc(x.srv,x.srn)})</td><td>${nf(x.hv,0)} (${nf(x.hvGap/1e6,0)})</td></tr>`).join('')+`</tbody></table>`;
+  const Q=GP11.top.filter(r=>sc(srOf(r[0])[2])).sort((p,q)=>q[3]-p[3]).slice(0,10);
+  const t3=`<table class="t8asmtbl"><thead><tr>${lh('Quầy',1)}${lh('Mã',1)}${lh('SS',1)}${lh('NPP',1)}${lh('SO kỳ trước (T10 01–10/10, tr)')}</tr></thead><tbody>`+Q.map(r=>{const m=srOf(r[0]);return `<tr><td style="text-align:left">${esc(r[2])}</td><td style="text-align:left">${esc(r[1])}</td><td style="text-align:left">${esc(m[4])}</td><td style="text-align:left">${esc(m[3])}</td><td>${nf(r[3]/1e6,1)}</td></tr>`;}).join('')+`</tbody></table>`;
+  const sub=t=>`<div style="margin:12px 0 4px;font-weight:700;color:#0369A1">${t}</div><div style="overflow-x:auto">`;
+  return sub('NPP thiếu nhiều nhất so với chỉ tiêu (thiếu dự kiến = chỉ tiêu − dự kiến giữ đà)')+t1+'</div>'+sub('SS cần can thiệp trước: quầy rơi, ĐDKD chưa phát sinh đơn, hội viên sắp đạt')+t2+`</div><div class="pnote" style="margin-top:6px">Quầy rơi = quầy mua trong 01–10/10 nhưng chưa mua trong 01–10/11. Quầy MCP đã mua = quầy có đơn T11 trên tổng quầy MCP của SS. Số quầy theo MCP T11 và raw đơn hàng.</div>`+sub('10 quầy rơi có SO kỳ trước lớn nhất (danh sách gọi/thăm trước)')+t3+'</div>';
 }
-function block5(c,hv,cb,cat,nb,gap){
-  const R=oppRows(c,hv,cb,cat,nb); let t=0;
-  const rows=R.map(r=>{const v=pn(LS.g('opp|'+r[0])); if(v!=null)t+=v; const as=LS.g('asu|'+r[0])||'';
-    return `<tr><td style="text-align:left;white-space:normal;min-width:240px">${esc(r[1])}</td><td><b>${r[2]}</b></td><td style="text-align:left;white-space:normal">${esc(r[3])}</td><td>${inp('opp|'+r[0],v==null?'':nf(v,2),'nhập tỷ')}</td><td style="text-align:left"><input data-gpt="asu|${r[0]}" value="${esc(as)}" placeholder="${esc(r[4])}" style="width:100%;min-width:230px;border:1px solid #38BDF8;background:#f0f9ff;border-radius:6px;padding:4px 6px;font:inherit;color:inherit"></td></tr>`;}).join('');
-  return `<div style="overflow-x:auto"><table class="t8asmtbl"><thead><tr><th style="${THL}">Cơ hội</th><th style="${TH}">Số lượng</th><th style="${THL}">Phạm vi</th><th style="${TH}">Ước tính SO thêm (tỷ) · nhập tay</th><th style="${THL}">Giả định của ước tính</th></tr></thead><tbody>${rows}<tr class="tot"><td style="text-align:left"><b>Tổng ước tính SO thêm</b></td><td></td><td style="text-align:left">khoảng thiếu so với dự kiến giữ đà: <b>${ty(gap)} tỷ</b></td><td><b>${nf(t,2)}</b></td><td style="text-align:left">${gap>0?'bù được '+pc(t*1e9,gap)+' khoảng thiếu':''}</td></tr></tbody></table></div><div class="pnote" style="margin-top:6px">Các ô SO thêm là <b>ước tính</b> do anh nhập, dashboard không điền số cứng. Các cơ hội có thể chồng nhau (một KH nằm ở nhiều dòng) nên cộng tổng chỉ để tham khảo.</div>`;
+/* ---- cơ hội định lượng (giả định sửa được) ---- */
+function opps(c,k){
+  const g=gp11(), hs=hvStat(), hm=hvMore(), cb=comboOff(), cat=cats(), b=BM(), rem=c.rem, nb=nbScope();
+  const R=[];
+  R.push({id:'wb',t:'Quầy rơi: đã mua đầu T10, chưa mua đầu T11',n:g.drop,u:'quầy',base:`SO kỳ trước ${ty(g.dropSO)} tỷ. Tham chiếu T10: ${nf(b.late_rate*100,1)}% quầy chưa mua đầu tháng vẫn mua cuối tháng (phần này đã nằm trong dự kiến giữ đà)`,pr:[['lift','Tăng tỷ lệ mua lại thêm (điểm %)']],est:g.drop*par('lift')/100*b.late_avg,how:`quầy × điểm % tăng thêm × SO bình quân/quầy mua lại cuối tháng T10 (${nf(b.late_avg/1e6,2)} tr)`});
+  R.push({id:'idle',t:'Quầy MCP chưa mua cả hai kỳ (đầu T10 và đầu T11)',n:Math.max(0,(g.mcp-g.a11)-g.drop),u:'quầy',base:'quầy trong MCP chưa có đơn ở cả hai kỳ so sánh',pr:[['lift2','Tăng tỷ lệ phát sinh thêm (điểm %)']],est:Math.max(0,(g.mcp-g.a11)-g.drop)*par('lift2')/100*b.late_avg,how:`quầy × điểm % × SO bình quân/quầy (${nf(b.late_avg/1e6,2)} tr)`});
+  R.push({id:'dor',t:'Quầy Off 2 tháng liền không mua (T9–T10)',n:nb.v,u:'quầy',base:'số từ dữ liệu T9–T10 (mới nhất có sẵn); có thể trùng với hai dòng trên',pr:[['dor','Đánh thức được (%)']],est:nb.v*par('dor')/100*b.late_avg,how:`quầy × % đánh thức × SO bình quân/quầy (${nf(b.late_avg/1e6,2)} tr)`});
+  R.push({id:'near',t:'KH Off có đơn 500–800K chưa nhận combo (gần ngưỡng)',n:g.near,u:'KH',base:`cần thêm tổng ${nf(g.nearGap/1e6,0)} tr để mỗi KH lên đủ ngưỡng đơn 800K`,pr:[['near','Nâng được đơn lên ngưỡng (%)']],est:g.nearGap*par('near')/100,how:'tổng phần thiếu đến 800K × % nâng được'});
+  const more=Math.max(0,Math.round(0.35*cb.n-cb.nhan)), up=Math.max(0,b.ord_combo-b.ord_non);
+  R.push({id:'cmb',t:'Nâng KH L1 Off nhận combo lên 35%',n:more,u:'KH cần thêm',base:`hiện ${pc(cb.nhan,cb.n)}; đơn có combo bình quân ${nf(b.ord_combo/1e6,2)} tr so với ${nf(b.ord_non/1e6,2)} tr đơn không combo (chênh ${nf(up/1e6,2)} tr, có thể do KH vốn mua lớn)`,pr:[['cmb','Phần chênh đơn thực sự do combo (%)']],est:more*up*par('cmb')/100,how:'KH cần thêm × chênh giá trị đơn × % do combo tạo ra (1 đơn/KH)'});
+  R.push({id:'hvs',t:'Hội viên sắp đạt NV1 (thiếu ≤30% chỉ tiêu nền)',n:hs.sap,u:'KH',base:`tổng DS còn thiếu để đạt 95% nền: ${ty(hm.sapGap)} tỷ`,pr:[['hvs','KH bù đủ phần thiếu (%)']],est:hm.sapGap*par('hvs')/100,how:'DS còn thiếu × % KH bù đủ (phần này có thể đã nằm trong nhịp mua thường)'});
+  R.push({id:'hvc',t:'Hội viên chưa mua T11',n:hs.chua,u:'KH',base:`tổng chỉ tiêu nền của nhóm này ${ty(hm.chuaBase)} tỷ`,pr:[['hvc','KH mua được (%)'],['hvb','Mua bằng % nền']],est:hm.chuaBase*par('hvc')/100*par('hvb')/100,how:'chỉ tiêu nền × % KH mua được × % nền mua được trong tháng'});
+  const neg=cat.filter(x=>x.g<0), cg=neg.reduce((t,x)=>t+(x.b-x.a),0);
+  R.push({id:'cat',t:'Ngành hàng thấp hơn T10 cùng kỳ: '+(neg.map(x=>x.n).join(', ')||'không có'),n:neg.length,u:'ngành',base:neg.map(x=>x.n+' '+nf(x.g*100,1)+'%').join(' · ')||'—',pr:[['cat','Kéo lại được (%)']],est:cg*rem*par('cat')/100,how:'(SO/ngày T10 cùng kỳ − SO/ngày hiện tại) × ngày công còn lại × % kéo lại'});
+  return R;
+}
+function nbScope(){const o={v:0}; Object.keys(SNAP.nb).forEach(a=>{if(sc(a))o.v+=SNAP.nb[a];}); return o;}
+function block5(c,k,gap){
+  const R=opps(c,k); let t=0; R.forEach(r=>{t+=r.est;});
+  const hc=par('hc')/100, adj=t*hc, fcs=forecast(c,k.k), scen=fcs+adj;
+  const rows=R.map(r=>`<tr><td style="text-align:left;white-space:normal;min-width:210px"><b>${esc(r.t)}</b></td><td><b>${nf(r.n,0)}</b> ${r.u}</td><td style="text-align:left;white-space:normal;min-width:220px">${esc(r.base)}</td><td style="text-align:left;white-space:normal">${r.pr.map(p=>`<div style="margin-bottom:3px">${esc(p[1])}: ${parIn(p[0])}</div>`).join('')}</td><td><b>${ty(r.est)}</b></td><td style="text-align:left;white-space:normal;min-width:200px;font-size:11.5px;color:#475569">${esc(r.how)}</td></tr>`).join('');
+  return `<div style="overflow-x:auto"><table class="t8asmtbl"><thead><tr><th style="${THL}">Cơ hội</th><th style="${TH}">Số lượng (live)</th><th style="${THL}">Cơ sở số liệu</th><th style="${THL}">Giả định (sửa được)</th><th style="${TH}">Ước tính SO thêm (tỷ)</th><th style="${THL}">Cách tính</th></tr></thead><tbody>${rows}<tr class="tot"><td style="text-align:left"><b>Cộng thô các cơ hội</b></td><td></td><td style="text-align:left;white-space:normal">các dòng có thể chồng nhau (một quầy nằm ở nhiều dòng)</td><td style="text-align:left">Hệ số thận trọng (loại trùng, thực thi thấp hơn kế hoạch): ${parIn('hc')}%</td><td><b>${ty(adj)}</b></td><td style="text-align:left;font-size:11.5px">cộng thô ${ty(t)} tỷ × hệ số thận trọng</td></tr></tbody></table></div>`+
+  `<div style="margin-top:10px" class="kpis"><div class="kpi" style="border-top:3px solid #38BDF8"><div class="k-lab">Dự kiến giữ đà (ước tính)</div><div class="k-val">${ty(fcs)} tỷ</div><div class="k-sub">${pc(fcs,c.tg)} chỉ tiêu</div></div><div class="kpi" style="border-top:3px solid #0EA5E9"><div class="k-lab">+ Cơ hội sau thận trọng (ước tính)</div><div class="k-val">${ty(adj)} tỷ</div><div class="k-sub">${pc(adj,c.tg)} chỉ tiêu</div></div><div class="kpi" style="border-top:3px solid #0369A1"><div class="k-lab">Kịch bản thực tế (ước tính)</div><div class="k-val">${ty(scen)} tỷ</div><div class="k-sub">${pc(scen,c.tg)} chỉ tiêu</div></div><div class="kpi" style="border-top:3px solid ${scen>=c.tg?'#16a34a':'#d97706'}"><div class="k-lab">${scen>=c.tg?'Vượt chỉ tiêu':'Còn thiếu so với 100%'}</div><div class="k-val">${ty(Math.abs(c.tg-scen))} tỷ</div><div class="k-sub">${scen>=c.tg?'':'cần thêm '+ty((c.tg-scen)/Math.max(1,c.rem))+' tỷ mỗi ngày công, ngoài các cơ hội trên'}</div></div></div>`+
+  `<div class="pnote" style="margin-top:6px">Tất cả là <b>ước tính</b>. Số lượng và cơ sở là số live từ dữ liệu; giả định là ô sửa được (lưu trên trình duyệt). Tham chiếu tỷ lệ mua lại lấy từ T10: ${nf(BM().late_rate*100,1)}% quầy chưa mua trong 10 ngày đầu vẫn mua sau đó, SO bình quân ${nf(BM().late_avg/1e6,2)} tr/quầy. Nếu kịch bản còn thiếu, phần thiếu cần quyết định thêm (đẩy đơn lớn theo ngành, chương trình, nhân lực), không nên coi là đã có.</div>`;
+}
+/* ---- timeline triển khai ---- */
+function block7(c,k){
+  const g=gp11(), b=BM(), R=opps(c,k), rate=b.late_rate+par('lift')/100, rem=c.rem, last=Number(T11_META.last_date.split('/')[0]);
+  const wds=mocDates().map(x=>Math.max(0,x.wd-c.d)/Math.max(1,rem));     // tỷ lệ tiến độ ngày công còn lại tại mỗi mốc
+  const rw=i=>nf(g.drop*rate*wds[i],0);
+  const hv=hvStat(), cb=comboOff(), more=Math.max(0,Math.round(0.35*cb.n-cb.nhan));
+  const rows=[
+   [(last+1)+'/11','Chốt kế hoạch: họp ASM, chia danh sách quầy rơi, hội viên sắp đạt, KH gần ngưỡng combo theo SS/SR từ dashboard','RSM · 5 ASM','100% SS nhận danh sách; ASM chốt cam kết trong tab',`Cam kết toàn Miền ≥ dự kiến giữ đà ${ty(forecast(core('all'),k.k))} tỷ`],
+   [(last+2)+'–14/11','Giai đoạn 1: thăm/gọi quầy rơi có SO kỳ trước lớn; chốt đơn cho KH hội viên sắp đạt; xác nhận đơn chờ trong 24 giờ','SS · SR · ASM',`Quầy rơi mua lại lũy kế ≥ ${rw(0)} quầy; đơn chờ ${ty(hv.pend)} tỷ được xác nhận hàng ngày`,'Mốc 14/11: SO lũy kế ≥ '+ty(core('all').mtd+core('all').need*(mocDates()[0].wd-c.d))+' tỷ'],
+   ['15–21/11','Giai đoạn 2: chào combo cho KH Off gần ngưỡng đơn 800K; dồn Gia vị, Mì; HPC rà tồn và trưng bày; đánh thức quầy 2 tháng không mua','ĐDKD · SS · NPP',`KH Off nhận combo thêm ≥ ${nf(more*wds[1],0)} (lũy kế); quầy rơi mua lại lũy kế ≥ ${rw(1)}`,'Mốc 21/11: SO lũy kế ≥ '+ty(core('all').mtd+core('all').need*(mocDates()[1].wd-c.d))+' tỷ · nhập chỉ tiêu T12 trước 25/11'],
+   ['22–28/11','Giai đoạn 3: dồn KH hội viên đạt NV1 và NV2 (thiếu nhãn), chốt đơn lớn cuối tuần; ASM rà NPP còn hụt, điều SR kèm cặp','ASM · SS',`${nf(hv.sap,0)} KH sắp đạt NV1 chuyển thành đạt; quầy rơi mua lại lũy kế ≥ ${rw(2)}`,'Mốc 28/11: SO lũy kế ≥ '+ty(core('all').mtd+core('all').need*(mocDates()[2].wd-c.d))+' tỷ'],
+   ['29–30/11','Chốt tháng: xác nhận hết đơn chờ, đơn tồn NPP; đối chiếu số cuối ngày; chốt danh sách kéo sang T12','RSM · ASM · NPP',`Quầy rơi mua lại ≥ ${rw(3)}; không còn đơn chờ quá 24 giờ`,'Chốt 30/11: SO ≥ '+ty(core('all').tg)+' tỷ (chỉ tiêu)']];
+  return `<div style="overflow-x:auto"><table class="t8asmtbl"><thead><tr><th style="${THL}">Thời gian</th><th style="${THL}">Việc triển khai</th><th style="${THL}">Phụ trách</th><th style="${THL}">KPI đầu việc (số live)</th><th style="${THL}">Mốc kết quả</th></tr></thead><tbody>`+rows.map(r=>`<tr><td style="text-align:left;white-space:nowrap"><b>${r[0]}</b></td><td style="text-align:left;white-space:normal;min-width:300px">${esc(r[1])}</td><td style="text-align:left;white-space:normal">${esc(r[2])}</td><td style="text-align:left;white-space:normal;min-width:240px">${esc(r[3])}</td><td style="text-align:left;white-space:normal;min-width:200px">${esc(r[4])}</td></tr>`).join('')+`</tbody></table></div><div class="pnote" style="margin-top:6px">Mục tiêu quầy rơi mua lại = tỷ lệ mua lại tham chiếu T10 (${nf(BM().late_rate*100,1)}%) cộng ${nf(par('lift'),0)} điểm % (giả định ở khối cơ hội), chia theo tỷ lệ ngày công còn lại. Mốc SO là ước tính theo đường về đích ở khối 3.</div>`;
+}
+/* ---- KPI hằng ngày theo ASM ---- */
+function block8(k){
+  const b=BM(), A=['all'].concat(ASMS_()); const rate=b.late_rate+par('lift')/100;
+  const rows=A.map(a=>{const c=core(a); const rws=T11.filter(r=>a==='all'||r.asm===a); const pcD=rws.reduce((t,r)=>t+((r.v['a|all']||{}).pc||0),0)/c.d;
+    let srn=0,drop=0; GP11.rows.forEach(r=>{const m=srOf(r[0]); if(a!=='all'&&m[2]!==a)return; if(r[1]>0)srn++; drop+=r[4];});
+    const mul=c.cur?c.need/c.cur:0, add=(c.need-c.cur);
+    return `<tr${a==='all'?' class="tot"':''}><td style="text-align:left;white-space:nowrap">${esc(lab(a))}</td><td>${ty(c.cur)}</td><td><b>${ty(c.need)}</b></td><td><b>${c.cur?(mul>=1?'+':'')+nf((mul-1)*100,1)+'%':'—'}</b></td><td>${nf(srn,0)}</td><td>${srn?nf(Math.max(0,add)/srn/1e6,2):'—'}</td><td>${nf(pcD,0)}</td><td>${nf(pcD*mul,0)}</td><td>${nf(drop*rate/Math.max(1,c.rem),0)}</td><td>${srn?nf(drop*rate/Math.max(1,c.rem)/srn,1):'—'}</td></tr>`;}).join('');
+  return `<div style="overflow-x:auto"><table class="t8asmtbl"><thead><tr><th style="${THL}">Phạm vi</th><th style="${TH}">SO/ngày hiện tại (tỷ)</th><th style="${TH}">SO/ngày cần (tỷ)</th><th style="${TH}">Cần tăng</th><th style="${TH}">Số ĐDKD (có MCP)</th><th style="${TH}">Cần thêm / ĐDKD / ngày (tr)</th><th style="${TH}">PC/ngày hiện tại</th><th style="${TH}">PC/ngày cần (ước tính)</th><th style="${TH}">Quầy rơi cần mua lại / ngày</th><th style="${TH}">Mỗi ĐDKD / ngày</th></tr></thead><tbody>${rows}</tbody></table></div><div class="pnote" style="margin-top:6px">PC/ngày cần là <b>ước tính</b>: giữ nguyên số line/PC và giá trị/line hiện tại, SO tăng thì PC tăng cùng tỷ lệ. Quầy rơi cần mua lại/ngày theo mục tiêu ở khối timeline.</div>`;
 }
 function block6(c,cam){
   const ct=pn(LS.g('t12|ct')), nd=pn(LS.g('t12|nd')); const need=(ct!=null&&nd)?ct*1e9/nd:null;
@@ -149,22 +224,23 @@ function block6(c,cam){
    `<div style="overflow-x:auto;margin-top:10px"><table class="t8asmtbl"><thead><tr><th style="${THL}">AP Quý 4 · tháng 12 (tham chiếu)</th><th style="${TH}">E (tỷ)</th><th style="${TH}">HE (tỷ)</th><th style="${TH}">O (tỷ)</th></tr></thead><tbody>${['all'].concat(ASMS_()).map(a=>{const ap=apq(a);return `<tr${a==='all'?' class="tot"':''}><td style="text-align:left">${esc(lab(a))}</td>${apl('E',ap.e)}${apl('HE',ap.he)}${apl('O',ap.o)}</tr>`;}).join('')}</tbody></table></div><div class="pnote" style="margin-top:6px">E/HE/O lấy từ chỉ tiêu AP Quý 4 (tháng 12) có sẵn trong dashboard. Chưa điền chỉ tiêu T12 thì các ô tính toán để trống, không lỗi.</div>`;
 }
 function build(){
-  const c=core(S.asm), k=accel(), hv=hvStat(), cb=comboOff(), cat=cats();
-  const nb={v:0,by:{}}; Object.keys(SNAP.nb).forEach(a=>{if(sc(a)){nb.v+=SNAP.nb[a];} nb.by[a]=SNAP.nb[a];});
-  if(S.asm!=='all'){nb.by={}; nb.by[S.asm]=SNAP.nb[S.asm]||0;}
+  const c=core(S.asm), k=accel(), hv=hvStat(), cb=comboOff(), cat=cats(), g=gp11();
+  const nb=nbScope(); nb.by={}; Object.keys(SNAP.nb).forEach(a=>{if(sc(a))nb.by[a]=SNAP.nb[a];});
   const b2=block2(k), gap=Math.max(0,c.tg-(S.asm==='all'?b2.fc:forecast(c,k.k)));
-  return {c,k,hv,cb,cat,nb,b2,gap};
+  return {c,k,hv,cb,cat,nb,b2,gap,g};
 }
 function body(m){
-  const {c,k,hv,cb,cat,nb,b2,gap}=m;
-  const cam=S.asm==='all'?b2.cam:camVal(S.asm,forecast(c,k.k));
+  const {c,k,hv,cb,cat,nb,b2,gap,g}=m;
   const sec=(n,t,inner,note)=>`<div class="panel" style="margin-top:14px;border-top:3px solid #0EA5E9"><div class="tbl-head"><div>${H(n+'. '+t)}${note?` <span class="pnote" style="display:inline">${note}</span>`:''}</div></div>${inner}</div>`;
   return sec(1,'Hiện trạng · '+esc(lab(S.asm)),block1(c,k))+
    sec(2,'Dự kiến và cam kết theo ASM',b2.html+`<div class="pnote" style="margin-top:6px">Dự kiến (<b>ước tính</b>) = SO MTD + SO/ngày hiện tại × hệ số tăng tốc (${nf(k.k,2)}) × ngày công còn lại (${c.rem}). Hệ số lấy từ T10 toàn Miền và áp cho mọi ASM. Cam kết mặc định bằng dự kiến, sửa ô để nhập cam kết (lưu trên trình duyệt). Tổng SO/ngày cần của 5 ASM = ${ty(b2.needSum)} tỷ, bằng Toàn Miền ${ty(b2.needAll)} tỷ.</div>`)+
    sec(3,'Mốc theo tuần · '+esc(lab(S.asm)),block3(c))+
-   sec(4,'Bảng giải pháp',block4(c,hv,cb,cat,nb),'trạng thái lưu trên trình duyệt')+
-   sec(5,'Cơ hội bán hàng · '+esc(lab(S.asm)),block5(c,hv,cb,cat,nb,gap))+
-   sec(6,'Tháng 12 · Toàn Miền',block6(core('all'),b2.cam));
+   sec(4,'Điểm nóng: NPP, SS và quầy cần xử lý trước · '+esc(lab(S.asm)),block4b(c))+
+   sec(5,'Giải pháp cụ thể',block4(c,hv,cb,cat,nb,g),'việc, phụ trách, KPI live, hạn · trạng thái lưu trên trình duyệt')+
+   sec(6,'Cơ hội bán hàng định lượng và kịch bản · '+esc(lab(S.asm)),block5(c,k,gap))+
+   sec(7,'Timeline triển khai',block7(c,k),'theo ngày công còn lại')+
+   sec(8,'KPI theo dõi hằng ngày theo ASM',block8(k))+
+   sec(9,'Tháng 12 · Toàn Miền',block6(core('all'),b2.cam));
 }
 function render(){
   const pg=document.getElementById('pgGp'); if(!pg||!SNAP||typeof T11==='undefined')return;
@@ -185,14 +261,14 @@ function render(){
 function printHtml(a){
   const keep=S.asm; S.asm=a;
   try{
-    const m=build(), {c,k,hv,cb,cat,nb}=m; const P=plans(c,hv,cb,cat,nb); const warn=c.need>c.mx&&c.mx>0;
+    const m=build(), {c,k,hv,cb,cat,nb,g}=m; const P=plans(c,hv,cb,cat,nb,g); const warn=c.need>c.mx&&c.mx>0;
     const kp=(l,v,s)=>`<div class="pk"><div class="l">${l}</div><div class="v">${v}</div><div class="s">${s||''}</div></div>`;
     const cam=a==='all'?m.b2.cam:camVal(a,forecast(c,k.k));
     const mo=mocDates().map(x=>{const w=Math.max(x.wd,c.d),so=c.mtd+c.need*(w-c.d);return `<tr><td>${x.d}/11</td><td>${x.wd}/${c.D}</td><td>${ty(so)}</td><td>${pc(so,c.tg)}</td></tr>`;}).join('');
     return `<div class="v3pp"><div class="pph"><div><div class="eb">Masan Consumer · Kênh GT · Miền Trung</div><h1>Họp ASM · Giải pháp T11–T12 <small>${esc(lab(a))}</small></h1></div><div class="meta">SO T11 đến hết ${T11_META.last_date}<br>ngày công ${c.d}/${c.D}</div></div>`+
      `<h2>1. Hiện trạng</h2><div class="pks">${kp('SO MTD',ty(c.mtd)+' tỷ',pc(c.mtd,c.tg)+' chỉ tiêu '+ty(c.tg)+' tỷ')}${kp('SO/ngày hiện tại',ty(c.cur)+' tỷ','cần '+ty(c.need)+' tỷ để đạt 100%')}${kp('Ngày công còn lại',c.rem,'time gone '+pc(c.d,c.D))}${kp('Dự kiến giữ đà (ước tính)',ty(forecast(c,k.k))+' tỷ',pc(forecast(c,k.k),c.tg)+' · hệ số '+nf(k.k,2))}${kp('Cam kết',nf(cam,2)+' tỷ',pc(cam*1e9,c.tg)+' chỉ tiêu')}${kp('SO/ngày cao nhất T7–T10',ty(c.mx)+' tỷ',warn?'⚠ cần cao hơn '+nf((c.need/c.mx-1)*100,1)+'%':'trong khả năng')}</div>`+
      `<h2>2. Mốc theo tuần (ước tính theo đường về đích)</h2><table class="pt"><thead><tr><th>Mốc</th><th>Ngày công</th><th>SO lũy kế (tỷ)</th><th>%Đạt chỉ tiêu</th></tr></thead><tbody>${mo}</tbody></table>`+
-     `<h2>3. Giải pháp</h2><table class="pt"><thead><tr><th>Giải pháp</th><th>Phụ trách</th><th>KPI đo</th><th>Hạn</th><th>Trạng thái</th></tr></thead><tbody>${P.map(p=>`<tr><td>${esc(p[1])}</td><td>${esc(p[2])}</td><td>${esc(p[3])}</td><td>${esc(p[4])}</td><td>${esc(LS.g('st|'+p[0])||'Chưa làm')}</td></tr>`).join('')}</tbody></table>`+
+     `<h2>3. Giải pháp</h2><table class="pt"><thead><tr><th>Giải pháp</th><th>Phụ trách</th><th>KPI đo</th><th>Hạn</th><th>Trạng thái</th></tr></thead><tbody>${P.map(p=>`<tr><td><b>${esc(p[1])}</b><br>${esc(p[2])}</td><td>${esc(p[3])}</td><td>${esc(p[4])}</td><td>${esc(p[5])}</td><td>${esc(LS.g('st|'+p[0])||'Chưa làm')}</td></tr>`).join('')}</tbody></table>`+
      `<footer>Nguồn: dashboard Sell-out Miền Trung. Dự kiến và mốc là ước tính từ số liệu, cần ASM xác nhận cam kết.</footer></div>`;
   }finally{S.asm=keep;}
 }
