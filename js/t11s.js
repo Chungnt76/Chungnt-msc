@@ -95,14 +95,9 @@ function exit(){
 let HDR=null;
 function hdr(on){
   const tg=document.querySelector('.h2 .tg'),sub=document.querySelector('.h2 .sub'); if(!tg)return;
-  if(on){ if(!HDR)HDR={tg:tg.innerHTML,ti:tg.title,sub:sub?sub.innerHTML:''};
-    const md=T11_META.mtd_days,dt=T11_META.days_total,p=md/dt*100,r=24,c=2*Math.PI*r,o=c*(1-p/100);
-    const cs=tg.querySelectorAll('circle'); if(cs[1])cs[1].setAttribute('stroke-dashoffset',o.toFixed(1));
-    const tv=tg.querySelector('.tv'); if(tv)tv.textContent=p.toFixed(1).replace('.',',')+'%';
-    const tl=tg.querySelectorAll('.tl'); if(tl[0])tl[0].textContent='Time gone T11 · '+md+'/'+dt+' ngày làm việc'; if(tl[1])tl[1].innerHTML='Dữ liệu T11 MTD đến <b>'+T11_META.last_date+'</b>';
-    tg.title='Time gone tháng 11 = số ngày làm việc đã qua ÷ '+dt;
+  if(on){ if(!HDR)HDR={sub:sub?sub.innerHTML:''};
     if(sub)sub.innerHTML='Tháng 8–10 đủ tháng & Tháng 11 MTD · <b>'+Math.round(DATA.reduce((a,r)=>a+(r.q10||0),0)).toLocaleString('vi-VN')+'</b> quầy · <b>5</b> ASM · Off/On Premise · Lẻ · VIP3 · VIP5 · VIP Sỉ';
-  } else if(HDR){ tg.innerHTML=HDR.tg; tg.title=HDR.ti; if(sub)sub.innerHTML=HDR.sub; HDR=null; }
+  } else if(HDR){ if(sub)sub.innerHTML=HDR.sub; HDR=null; }
 }
 /* ---- cộng 1 vào nhãn tháng (T7..T10 → T8..T11) trong các tab chạy bằng khe tháng ---- */
 const RE=/((?<![A-Za-zÀ-ỹ0-9])T|[Tt]háng |THÁNG )(7|8|9|10)(?!\d)/g;
