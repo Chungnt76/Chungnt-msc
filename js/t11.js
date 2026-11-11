@@ -8,7 +8,8 @@ const mx=()=>T11_META||{};
 const d11=()=>(mx().has_data&&mx().mtd_days>0)?mx().mtd_days:null;
 const dTot=()=>mx().days_total||25;
 const ALIAS={'Võ Minh Huy':'Lê Văn Lực','Mai Văn Khanh':'Phùng Anh Minh'};           // SS đã nghỉ → gộp vào SS nhận
-const MERGE=new Set(['Võ Minh Huy','Mai Văn Khanh','Lê Văn Lực','Phùng Anh Minh']);
+const NGHI=new Set(['Võ Minh Huy','Mai Văn Khanh']);   // SS nghỉ việc từ T11: ẩn dòng, số lịch sử vẫn tính vào tổng NPP/ASM
+const MERGE=new Set();   // gộp SS chỉ áp dụng từ T11 (dữ liệu HVT/Combo); lịch sử T9, T10 giữ nguyên
 const bn=n=>String(n).replace(' - Chi nhánh','');
 const cs=r=>ALIAS[r.ssn]||r.ssn;
 const k3=r=>MERGE.has(r.ssn)?(r.asm+'|'+bn(r.npp)+'|'+cs(r)):(r.asm+'|'+r.npp+'|'+r.ssn);
@@ -74,7 +75,7 @@ function tree(){
     [...new Set(M.list.filter(x=>x.asm===A.a).map(x=>x.npp))].map(n=>({n,m:agg(x=>x.asm===A.a&&x.npp===n)})).sort((p,q)=>key(q.m)-key(p.m)).forEach(N=>{
       const no=S.npp.has(A.a+'|'+N.n); h+=rowHtml(N.n,N.m,{lvl:1,open:no,ds:{asm:A.a,npp:N.n}});
       if(!no)return;
-      M.list.filter(x=>x.asm===A.a&&x.npp===N.n).map(x=>({x,m:agg(y=>y.k===x.k)})).sort((p,q)=>key(q.m)-key(p.m)).forEach(Z=>{
+      M.list.filter(x=>x.asm===A.a&&x.npp===N.n&&!NGHI.has(x.ssn)&&!NGHI.has(x.ss)).map(x=>({x,m:agg(y=>y.k===x.k)})).sort((p,q)=>key(q.m)-key(p.m)).forEach(Z=>{
         h+=rowHtml(Z.x.ss,Z.m,{lvl:2,open:null});});
     });
   });
