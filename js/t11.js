@@ -1,7 +1,7 @@
 /* ===== Tab Tháng 11 — tracking SO / Active / PC / LPPC (T11 so với T10 & T9) =====
    Dữ liệu: data/T11.js (T11, T11CH, T11_META). Chưa có dữ liệu thì tab hiện khung + cột T9, T10 để đối chiếu. */
 (function(){
-const D9=24, D10=27;                       // ngày làm việc T9, T10
+const D9=24, D10=9;   // D10 = số ngày làm việc T10 cùng kỳ (01–10/10, không tính CN)                       // ngày làm việc T9, T10
 const S={meat:'a',oo:'all',vip:'all',asm:new Set(),npp:new Set()};
 const dash='<span class="fx">—</span>';
 const mx=()=>T11_META||{};
@@ -27,7 +27,7 @@ function maps(){
   if(MAPS)return MAPS;
   const m9={},m10={},m11={},seen={},list=[];
   src9().forEach(r=>put(m9,r));
-  src10().forEach(r=>put(m10,r));
+  (typeof T10CY!=='undefined'?T10CY:src10()).forEach(r=>put(m10,r));
   (T11||[]).forEach(r=>put(m11,r));
   src10().concat(src9(),T11||[]).forEach(r=>{const k=k3(r);if(!seen[k]){seen[k]=1;const mm=MERGE.has(r.ssn);list.push({asm:r.asm,npp:mm?bn(r.npp):r.npp,ssn:cs(r),ss:mm?cs(r):(r.ss||r.ssn),k});}});
   MAPS={m9,m10,m11,list}; return MAPS;
@@ -84,7 +84,7 @@ function tree(){
 function chanTbl(){
   const d=d11(),has=d!=null;
   let h='<thead><tr><th rowspan="2" style="text-align:left">ASM</th><th colspan="5">Off Premise</th><th colspan="5">On Premise</th></tr><tr>'+
-    ['SO T10','SO T11','SO/ngày Δ vs T10','Active T10','Active T11'].map(t=>`<th>${t}</th>`).join('').repeat(2)+'</tr></thead><tbody>';
+    ['SO T10 cùng kỳ','SO T11','SO/ngày Δ vs T10','Active T10 cùng kỳ','Active T11'].map(t=>`<th>${t}</th>`).join('').repeat(2)+'</tr></thead><tbody>';
   const one=(oo,sel)=>{const m=agg(sel,oo);
     return `<td>${gFmt(m.so10)}</td><td style="font-weight:700">${has?gFmt(m.so11):dash}</td><td>${has?gd(m.so11/d,m.so10/D10):dash}</td><td>${fi(m.a10)}</td><td style="font-weight:700">${has?fi(m.a11):dash}</td>`;};
   ASMS.forEach(a=>{const sel=x=>x.asm===a;h+=`<tr><td style="text-align:left;font-weight:600">${a}</td>${one('OFF',sel)}${one('ON',sel)}</tr>`;});
@@ -96,13 +96,13 @@ function render(){
   MAPS=null;
   const d=d11(),has=d!=null,M=agg(()=>true),s11=has?M.so11/d:null;
   el('t11Banner').innerHTML=has?
-    `Dữ liệu Tháng 11 đã cập nhật <b>đến ngày ${mx().last_date}</b> (MTD · ${d}/${dTot()} ngày làm việc) — so sánh theo bình quân/ngày làm việc; Tiến độ = %Đạt chia % ngày làm việc đã qua (100 = đúng tiến độ).`:
+    `Dữ liệu Tháng 11 đã cập nhật <b>đến ngày ${mx().last_date}</b> (MTD · ${d}/${dTot()} ngày làm việc) — so sánh T10 <b>cùng kỳ (01–10/10, 9 ngày làm việc)</b> theo lũy kế và bình quân/ngày làm việc; Tiến độ = %Đạt chia % ngày làm việc đã qua (100 = đúng tiến độ).`:
     `⏳ <b>Chưa có dữ liệu Tháng 11</b> — khung đã dựng sẵn (T11 có ${dTot()} ngày làm việc). Khi có file sell-out T11 (cùng định dạng T10), toàn bộ cột T11 sẽ tự hiện; hiện các cột T9 &amp; T10 để đối chiếu.`;
-  const row=(lab,a,b,c,fmt,g)=>`<tr><td style="text-align:left;font-weight:600">${lab}</td><td>${fmt(a)}</td><td>${fmt(b)}</td><td style="font-weight:700">${has?fmt(c):dash}</td><td>${has&&g?gd(c,b):dash}</td><td>${has&&g?gd(c,a):dash}</td></tr>`;
-  el('t11CmpTbl').innerHTML=`<thead><tr><th style="text-align:left">Chỉ số toàn Miền</th><th>Tháng 9</th><th>Tháng 10</th><th>Tháng 11</th><th>Δ % T11 vs T10</th><th>Δ % T11 vs T9</th></tr></thead><tbody>`+
-    row('SO (tổng tháng)',M.so9,M.so10,M.so11,gFmt,false)+
+  const row=(lab,a,b,c,fmt,g)=>`<tr><td style="text-align:left;font-weight:600">${lab}</td><td>${fmt(a)}</td><td>${fmt(b)}</td><td style="font-weight:700">${has?fmt(c):dash}</td><td>${has&&g?gd(c,b):dash}</td><td>${has&&g===true?gd(c,a):dash}</td></tr>`;
+  el('t11CmpTbl').innerHTML=`<thead><tr><th style="text-align:left">Chỉ số toàn Miền</th><th>Tháng 9</th><th>Tháng 10 (cùng kỳ 01–10/10)</th><th>Tháng 11 (01–10/11)</th><th>Δ % T11 vs T10</th><th>Δ % T11 vs T9</th></tr></thead><tbody>`+
+    row('SO (lũy kế MTD)',M.so9,M.so10,M.so11,gFmt,2)+
     row('SO bình quân/ngày',M.so9/D9,M.so10/D10,s11,gFmt,true)+
-    row('Active (ASO)',M.a9,M.a10,M.a11,fi,false)+
+    row('Active (ASO)',M.a9,M.a10,M.a11,fi,2)+
     row('PC bình quân/ngày',M.pc9/D9,M.pc10/D10,has?M.pc11/d:null,fi,true)+
     row('LPPC',lp(M.pc9,M.l9),lp(M.pc10,M.l10),lp(M.pc11,M.l11),ovL,true)+
     `<tr><td style="text-align:left;font-weight:600">Chỉ tiêu SO / %Đạt / Tiến độ</td><td>—</td><td>—</td><td>${M.tg?gFmt(M.tg)+(has?' · '+fp(M.so11/M.tg*100):''):'—'}</td><td colspan="2">${has&&M.tg?tien(M.so11/M.tg*100):'—'}</td></tr></tbody>`;
@@ -156,7 +156,7 @@ window.renderT11=function(){try{init();render();avail();}catch(e){console.error(
   const shiftOn=()=>!!(window.T11SHIFT&&T11SHIFT.on);
   const SUP=['pgOv','pgSoM','pgPc','pgCat','pgR360'];            // tab chạy được chế độ Tháng 11 (dịch khe tháng)
   const NOTE={pgGrow:'Tăng trưởng 10T là lũy kế 10 tháng so cùng kỳ 2025/2024/2023 — chưa có số cùng kỳ T11 nên chưa chạy được Tháng 11. Số T11 xem ở tab Tháng 11.',
-    pgApq:'AP Quý 4: đang xem Tháng 11 — SO T11 sell-out MTD đến 10/11 so với chỉ tiêu AP tháng 11 (đổi tháng ở bộ chọn riêng của tab).',pgAp9:'Thực hiện AP 9 tháng — không theo bộ lọc tháng.',pgPlan:'Plan AP Quý 4 — không theo bộ lọc tháng.',pgOn7:'Kênh On 7 loại hình chưa có số T11 (cần file chi tiết loại hình T11).'};
+    pgApq:'AP Quý 4: đang xem Tháng 11 — SO T11 sell-out MTD đến 10/11 so với chỉ tiêu AP tháng 11 (đổi tháng ở bộ chọn riêng của tab).',pgAp9:'Thực hiện AP 9 tháng — không theo bộ lọc tháng.',pgPlan:'Plan AP Quý 4 — không theo bộ lọc tháng.'};
   function banner(){
     let b=document.getElementById('t11Banner2'); const on=shiftOn()||onT11();
     const pg=Object.keys(NOTE).find(k=>vis(k)); const msg=(on&&pg)?NOTE[pg]:'';
@@ -166,7 +166,10 @@ window.renderT11=function(){try{init();render();avail();}catch(e){console.error(
   }
   function sync(){
     const fm=document.getElementById('fMonth'); if(!fm)return;
-    const on=onT11()||shiftOn();
+    const p7=vis('pgOn7');
+    if(p7&&(shiftOn()||onT11())&&!window.O7_11){window.O7_11=true;try{renderOn7();}catch(er){console.error(er);}}
+    else if(!p7&&window.O7_11){window.O7_11=false;if(!shiftOn()&&!onT11()&&SUP.some(vis)){try{t11shiftEnter();}catch(er){console.error(er);}}}
+    const on=onT11()||shiftOn()||(p7&&!!window.O7_11);
     [...fm.children].forEach(b=>b.classList.toggle('on',on?b.dataset.m==='11':b.dataset.m===F.month));
     chip(onT11()); banner();
   }
@@ -176,11 +179,13 @@ window.renderT11=function(){try{init();render();avail();}catch(e){console.error(
     fm.addEventListener('click',e=>{const b=e.target.closest('button'); if(!b)return;
       if(b.dataset.m==='11'){e.stopImmediatePropagation();e.stopPropagation();
         if(onT11()){setTimeout(sync,30);return;}
+        if(vis('pgOn7')){window.O7_11=true;try{renderOn7();}catch(er){console.error(er);}setTimeout(sync,30);return;}
         if(vis('pgMbs78')){navTo('hvt');setTimeout(sync,60);return;}
         if(SUP.some(vis)){try{t11shiftEnter();}catch(er){console.error(er);} }
         else if(!NOTE_PAGES()){navTo('t11');}
         setTimeout(sync,60);}
-      else{ if(shiftOn()){try{t11shiftExit();}catch(er){console.error(er);}}
+      else{ if(window.O7_11){window.O7_11=false;if(vis('pgOn7')){setTimeout(()=>{try{renderOn7();}catch(er){}},0);}}
+        if(shiftOn()){try{t11shiftExit();}catch(er){console.error(er);}}
         if(onT11())setTimeout(()=>navTo('ov'),30); setTimeout(sync,120);}},true);
     const nv=document.getElementById('nav2');
     if(nv){nv.addEventListener('click',e=>{const bt=e.target.closest('button'); if(!bt)return;
