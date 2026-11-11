@@ -135,11 +135,12 @@ function hvInit(){
 window.renderHvt=function(){try{hvInit();hvRender();}catch(e){console.error('HVT',e);}};
 
 /* ===================== COMBO ===================== */
-const C={grp:'all',asm:'all',open:{a:new Set(),n:new Set(),s:new Set()},tree:null,acc:null};
+const grpOk=g=>C.grp==='all'||(C.grp==='oo'?g!==2:g===C.grp);
+const C={grp:'oo',asm:'all',open:{a:new Set(),n:new Set(),s:new Set()},tree:null,acc:null};
 const cmb=()=>COMBO11.meta;
 function cbAcc(){
   const SR=COMBO11.sr, acc=SR.map(()=>({don:0,suat:0,kh:new Set(),amt:0,ngoai:0,days:new Map()}));
-  COMBO11.rows.forEach(r=>{ if(C.grp!=='all'&&String(r[3])!==C.grp)return;
+  COMBO11.rows.forEach(r=>{ if(!grpOk(r[3]))return;
     const a=acc[r[0]]; a.don++; a.suat+=r[6]; a.kh.add(r[1]); a.amt+=r[8]; if(!r[9])a.ngoai++;
     if(!a.days.has(r[5]))a.days.set(r[5],new Set()); a.days.get(r[5]).add(r[1]); });
   return acc;
@@ -182,10 +183,13 @@ function cbCards(){
   const agg=g=>{const o={don:0,suat:0,kh:new Set(),amt:0};COMBO11.rows.forEach(r=>{if(!scope(r[0]))return;if(g!=='all'&&r[3]!==g)return;o.don++;o.suat+=r[6];o.kh.add(r[1]);o.amt+=r[8];});return o;};
   const card=(lab,val,sub,ac)=>`<div class="kpi" style="border-top:3px solid ${ac}"><div class="k-lab" style="color:${ac}">${lab}</div><div class="k-val">${val}</div><div class="k-sub">${sub}</div></div>`;
   const grp=(t,o,ac)=>`<div style="margin-top:12px"><b style="color:${ac}">${t}</b></div><div class="kpis" style="grid-template-columns:repeat(4,1fr)">`+card('Số đơn combo',fi(o.don),'KH × ngày × chương trình',ac)+card('Số suất',fi(o.suat),'Σ SumQTY_REWARD',ac)+card('KH đã nhận combo',fi(o.kh.size),'KH duy nhất',ac)+card('DS hàng combo',fmtM(o.amt),'Σ RETAILER_AMOUNT (chưa gồm DS nhóm KH ngoài combo)',ac)+'</div>';
-  const A=agg('all'); let U=0,DSF=0; COMBO11.sr.forEach((x,i)=>{if(!scope(i))return; const e=(COMBO11.ex||[])[i]||[0,0]; U+=e[0]; DSF+=e[1];});
+  const A=(()=>{const o={don:0,suat:0,kh:new Set(),amt:0};COMBO11.rows.forEach(r=>{if(!scope(r[0])||!grpOk(r[3]))return;o.don++;o.suat+=r[6];o.kh.add(r[1]);o.amt+=r[8];});return o;})();
+  let U=0,DSF=0; const gs=C.grp==='oo'?[0,1]:C.grp==='all'?[0,1,2]:[C.grp];
+  COMBO11.sr.forEach((x,i)=>{if(!scope(i))return; const e=(COMBO11.ex||[])[i]||[0,0,0,0,0]; if(gs.some(g=>g===0))U+=e[0]; if(gs.some(g=>g>0))U+=e[1]; gs.forEach(g=>DSF+=e[2+g]);});
+  const gl={oo:'OFF + ON gộp (tracking tổng)',all:'Tất cả gồm Nhà hàng',0:'KH combo OFF',1:'KH combo ON',2:'KH combo Nhà hàng'}[C.grp];
   const ac='#0369a1';
-  document.getElementById('cbCards').innerHTML=`<div style="margin-top:12px"><b style="color:${ac}">Tổng quan combo MTD đến ${cmb().asof} (gộp tất cả chương trình)</b></div><div class="kpis" style="grid-template-columns:repeat(4,1fr)">`+
-    card('Số KH được tham gia',fi(U),'KH có phát sinh đơn MTD (raw sell-out) – tập KH đủ điều kiện được áp combo',ac)+
+  document.getElementById('cbCards').innerHTML=`<div style="margin-top:12px"><b style="color:${ac}">Tổng quan combo MTD đến ${cmb().asof} · ${gl}</b></div><div class="kpis" style="grid-template-columns:repeat(4,1fr)">`+
+    card('Số KH được tham gia',fi(U),'KH có phát sinh đơn MTD theo kênh '+(C.grp==='oo'?'Off + On premise':C.grp===0?'Off premise':C.grp===2||C.grp===1?'On premise':'Off + On premise'),ac)+
     card('Số KH đã mua combo',fi(A.kh.size),U?fp(A.kh.size/U*100)+' KH tham gia · '+fi(A.don)+' đơn combo':'KH duy nhất',ac)+
     card('Số suất đã mua',fi(A.suat),U?'Bình quân '+(A.suat/Math.max(1,A.kh.size)).toFixed(2).replace('.',',')+' suất/KH':'Σ SumQTY_REWARD',ac)+
     card('Doanh số mang về',fmtM(DSF),'Toàn bộ DS các đơn có combo (sau CK) · riêng dòng hàng đủ ĐK combo: '+fmtM(A.amt),ac)+'</div>';
@@ -210,13 +214,13 @@ function cbRender(){
   document.getElementById('cbMx').innerHTML=cbRows('mx');
   document.getElementById('cbBody').innerHTML=cbRows('tb');
   document.getElementById('cbPromos').innerHTML=COMBO11.promos.map(p=>`<tr><td>${esc(p[1])}</td><td style="text-align:left;white-space:normal">${esc(p[2])}</td><td>${p[3]} – ${p[4]}</td></tr>`).join('');
-  [['cbGrp','grp'],['cbAsm','asm']].forEach(([id,k])=>[...document.getElementById(id).children].forEach(b=>b.classList.toggle('on',b.dataset.v===C[k])));
+  [['cbGrp','grp'],['cbAsm','asm']].forEach(([id,k])=>[...document.getElementById(id).children].forEach(b=>b.classList.toggle('on',b.dataset.v===String(C[k]))));
 }
 function cbInit(){
   const el=id=>document.getElementById(id); if(!el('cbBody')||el('cbBody')._i)return; el('cbBody')._i=1;
   C.tree=buildTree(COMBO11.sr);
   el('cbAsm').innerHTML='<button data-v="all" class="on">Cả miền</button>'+ASMS.map(a=>`<button data-v="${esc(a)}">${esc(a)}</button>`).join('');
-  el('cbGrp').onclick=e=>{const b=e.target.closest('button');if(b){C.grp=b.dataset.v==='all'?'all':+b.dataset.v;cbRender();}};
+  el('cbGrp').onclick=e=>{const b=e.target.closest('button');if(b){C.grp=isNaN(+b.dataset.v)?b.dataset.v:+b.dataset.v;cbRender();}};
   el('cbAsm').onclick=e=>{const b=e.target.closest('button');if(b){C.asm=b.dataset.v;cbRender();}};
   el('cbCtl').onclick=e=>{const b=e.target.closest('button');if(!b)return;
     if(b.dataset.a==='expand'){C.tree.forEach((A,a)=>{C.open.a.add(a);A.forEach((N,n)=>{C.open.n.add(a+'|'+n);});});} else{C.open.a.clear();C.open.n.clear();C.open.s.clear();} cbRender();};
