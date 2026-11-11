@@ -46,7 +46,7 @@ function render(){
   bySr(); cards();
   document.getElementById('cbtBody').innerHTML=rows();
   const m=CBT11.meta, tot=sum([...byS.keys()]);
-  document.getElementById('cbtNote').innerHTML=`Tập KH áp dụng = MCP (${fi(m.mcp)} KH) − nhóm hội viên (${fi(m.hv)} KH) − Vãng lai = <b>${fi(m.universe)} KH</b> (OFF + ON; Quán ăn/Nhà hàng nằm trong ON). · DS MTD = sell-out đến ${m.asof}. · <b>CTSO = TB 3 tháng gần nhất</b> (chưa có chỉ tiêu T11 theo từng KH). · KH đã mua = KH có đơn MTD · KH đã nhận = KH nhận combo · % KH tham gia = KH nhận ÷ số KH · Nhóm KH đã mua = CTSO/DS của riêng KH đã mua.`;
+  document.getElementById('cbtNote').innerHTML=`Tập KH áp dụng = MCP (${fi(m.mcp)} KH) − nhóm hội viên (${fi(m.hv)} KH) − Vãng lai = <b>${fi(m.universe)} KH</b> (OFF + ON; Quán ăn/Nhà hàng nằm trong ON). · DS MTD = sell-out đến ${m.asof}. · <b>CTSO = TB 3 tháng gần nhất</b> (chưa có chỉ tiêu T11 theo từng KH). · KH đã mua = KH có đơn MTD · KH đã nhận = KH nhận combo · % KH tham gia = KH nhận ÷ số KH · <b>Nhóm KH đã nhận combo</b> = CTSO/DS MTD của riêng KH đã mua đạt combo (không gồm KH mua nhưng chưa có combo).`;
   [...document.querySelectorAll('#cbtGrp button')].forEach(b=>b.classList.toggle('on',b.dataset.v===S.g));
   [...document.querySelectorAll('#cbtAsm button')].forEach(b=>b.classList.toggle('on',b.dataset.v===S.asm));
 }
