@@ -22,11 +22,11 @@ function kh(r){
   const base=r[6], ds=r[5], b=[r[10],r[11],r[12],r[13]], t=r[3], pct=base?ds/base:0;
   const m1=pct>=0.95, m2=pct>=1, m3=pct>=1.05, sum4=b[0]+b[1]+b[2]+b[3];
   const nv2=t===1?b.every(x=>x>=NV2_BRAND):sum4>=NV2_TOTAL, ok=m1&&nv2, rate=m3?0.02:m2?0.015:m1?0.012:0;
-  return {base,ds,b,t,pct,m1,m2,m3,nv2,ok,sum4,vc:r[14],pd:r[4]||0,ps:ds>0,thuong:ok?ds*rate:0,mi105:Math.max(0,1.05*base-ds),dai4:t===1&&nv2};
+  return {base,ds,b,t,pct,m1,m2,m3,nv2,ok,sum4,vc:r[14],pd:r[4]||0,ps:ds>0,thuong:ok?ds*rate:0,mi105:Math.max(0,1.05*base-ds-(r[4]||0)),dai4:t===1&&nv2};
 }
 const emptyAcc=()=>({n:0,ps:0,base:0,ds:0,pd:0,mi:0,m1:0,m2:0,m3:0,dai4:0,ok:0,vc:[0,0,0,0],nv1:0,nv2:0,nv1x:0,th:0,dsx:0});
 function addKh(a,k){
-  a.n++; if(k.ps)a.ps++; a.base+=k.base; a.ds+=k.ds; a.pd+=k.pd; a.mi+=k.mi105; if(k.m1)a.m1++; if(k.m2)a.m2++; if(k.m3)a.m3++; if(k.dai4)a.dai4++; if(k.ok)a.ok++;
+  a.n++; if(k.ps)a.ps++; a.base+=k.base; a.ds+=k.ds; a.pd+=k.pd; a.dsc=(a.dsc||0); a.mi+=k.mi105; if(k.m1)a.m1++; if(k.m2)a.m2++; if(k.m3)a.m3++; if(k.dai4)a.dai4++; if(k.ok)a.ok++;
   a.vc[k.vc]++; if(k.m1)a.nv1++; if(k.nv2)a.nv2++; if(k.m1&&!k.nv2){a.nv1x++;a.dsx+=k.ds;} a.th+=k.thuong;}
 function hvAcc(){
   const SR=HVT11.sr, acc=SR.map(emptyAcc);
@@ -34,6 +34,7 @@ function hvAcc(){
   return acc;
 }
 const hvSum=(idxs)=>{const o=emptyAcc();idxs.forEach(i=>{const a=H.acc[i];for(const k in o){if(k==='vc')a.vc.forEach((v,j)=>o.vc[j]+=v);else o[k]+=a[k];}});return o;};
+if(typeof CBT11!=='undefined'&&!HVT11.__fix){const m=new Map(CBT11.sr.map(x=>[String(x[0]),x])); HVT11.sr.forEach(x=>{ if(x[2]==='Chưa gán SS'){const y=m.get(String(x[0])); if(y&&y[2]&&y[2]!=='Chưa gán SS'){x[2]=y[2];x[3]=y[3];x[4]=y[4];}}}); HVT11.__fix=1;}
 const Tr=v=>v?gFmt(v):dash, pc=(a,b)=>b?fp(a/b*100):dash;
 function pctCell(v){return v==null?dash:`<span style="font-weight:700;color:${v>=100?'var(--green)':(v>=95?'#0369a1':(v<60?'var(--accent)':'var(--ink)'))}">${fp(v)}</span>`;}
 function hvRow(name,m,o){
@@ -42,14 +43,14 @@ function hvRow(name,m,o){
   const th=m.th?fi(Math.round(m.th)):dash;
   return `<tr class="${o.tot?'tot':'lvl'+lvl}" ${at} data-lvl="${lvl}"><td style="padding-left:${o.tot?12:pad}px">${o.tot?'':caret}<span class="nm">${esc(name)}</span></td>`+
    `<td>${fi(m.n)}</td><td style="font-weight:700">${fi(m.ps)}</td><td>${pc(m.ps,m.n)}</td>`+
-   `<td>${Tr(m.base)}</td><td style="font-weight:700">${Tr(m.ds)}</td><td>${pctCell(m.base?m.ds/m.base*100:null)}</td><td>${Tr(m.mi)}</td>`+
+   `<td>${Tr(m.base)}</td><td style="font-weight:700">${Tr(m.ds+m.pd)}<div class="k-sub" style="font-weight:400">xác nhận ${Tr(m.ds)}</div></td><td>${pctCell(m.base?(m.ds+m.pd)/m.base*100:null)}</td><td>${Tr(m.mi)}</td>`+
    `<td>${fi(m.m1)}</td><td>${fi(m.m2)}</td><td>${fi(m.m3)}</td>`+
    `<td>${fi(m.dai4)}</td><td style="font-weight:800;color:#0f172a">${fi(m.ok)}</td>`+
    `<td>${fi(m.vc[1])}</td><td>${fi(m.vc[2])}</td><td>${fi(m.vc[3])}</td><td>${fi(m.vc[0])}</td>`+
    `<td>${fi(m.nv1)}</td><td>${fi(m.nv2)}</td><td style="font-weight:700;color:${m.nv1x?'var(--accent)':'inherit'}">${fi(m.nv1x)}</td><td>${th}</td></tr>`;
 }
 function hvTable(){
-  const T=H.tree; let h=''; const rankOf=(arr)=>arr.sort((x,y)=>(y.m.base?y.m.ds/y.m.base:0)-(x.m.base?x.m.ds/x.m.base:0));
+  const T=H.tree; let h=''; const rankOf=(arr)=>arr.sort((x,y)=>(y.m.base?(y.m.ds+y.m.pd)/y.m.base:0)-(x.m.base?(x.m.ds+x.m.pd)/x.m.base:0));
   const asmList=ASM_ALL().filter(a=>T.has(a)&&(H.asm==='all'||H.asm===a));
   const A=asmList.map(a=>({k:a,m:hvSum(leaves(T.get(a)))})).filter(x=>x.m.n>0); rankOf(A); A.sort((x,y)=>(x.k==='Chưa gán SS')-(y.k==='Chưa gán SS'));
   A.forEach(x=>{const ao=H.open.a.has(x.k); h+=hvRow(x.k,x.m,{lvl:0,open:ao,ds:{a:x.k}}); if(!ao)return;
@@ -114,7 +115,7 @@ function hvRender(){
   if(!document.getElementById('hvtBody'))return;
   H.acc=hvAcc();
   const m=HVT11.meta;
-  document.getElementById('hvtWarn').innerHTML=`Ngày cắt dữ liệu: <b>hết 10/11</b> (theo anh Chung báo; file hội viên không ghi ngày). ${m.unmapped_sr?`<b>${m.unmapped_sr} SR mới</b> chưa có trong dữ liệu T10 nên xếp ở dòng "Chưa gán SS".`:''}`;
+  document.getElementById('hvtWarn').innerHTML=`Ngày cắt dữ liệu: <b>hết 10/11</b> (theo anh Chung báo; file hội viên không ghi ngày). ${HVT11.sr.some(x=>x[2]==='Chưa gán SS')&&m.unmapped_sr?`<b>${m.unmapped_sr} SR mới</b> chưa có trong dữ liệu T10 nên xếp ở dòng "Chưa gán SS".`:''}`;
   const g=hvCards(); hvNv(g);
   document.getElementById('hvtBody').innerHTML=hvTable();
   hvNvList(); hvList();
