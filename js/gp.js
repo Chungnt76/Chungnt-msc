@@ -83,7 +83,7 @@ function hvMore(){
   const o={sapGap:0,chuaBase:0,chua:0}; HVT11.rows.forEach(r=>{ if(!sc(HVT11.sr[r[0]][2]))return; const base=r[6],ds=r[5];
     if(base>0&&ds/base<0.95&&(0.95*base-ds)<=0.3*base)o.sapGap+=0.95*base-ds; if(!(ds>0)){o.chua++;o.chuaBase+=base;} }); return o;}
 /* tham số giả định (sửa được, lưu trên trình duyệt) */
-const PAR={hc:70,lift:10,lift2:5,cmb:40,hvs:50,hvc:15,hvb:30,cat:50,dor:10,near:30};
+const PAR={cl:25,hc:50,lift:10,lift2:5,cmb:40,hvs:50,hvc:15,hvb:30,cat:50,dor:10,near:30};
 const par=k=>{const v=pn(LS.g('par|'+k)); return v==null?PAR[k]:v;};
 const parIn=k=>inp('par|'+k,nf(par(k),0),'',56);
 /* ---- giao diện ---- */
@@ -104,7 +104,7 @@ function block1(c,k){
     card('SO/ngày cần để đạt 100%',ty(c.need)+' tỷ',c.cur?'gấp '+nf(c.need/c.cur,2)+' lần hiện tại':'—',warn?'#dc2626':'#0EA5E9')+
     card('SO/ngày cao nhất T7–T10',ty(c.mx)+' tỷ','T7 '+ty(c.hist[7])+' · T8 '+ty(c.hist[8])+' · T9 '+ty(c.hist[9])+' · T10 '+ty(c.hist[10]),'#38BDF8')+
     card('Hệ số tăng tốc (từ T10)',nf(k.k,2),'SO/ngày '+k.d2+' ngày sau ÷ '+k.d1+' ngày đầu T10 ('+ty(k.b)+' ÷ '+ty(k.a)+' tỷ)','#38BDF8')+
-  `</div>`+(warn?`<div class="t8norm" style="margin-top:8px;background:#fef2f2;border:1px solid #fca5a5;color:#991b1b;padding:9px 12px;border-radius:8px"><b>⚠ Cảnh báo:</b> SO/ngày cần (${ty(c.need)} tỷ) cao hơn mức cao nhất T7–T10 (${ty(c.mx)} tỷ) ${nf((c.need/c.mx-1)*100,1)}% — chỉ tiêu T11 khó đạt nếu chỉ giữ nhịp cũ, cần thêm giải pháp ở khối 4 và 5.</div>`:'');
+  `</div>`+(warn?`<div class="t8norm" style="margin-top:8px;background:#fef2f2;border:1px solid #fca5a5;color:#991b1b;padding:9px 12px;border-radius:8px"><b>⚠ Cảnh báo:</b> SO/ngày cần (${ty(c.need)} tỷ) cao hơn mức cao nhất T7–T10 (${ty(c.mx)} tỷ) ${nf((c.need/c.mx-1)*100,1)}% — chỉ tiêu T11 khó đạt nếu chỉ giữ nhịp cũ, cần thêm giải pháp ở khối 5 đến 7.</div>`:'');
 }
 function block2(k){
   const A=ASMS_(); let h='',tot={mtd:0,tg:0,fc:0,cam:0,need:0};
@@ -129,6 +129,68 @@ function block3(c){
     prev=w;prevSo=so;});
   return `<div style="overflow-x:auto"><table class="t8asmtbl"><thead><tr><th style="${THL}">Mốc</th><th style="${TH}">Ngày công lũy kế</th><th style="${TH}">SO/ngày mục tiêu (tỷ)</th><th style="${TH}">SO lũy kế mục tiêu (tỷ)</th><th style="${TH}">%Đạt chỉ tiêu</th><th style="${TH}">Thực tế lũy kế (tỷ)</th><th style="${TH}">Thực tế ÷ mốc</th><th style="${TH}">Kết quả</th></tr></thead><tbody>${h}</tbody></table></div>
   <div class="pnote" style="margin-top:6px">Đường về đích: giữ SO/ngày cần đều trên các ngày công còn lại để chạm 100% ngày 30/11. Mục tiêu mốc là <b>ước tính</b> theo đường này, không phải chỉ tiêu chính thức. Cột Thực tế tự điền khi dữ liệu T11 đã đến đúng ngày mốc (hoặc khi đã mở tab vào đúng ngày đó). Tô xanh đạt mốc · vàng 85–99% · đỏ dưới 85%.</div>`;
+}
+/* ---- đòn bẩy SO: ASO · tần suất · LPPC · SO/line + hội viên + combo ---- */
+const pct=(arr,p)=>{const a=arr.filter(x=>isFinite(x)&&x>0).sort((x,y)=>x-y); if(!a.length)return 0; const i=(a.length-1)*p, lo=Math.floor(i); return a[lo]+(a[Math.min(a.length-1,lo+1)]-a[lo])*(i-lo);};
+const LV=[['cov','ASO / MCP (độ phủ quầy mua)'],['frq','PC / ASO (số đơn mỗi quầy)'],['lp','LPPC (line mỗi đơn)'],['spl','SO / line (giá trị mỗi line)']];
+const mt=(v)=>{v=v||{}; const so=v.so||0,pc=v.pc||0,li=v.lines||0,aso=v.aso||0; return {so,pc,li,aso};};
+let DRV=null;
+function drv(){
+  if(DRV)return DRV; const d=T11_META.mtd_days, rem=T11_META.days_total-d, k=accel().k;
+  const cyM={}; T10CY.forEach(r=>{cyM[r.asm+'|'+r.ssn]=mt(r.v['a|all']);});
+  const R=T11.map(r=>{const m=mt(r.v['a|all']), cy=cyM[r.asm+'|'+r.ssn]||{so:0,pc:0,li:0,aso:0}, mcp=r.mcp||0;
+    const f=(x)=>({cov:mcp?x.aso/mcp:0,frq:x.aso?x.pc/x.aso:0,lp:x.pc?x.li/x.pc:0,spl:x.li?x.so/x.li:0});
+    return Object.assign({asm:r.asm,npp:r.npp,ss:r.ssn,mcp,m,cy,L:f(m),Lcy:f(cy),B:(m.so/d)*k*rem},{});});
+  const P75={},P50={}; LV.forEach(l=>{const a=R.map(x=>x.L[l[0]]); P75[l[0]]=pct(a,0.75); P50[l[0]]=pct(a,0.5);});
+  const hvS={}, hvC={}, cbS={};
+  const key=(m)=>m[2]+'|'+m[4];
+  HVT11.rows.forEach(r=>{const m=HVT11.sr[r[0]], o=hvS[key(m)]||(hvS[key(m)]={gap:0,chua:0,chuaN:0,sapN:0}); const base=r[6],ds=r[5];
+    if(base>0&&ds/base<0.95&&(0.95*base-ds)<=0.3*base){o.gap+=0.95*base-ds;o.sapN++;} if(!(ds>0)){o.chua+=base;o.chuaN++;}});
+  CBT11.rows.forEach(r=>{ if(r[1]!==0)return; const m=CBT11.sr[r[0]], o=cbS[key(m)]||(cbS[key(m)]={n:0,nhan:0}); o.n+=r[2]; o.nhan+=r[6];});
+  DRV={R,P75,P50,hvS,cbS,d,rem,k}; return DRV;
+}
+function gain(x,cl){   // trả về mức tăng SO theo từng đòn bẩy và tổng (nhân), cl = % khép khoảng cách tới P75
+  const D=drv(), g={}, mult=LV.reduce((t,l)=>{const cur=x.L[l[0]], tgt=D.P75[l[0]]; const up=cur>0&&tgt>cur?(tgt/cur-1)*cl:0; g[l[0]]=x.B*up; return t*(1+up);},1);
+  g.all=x.B*(mult-1); return g;
+}
+function hvCb(x){
+  const D=drv(), b=BM(), kk=x.asm+'|'+x.ss, h=D.hvS[kk]||{gap:0,chua:0}, c=D.cbS[kk]||{n:0,nhan:0};
+  const more=Math.max(0,Math.round(0.35*c.n-c.nhan));
+  return {hv:h.gap*par('hvs')/100+h.chua*par('hvc')/100*par('hvb')/100, cb:more*Math.max(0,b.ord_combo-b.ord_non)*par('cmb')/100, hvN:(h.sapN||0), more};
+}
+function blockDrv(c){
+  const D=drv(), cl=par('cl')/100, rows=D.R.filter(x=>sc(x.asm));
+  const agg1=(arr)=>{const o={mcp:0,so:0,pc:0,li:0,aso:0,cpc:0,cli:0,cso:0,B:0}; arr.forEach(x=>{o.mcp+=x.mcp;o.so+=x.m.so;o.pc+=x.m.pc;o.li+=x.m.li;o.aso+=x.m.aso;o.cpc+=x.cy.pc;o.cli+=x.cy.li;o.cso+=x.cy.so;o.B+=x.B;}); return o;};
+  const f=o=>({cov:o.mcp?o.aso/o.mcp:0,frq:o.aso?o.pc/o.aso:0,lp:o.pc?o.li/o.pc:0,spl:o.li?o.so/o.li:0});
+  const chg=(a,b)=>b?(a/b-1):null, cc=v=>v==null?'—':`<span style="color:${v>=0?'#065f46':'#991b1b'}">${v>=0?'+':''}${nf(v*100,1)}%</span>`;
+  const asms=(S.asm==='all'?ASMS_():[S.asm]);
+  const grp=(arr)=>({arr,o:agg1(arr)});
+  const lines=[]; if(S.asm==='all')lines.push(['Toàn Miền',grp(D.R)]); asms.forEach(a=>lines.push([lab(a),grp(D.R.filter(x=>x.asm===a))]));
+  const T1=`<table class="t8asmtbl"><thead><tr><th style="${THL}">Phạm vi</th><th style="${TH}">MCP (quầy)</th><th style="${TH}">ASO (quầy mua T11)</th><th style="${TH}">ASO/MCP</th><th style="${TH}">PC (đơn)</th><th style="${TH}">PC/ASO</th><th style="${TH}">PC/ngày</th><th style="${TH}">so T10 cùng kỳ</th><th style="${TH}">LPPC</th><th style="${TH}">so T10</th><th style="${TH}">SO/line (nghìn đ)</th><th style="${TH}">so T10</th></tr></thead><tbody>`+lines.map(([n,g])=>{const o=g.o,l=f(o),cyl={lp:o.cpc?o.cli/o.cpc:0,spl:o.cli?o.cso/o.cli:0};
+    return `<tr${n==='Toàn Miền'?' class="tot"':''}><td style="text-align:left;white-space:nowrap">${esc(n)}</td><td>${nf(o.mcp,0)}</td><td>${nf(o.aso,0)}</td><td>${nf(l.cov*100,1)}%</td><td>${nf(o.pc,0)}</td><td>${nf(l.frq,2)}</td><td>${nf(o.pc/D.d,0)}</td><td>${cc(chg(o.pc/D.d,o.cpc/9))}</td><td>${nf(l.lp,2)}</td><td>${cc(chg(l.lp,cyl.lp))}</td><td>${nf(l.spl/1e3,1)}</td><td>${cc(chg(l.spl,cyl.spl))}</td></tr>`;}).join('')+`</tbody></table>`;
+  /* độ nhạy: tăng tự nhiên 1 đơn vị */
+  const T2=`<table class="t8asmtbl"><thead><tr><th style="${THL}">Phạm vi</th><th style="${TH}">SO còn lại nếu giữ đà (tỷ)</th><th style="${TH}">+1 điểm % ASO/MCP</th><th style="${TH}">+0,1 đơn/quầy (PC/ASO)</th><th style="${TH}">+0,1 line/đơn (LPPC)</th><th style="${TH}">+10 nghìn đ/line</th><th style="${TH}">+1 PC/SR/ngày</th></tr></thead><tbody>`+lines.map(([n,g])=>{const o=g.o,l=f(o),B=o.B; const srn=g.arr.length?GP11.rows.filter(r=>sc(srOf(r[0])[2])&&(n==='Toàn Miền'||lab(srOf(r[0])[2])===n)).length:0;
+    const e1=l.cov?B*(0.01/l.cov):0, e2=l.frq?B*(0.1/l.frq):0, e3=l.lp?B*(0.1/l.lp):0, e4=l.spl?B*(10000/l.spl):0, e5=o.pc?B*(srn*1/(o.pc/D.d)):0;
+    return `<tr${n==='Toàn Miền'?' class="tot"':''}><td style="text-align:left;white-space:nowrap">${esc(n)}</td><td>${ty(B)}</td><td><b>+${ty(e1)}</b></td><td><b>+${ty(e2)}</b></td><td><b>+${ty(e3)}</b></td><td><b>+${ty(e4)}</b></td><td><b>+${ty(e5)}</b></td></tr>`;}).join('')+`</tbody></table>`;
+  /* trong khả năng: khép cl% khoảng cách tới P75 */
+  const T3=`<table class="t8asmtbl"><thead><tr><th style="${THL}">Phạm vi</th><th style="${TH}">ASO/MCP</th><th style="${TH}">PC/ASO</th><th style="${TH}">LPPC</th><th style="${TH}">SO/line</th><th style="${TH}">Hội viên</th><th style="${TH}">Combo</th><th style="${TH}">Tổng thô (tỷ)</th><th style="${TH}">Sau hệ số thận trọng (tỷ)</th><th style="${TH}">%Đạt giữ đà → sau cơ hội</th></tr></thead><tbody>`+lines.map(([n,g])=>{const t={cov:0,frq:0,lp:0,spl:0,all:0,hv:0,cb:0}; g.arr.forEach(x=>{const q=gain(x,cl),h=hvCb(x); ['cov','frq','lp','spl'].forEach(k=>t[k]+=q[k]); t.all+=q.all; t.hv+=h.hv; t.cb+=h.cb;});
+    const raw=t.all+t.hv+t.cb, adj=raw*par('hc')/100; const ac=n==='Toàn Miền'?core('all'):core(asms.find(a=>lab(a)===n)||'all'); const fc=forecast(ac,accel().k);
+    return `<tr${n==='Toàn Miền'?' class="tot"':''}><td style="text-align:left;white-space:nowrap">${esc(n)}</td><td>${ty(t.cov)}</td><td>${ty(t.frq)}</td><td>${ty(t.lp)}</td><td>${ty(t.spl)}</td><td>${ty(t.hv)}</td><td>${ty(t.cb)}</td><td>${ty(raw)}</td><td><b>${ty(adj)}</b></td><td>${pc(fc,ac.tg)} → <b>${pc(fc+adj,ac.tg)}</b></td></tr>`;}).join('')+`</tbody></table>`;
+  /* drill NPP */
+  const nm={}; rows.forEach(x=>{const k=x.asm+'|'+x.npp; (nm[k]=nm[k]||{asm:x.asm,npp:x.npp,arr:[]}).arr.push(x);});
+  const NP=Object.values(nm).map(n=>{const t={cov:0,frq:0,lp:0,spl:0,all:0,hv:0,cb:0}; n.arr.forEach(x=>{const q=gain(x,cl),h=hvCb(x); ['cov','frq','lp','spl','all'].forEach(k=>t[k]+=q[k]); t.hv+=h.hv; t.cb+=h.cb;}); t.tot=(t.all+t.hv+t.cb)*par('hc')/100; const o=agg1(n.arr); return Object.assign(n,{t,o,l:f(o)});}).sort((p,q)=>q.t.tot-p.t.tot).slice(0,10);
+  const lead=t=>{const m=[['ASO/MCP',t.cov],['PC/ASO',t.frq],['LPPC',t.lp],['SO/line',t.spl],['Hội viên',t.hv],['Combo',t.cb]].sort((a,b)=>b[1]-a[1])[0]; return m[1]>0?m[0]:'—';};
+  const T4=`<table class="t8asmtbl"><thead><tr><th style="${THL}">ASM</th><th style="${THL}">NPP</th><th style="${TH}">ASO/MCP</th><th style="${TH}">PC/ASO</th><th style="${TH}">LPPC</th><th style="${TH}">SO/line (nghìn)</th><th style="${TH}">Hội viên (tỷ)</th><th style="${TH}">Combo (tỷ)</th><th style="${THL}">Đòn bẩy lớn nhất</th><th style="${TH}">Cơ hội (tỷ, sau thận trọng)</th></tr></thead><tbody>`+NP.map(n=>`<tr><td style="text-align:left">${esc(SHORT[n.asm]||n.asm)}</td><td style="text-align:left">${esc(n.npp)}</td><td>${nf(n.l.cov*100,1)}% <span class="k-sub">+${ty(n.t.cov)}</span></td><td>${nf(n.l.frq,2)} <span class="k-sub">+${ty(n.t.frq)}</span></td><td>${nf(n.l.lp,2)} <span class="k-sub">+${ty(n.t.lp)}</span></td><td>${nf(n.l.spl/1e3,1)} <span class="k-sub">+${ty(n.t.spl)}</span></td><td>${ty(n.t.hv)}</td><td>${ty(n.t.cb)}</td><td style="text-align:left"><b>${lead(n.t)}</b></td><td><b>${ty(n.t.tot)}</b></td></tr>`).join('')+`</tbody></table>`;
+  const SS=rows.map(x=>{const q=gain(x,cl),h=hvCb(x),t={cov:q.cov,frq:q.frq,lp:q.lp,spl:q.spl,hv:h.hv,cb:h.cb}; t.tot=(q.all+h.hv+h.cb)*par('hc')/100; return {x,t};}).sort((p,q)=>q.t.tot-p.t.tot).slice(0,12);
+  const T5=`<table class="t8asmtbl"><thead><tr><th style="${THL}">ASM</th><th style="${THL}">NPP</th><th style="${THL}">SS</th><th style="${TH}">ASO/MCP</th><th style="${TH}">PC/ASO</th><th style="${TH}">LPPC</th><th style="${TH}">SO/line (nghìn)</th><th style="${TH}">Hội viên (tỷ)</th><th style="${TH}">Combo (tỷ)</th><th style="${THL}">Đòn bẩy lớn nhất</th><th style="${TH}">Cơ hội (tỷ)</th></tr></thead><tbody>`+SS.map(({x,t})=>{const bad=(k)=>x.L[k]<D.P50[k]?'color:#991b1b;font-weight:700':'';
+    return `<tr><td style="text-align:left">${esc(SHORT[x.asm]||x.asm)}</td><td style="text-align:left">${esc(x.npp)}</td><td style="text-align:left"><b>${esc(x.ss)}</b></td><td style="${bad('cov')}">${nf(x.L.cov*100,1)}%</td><td style="${bad('frq')}">${nf(x.L.frq,2)}</td><td style="${bad('lp')}">${nf(x.L.lp,2)}</td><td style="${bad('spl')}">${nf(x.L.spl/1e3,1)}</td><td>${ty(t.hv)}</td><td>${ty(t.cb)}</td><td style="text-align:left"><b>${lead(t)}</b></td><td><b>${ty(t.tot)}</b></td></tr>`;}).join('')+`</tbody></table>`;
+  const sub=t=>`<div style="margin:14px 0 4px;font-weight:700;color:#0369A1">${t}</div><div style="overflow-x:auto">`;
+  const bm=LV.map(l=>`${l[1].split(' (')[0]}: trung vị ${l[0]==='cov'?nf(D.P50[l[0]]*100,1)+'%':l[0]==='spl'?nf(D.P50[l[0]]/1e3,1)+' nghìn':nf(D.P50[l[0]],2)}, P75 ${l[0]==='cov'?nf(D.P75[l[0]]*100,1)+'%':l[0]==='spl'?nf(D.P75[l[0]]/1e3,1)+' nghìn':nf(D.P75[l[0]],2)}`).join(' · ');
+  return sub('A. Cây chỉ số: SO = ASO/MCP × PC/ASO × LPPC × SO/line × MCP')+T1+`</div><div class="pnote" style="margin-top:6px">ASO = số quầy có đơn trong kỳ; PC = số đơn; LPPC = line mỗi đơn. “so T10” = so T10 cùng kỳ (01–09/10, 9 ngày công; T11 mới 8 ngày công nên PC/ngày so được, ASO/MCP chưa so thẳng).</div>`+
+  sub('B. Mỗi chỉ số tăng một bước nhỏ thì thêm bao nhiêu SO đến hết tháng (ước tính, giữ nguyên các chỉ số còn lại)')+T2+`</div><div class="pnote" style="margin-top:6px">SO còn lại = SO/ngày hiện tại × hệ số tăng tốc ${nf(D.k,2)} × ${D.rem} ngày công. +1 PC/SR/ngày nhân số SR trong phạm vi, giữ nguyên giá trị mỗi đơn.</div>`+
+  sub('C. Tăng trong khả năng: các SS thấp hơn nhóm top (P75 của 45 SS toàn Miền) khép '+nf(cl*100,0)+'% khoảng cách')+T3+`</div><div class="pnote" style="margin-top:6px">Khép khoảng cách: <input data-gp="par|cl" value="${nf(par('cl'),0)}" inputmode="decimal" style="width:48px;text-align:right;border:1px solid #38BDF8;background:#f0f9ff;border-radius:6px;padding:3px 5px;font:inherit">% (sửa được). Mốc so sánh toàn Miền: ${bm}. Hội viên và Combo dùng giả định ở khối cơ hội. Các cột chồng nhau một phần nên tổng thô nhân hệ số thận trọng ${nf(par('hc'),0)}%. Ước tính, không phải cam kết.</div>`+
+  sub('D. NPP có cơ hội lớn nhất (mỗi ô: chỉ số hiện tại, bên dưới là SO thêm tỷ nếu khép khoảng cách)')+T4+`</div>`+
+  sub('E. SS có cơ hội lớn nhất (đỏ = thấp hơn trung vị toàn Miền)')+T5+`</div>`;
 }
 const topN=(arr,key,n)=>arr.slice().sort((p,q)=>q[key]-p[key]).slice(0,n);
 function plans(c,hv,cb,cat,nb,g){
@@ -236,11 +298,12 @@ function body(m){
    sec(2,'Dự kiến và cam kết theo ASM',b2.html+`<div class="pnote" style="margin-top:6px">Dự kiến (<b>ước tính</b>) = SO MTD + SO/ngày hiện tại × hệ số tăng tốc (${nf(k.k,2)}) × ngày công còn lại (${c.rem}). Hệ số lấy từ T10 toàn Miền và áp cho mọi ASM. Cam kết mặc định bằng dự kiến, sửa ô để nhập cam kết (lưu trên trình duyệt). Tổng SO/ngày cần của 5 ASM = ${ty(b2.needSum)} tỷ, bằng Toàn Miền ${ty(b2.needAll)} tỷ.</div>`)+
    sec(3,'Mốc theo tuần · '+esc(lab(S.asm)),block3(c))+
    sec(4,'Điểm nóng: NPP, SS và quầy cần xử lý trước · '+esc(lab(S.asm)),block4b(c))+
-   sec(5,'Giải pháp cụ thể',block4(c,hv,cb,cat,nb,g),'việc, phụ trách, KPI live, hạn · trạng thái lưu trên trình duyệt')+
-   sec(6,'Cơ hội bán hàng định lượng và kịch bản · '+esc(lab(S.asm)),block5(c,k,gap))+
-   sec(7,'Timeline triển khai',block7(c,k),'theo ngày công còn lại')+
-   sec(8,'KPI theo dõi hằng ngày theo ASM',block8(k))+
-   sec(9,'Tháng 12 · Toàn Miền',block6(core('all'),b2.cam));
+   sec(5,'Đòn bẩy SO: ASO · PC · LPPC · Hội viên · Combo, khoan sâu NPP/SS · '+esc(lab(S.asm)),blockDrv(c),'cơ hội theo chỉ số, ước tính')+
+   sec(6,'Giải pháp cụ thể',block4(c,hv,cb,cat,nb,g),'việc, phụ trách, KPI live, hạn · trạng thái lưu trên trình duyệt')+
+   sec(7,'Cơ hội bán hàng định lượng và kịch bản · '+esc(lab(S.asm)),block5(c,k,gap))+
+   sec(8,'Timeline triển khai',block7(c,k),'theo ngày công còn lại')+
+   sec(9,'KPI theo dõi hằng ngày theo ASM',block8(k))+
+   sec(10,'Tháng 12 · Toàn Miền',block6(core('all'),b2.cam));
 }
 function render(){
   const pg=document.getElementById('pgGp'); if(!pg||!SNAP||typeof T11==='undefined')return;
