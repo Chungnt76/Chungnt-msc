@@ -18,24 +18,27 @@ const sub=t=>`<div style="margin:16px 0 4px;font-weight:700;color:#0369A1">${t}<
 const inp=(id,val,w)=>`<input data-nv="${id}" value="${esc(val)}" inputmode="decimal" style="width:${w||60}px;text-align:right;border:1px solid #38BDF8;background:#f0f9ff;border-radius:6px;padding:4px 6px;font:inherit;color:inherit">`;
 const cv=c=>c>2?'>200%':nf(c*100,0)+'%';
 const stc=r=>r>=1?'background:#d1fae5;color:#065f46':r>=0.8?'background:#fef3c7;color:#92400e':'background:#fee2e2;color:#991b1b';
+const FLT=()=>F.oo!=='all'||F.vip!=='all'||(typeof MEAT!=='undefined'&&MEAT==='excl');
+const vk=oo=>((typeof MEAT!=='undefined'&&MEAT==='excl')?'x':'a')+'|'+(oo||F.oo)+(F.vip==='all'?'':'|'+F.vip);
+const vo=(r,oo)=>{ if(oo==='OFF'&&F.oo==='ON')return {}; if(oo==='ON'&&F.oo==='OFF')return {}; return r.v[vk(oo)]||{}; };
 let CACHE=null,CK='';
 function compute(){
-  const key=[T11_META.last_date,['hc','pc','lp','cap','aso','on','cat','cb1'].map(par).join(',')].join('|');
+  const key=[F.oo,F.vip,typeof MEAT!=='undefined'?MEAT:'',T11_META.last_date,['hc','pc','lp','cap','aso','on','cat','cb1'].map(par).join(',')].join('|');
   if(CACHE&&CK===key)return CACHE; CK=key;
   const x=X(), d=T11_META.mtd_days, D=T11_META.days_total, rem=D-d, k=x.accel().k, rf=rem/D;
   const SS=new Map(), byClean=new Map(), ALI=new Map();
   T11.forEach(r=>{ if(((r.v['a|all']||{}).so||0)>0)return; const c=T11.find(q=>q!==r&&q.asm===r.asm&&base(q.npp)===base(r.npp)&&((q.v['a|all']||{}).so||0)>0); if(c)ALI.set(r.asm+'|'+r.ssn,c.asm+'|'+c.ssn);});
   const K=(a,n)=>{const k=a+'|'+n; return ALI.get(k)||k;};
   const mk=(r)=>({asm:r.asm,npps:[],ss:r.ssn,so:0,tg:0,pc:0,li:0,aso:0,sm:0,mcp:0,asoOff:0,mcpOff:0,asoOn:0,mcpOn:0,t10:{so:0,aso:0,offSo:0,offAso:0,onSo:0,onAso:0,pc:0,sm:0,li:0},t9:{off:0,on:0,pc:0,sm:0,li:0,so:0},on7:{q:0,a:0},drop:0,dropSO:0,srn:0,top:[],hv:{n:0,chua:0,m1:0,sap:[],nv1x:0,gapSap:0},cbN:0,cbNhan:0,td:{n:0,ct:0,th:0,ok:0,near:0},cat:0,sr:[]});
-  [...T11].sort((x,y)=>(ALI.has(x.asm+'|'+x.ssn)?1:0)-(ALI.has(y.asm+'|'+y.ssn)?1:0)).forEach(r=>{const kk=K(r.asm,r.ssn); let o=SS.get(kk); if(!o){o=mk(r);SS.set(kk,o);} const a=r.v['a|all']||{};
+  [...T11].sort((x,y)=>(ALI.has(x.asm+'|'+x.ssn)?1:0)-(ALI.has(y.asm+'|'+y.ssn)?1:0)).forEach(r=>{const kk=K(r.asm,r.ssn); let o=SS.get(kk); if(!o){o=mk(r);SS.set(kk,o);} const a=r.v[vk()]||{};
     if(o.npps.indexOf(r.npp)<0)o.npps.push(r.npp);
-    o.so+=a.so||0;o.pc+=a.pc||0;o.li+=a.lines||0;o.aso+=a.aso||0;o.sm+=a.sm||0;o.mcp+=r.mcp||0;o.tg+=(((r.tgm||{})['11'])||[r.target||0])[0]||0;
-    o.asoOff+=(r.v['a|OFF']||{}).aso||0; o.asoOn+=(r.v['a|ON']||{}).aso||0;
+    o.so+=a.so||0;o.pc+=a.pc||0;o.li+=a.lines||0;o.aso+=a.aso||0;o.sm+=a.sm||0;o.mcp+=r.mcp||0;o.tg+=(F.oo!=='all'||F.vip!=='all')?0:((((r.tgm||{})['11'])||[r.target||0])[(typeof MEAT!=='undefined'&&MEAT==='excl')?1:0])||0;
+    o.asoOff+=vo(r,'OFF').aso||0; o.asoOn+=vo(r,'ON').aso||0;
     byClean.set(clean(r.ss)+'|'+base(r.npp),o); byClean.set(clean(r.ssn)+'|'+base(r.npp),o);});
-  T10.forEach(r=>{const o=SS.get(K(r.asm,r.ssn)); if(!o)return; const f=r.v['a|OFF']||{},n=r.v['a|ON']||{};
-    o.t10.pc+=r.pc||0;o.t10.sm+=r.sm||0;o.t10.li+=r.lines||0;o.t10.so+=r.so||0;o.t10.aso+=r.aso||0;o.t10.offSo+=f.so||0;o.t10.offAso+=f.aso||0;o.t10.onSo+=n.so||0;o.t10.onAso+=n.aso||0;});
-  T9.forEach(r=>{const o=SS.get(K(r.asm,r.ssn)); if(!o)return; const a=r.v['a|all']||{};o.t9.off+=(r.v['a|OFF']||{}).aso||0;o.t9.on+=(r.v['a|ON']||{}).aso||0;o.t9.pc+=a.pc||0;o.t9.sm+=a.sm||0;o.t9.li+=a.lines||0;o.t9.so+=a.so||0;});
-  T11S.DATA.forEach(r=>{const o=byClean.get(clean(r.ss)+'|'+base(r.npp)); if(!o)return; if(r.oo==='OFF')o.mcpOff+=r.q11||0; else o.mcpOn+=r.q11||0;});
+  T10.forEach(r=>{const o=SS.get(K(r.asm,r.ssn)); if(!o)return; const f=vo(r,'OFF'),n=vo(r,'ON'),a10=r.v[vk()]||{};
+    o.t10.pc+=a10.pc||0;o.t10.sm+=a10.sm||0;o.t10.li+=a10.lines||0;o.t10.so+=a10.so||0;o.t10.aso+=a10.aso||0;o.t10.offSo+=f.so||0;o.t10.offAso+=f.aso||0;o.t10.onSo+=n.so||0;o.t10.onAso+=n.aso||0;});
+  T9.forEach(r=>{const o=SS.get(K(r.asm,r.ssn)); if(!o)return; const a=r.v[vk()]||{};o.t9.off+=vo(r,'OFF').aso||0;o.t9.on+=vo(r,'ON').aso||0;o.t9.pc+=a.pc||0;o.t9.sm+=a.sm||0;o.t9.li+=a.lines||0;o.t9.so+=a.so||0;});
+  T11S.DATA.forEach(r=>{const o=byClean.get(clean(r.ss)+'|'+base(r.npp)); if(!o)return; if((F.vip!=='all'&&r.vip!==F.vip)||(F.oo!=='all'&&r.oo!==F.oo))return; if(r.oo==='OFF')o.mcpOff+=r.q11||0; else o.mcpOn+=r.q11||0;});
   const on=ON7_11; const onIdx=on.k.map(q=>{let o=null; SS.forEach(v=>{if(!o&&v.asm===q[1]&&clean(v.ss)===clean(q[0]))o=v;}); return o;});
   on.r.forEach(r=>{const o=onIdx[r[1]]; if(!o||r[2]>6)return; o.on7.q+=r[4];o.on7.a+=r[5];});
   const ssOf=m=>SS.get(K(m[2],m[4]));
@@ -84,23 +87,25 @@ function rollup(arr){
     r.short+=o.short;});
   r.tot=r.hv+r.cb; r.gap=Math.max(0,r.tg-r.fc); return r;
 }
-const sc=a=>S.asm==='all'||a===S.asm;
+const NTF=()=>F.oo!=='all'||F.vip!=='all';
+const sc=a=>F.asm!=='all'?a===F.asm:(S.asm==='all'||a===S.asm);
+const FLT_NOTE=()=>{const m=[F.oo==='OFF'?'kênh Off Premise':F.oo==='ON'?'kênh On Premise':'',F.vip!=='all'?'nhóm '+F.vip:''].filter(Boolean); if(!m.length&&!(typeof MEAT!=='undefined'&&MEAT==='excl')&&F.asm==='all')return ''; return `<div class="pnote" style="margin:8px 0;padding:8px 10px;background:#fff7ed;border:1px solid #fdba74;border-radius:8px">Đang lọc theo bộ lọc chung: <b>${[F.asm!=='all'?F.asm:'',...m,(typeof MEAT!=='undefined'&&MEAT==='excl')?'không P.Meat &amp; Bia':''].filter(Boolean).join(' · ')}</b>. SO, PC, LPPC và ASO tính theo bộ lọc. ${(F.oo!=='all'||F.vip!=='all')?'Chỉ tiêu và GAP chỉ có cấp Toàn Miền nên không hiện khi lọc kênh/nhóm. ':''}Hội viên Tết, combo, gắn kết, CAT và quầy rơi là số toàn bộ KH, không chia theo kênh/nhóm.</div>`;};
 function blockSummary(C){
   const L=C.list.filter(o=>sc(o.asm)), r=rollup(L), hc=C.hc;
   const gap=r.tg-r.fc, rawCover=r.core, cov=gap>0?rawCover/gap:0, exec=rawCover*hc, scen=r.fc+exec;
-  const warn=gap>0&&rawCover<gap;
+  const warn=gap>0&&rawCover<gap, NT=F.oo!=='all'||F.vip!=='all';
   return `<div class="kpis" style="grid-template-columns:repeat(5,1fr)">`+
-   card('Chỉ tiêu T11',ty(r.tg)+' tỷ','SO MTD '+ty(r.so)+' tỷ · '+pc(r.so,r.tg)+' đến '+T11_META.last_date)+
+   card('Chỉ tiêu T11',NT?'—':ty(r.tg)+' tỷ','SO MTD '+ty(r.so)+' tỷ · '+pc(r.so,r.tg)+' đến '+T11_META.last_date)+
    card('Dự kiến giữ đà',ty(r.fc)+' tỷ',pc(r.fc,r.tg)+' chỉ tiêu · hệ số tăng tốc '+nf(C.k,2))+
-   card('GAP cần lấp',gap>0?ty(gap)+' tỷ':'Đủ (dư '+ty(-gap)+')','SO/ngày '+ty(r.so/C.d)+' → cần '+ty(Math.max(0,r.tg-r.so)/C.rem)+' tỷ',gap>0?'#dc2626':'#16a34a')+
-   card('Nhiệm vụ 1+2+3+4 (ASO·PC·LPPC·MBS)','+'+ty(rawCover)+' tỷ','đủ '+nf(cov*100,0)+'% GAP nếu làm 100% · CAT là lớp đệm, không cộng',cov>=1?'#16a34a':'#d97706')+
-   card('Thực thi '+nf(hc*100,0)+'%','+'+ty(exec)+' tỷ','→ '+ty(scen)+' tỷ = '+pc(scen,r.tg)+' chỉ tiêu (mức cam kết sàn)',scen>=r.tg?'#16a34a':'#d97706')+`</div>`+
-  `<div class="pnote" style="margin:8px 0">Cách tính: mỗi nhiệm vụ tính SO thêm cho từng SS trên <b>${C.rem} ngày công còn lại</b> (từ ${Number(T11_META.last_date.split('/')[0])+1}/11). ASO: kéo số KH có đơn về ${nf(par('aso'),0)}% MCP Off / ${nf(par('on'),0)}% On (mục tiêu Miền), trừ ${nf(par('ov'),0)}% phần chồng lấn với PC. PC và LPPC: mỗi SS tiến về mục tiêu Miền (PC ${nf(par('pc'),1)}, LPPC ${nf(par('lp'),2)}) nhưng không quá +${nf(par('cap'),0)}% so với hiện tại (không đòi SS vượt quá khả năng). MBS: hội viên sắp đạt + chưa mua, combo L1 Off lên ${nf(par('cb1'),0)}%. Tăng CAT: +${nf(par('cat'),1)} ngành/KH × 150K. Tất cả là <b>ước tính</b>; ô xanh sửa được, lưu trên trình duyệt.</div>`;
+   card('GAP cần lấp',NT?'—':gap>0?ty(gap)+' tỷ':'Đủ (dư '+ty(-gap)+')',(NT?'Chỉ tiêu chỉ có cấp Toàn Miền':'SO/ngày '+ty(r.so/C.d)+' → cần '+ty(Math.max(0,r.tg-r.so)/C.rem)+' tỷ'),gap>0?'#dc2626':'#16a34a')+
+   card('Nhiệm vụ 1+2+3+4 (ASO·PC·LPPC·MBS)','+'+ty(rawCover)+' tỷ',(NT?'SO thêm nếu làm đủ 100%':'đủ '+nf(cov*100,0)+'% GAP nếu làm 100%')+' · CAT là lớp đệm, không cộng',cov>=1?'#16a34a':'#d97706')+
+   card('Thực thi '+nf(hc*100,0)+'%','+'+ty(exec)+' tỷ','→ '+ty(scen)+' tỷ'+(NT?'':' = '+pc(scen,r.tg)+' chỉ tiêu')+' (mức cam kết sàn)',(NT||scen>=r.tg)?'#16a34a':'#d97706')+`</div>`+
+  `${FLT_NOTE()}<div class="pnote" style="margin:8px 0">Cách tính: mỗi nhiệm vụ tính SO thêm cho từng SS trên <b>${C.rem} ngày công còn lại</b> (từ ${Number(T11_META.last_date.split('/')[0])+1}/11). ASO: kéo số KH có đơn về ${nf(par('aso'),0)}% MCP Off / ${nf(par('on'),0)}% On (mục tiêu Miền), trừ ${nf(par('ov'),0)}% phần chồng lấn với PC. PC và LPPC: mỗi SS tiến về mục tiêu Miền (PC ${nf(par('pc'),1)}, LPPC ${nf(par('lp'),2)}) nhưng không quá +${nf(par('cap'),0)}% so với hiện tại (không đòi SS vượt quá khả năng). MBS: hội viên sắp đạt + chưa mua, combo L1 Off lên ${nf(par('cb1'),0)}%. Tăng CAT: +${nf(par('cat'),1)} ngành/KH × 150K. Tất cả là <b>ước tính</b>; ô xanh sửa được, lưu trên trình duyệt.</div>`;
 }
 const T=(h,rows)=>`<div style="overflow-x:auto"><table class="t8asmtbl"><thead><tr>${h}</tr></thead><tbody>${rows}</tbody></table></div>`;
 function lines(arr,asmOn){ // bảng theo ASM hoặc NPP: GAP + 3 nhóm giải pháp
   return arr.map(([name,L,isT])=>{const r=rollup(L), gap=r.tg-r.fc, cov=gap>0?r.core/gap:null;
-    return `<tr${isT?' class="tot"':''}><td style="text-align:left;white-space:nowrap">${esc(name)}</td><td>${ty(r.tg)}</td><td>${pc(r.so,r.tg)}</td><td>${ty(r.fc)}</td><td><b>${gap>0?ty(gap):'Đủ'}</b></td><td>+${ty(r.asoNet)}</td><td>+${ty(r.dsAll)}</td><td>+${ty(r.tot)}</td><td><b>+${ty(r.core)}</b></td><td style="${cov==null?'':stc(cov)}">${cov==null?'—':cv(cov)}</td><td>${gap>0?(r.core>=gap?'Đủ, dư '+ty(r.core-gap):'Thiếu '+ty(gap-r.core)):'Dư '+ty(-gap+r.core)}</td><td>${ty(r.catDs)}</td></tr>`;}).join('');
+    return `<tr${isT?' class="tot"':''}><td style="text-align:left;white-space:nowrap">${esc(name)}</td><td>${ty(r.tg)}</td><td>${pc(r.so,r.tg)}</td><td>${ty(r.fc)}</td><td><b>${NTF()?'—':gap>0?ty(gap):'Đủ'}</b></td><td>+${ty(r.asoNet)}</td><td>+${ty(r.dsAll)}</td><td>+${ty(r.tot)}</td><td><b>+${ty(r.core)}</b></td><td style="${cov==null?'':stc(cov)}">${cov==null?'—':cv(cov)}</td><td>${NTF()?'—':gap>0?(r.core>=gap?'Đủ, dư '+ty(r.core-gap):'Thiếu '+ty(gap-r.core)):'Dư '+ty(-gap+r.core)}</td><td>${ty(r.catDs)}</td></tr>`;}).join('');
 }
 const H1=`<th style="${THL}">Phạm vi</th><th style="${TH}">Chỉ tiêu (tỷ)</th><th style="${TH}">%Đạt MTD</th><th style="${TH}">Dự kiến giữ đà (tỷ)</th><th style="${TH}">GAP (tỷ)</th><th style="${TH}">NV 1: ASO (tỷ)</th><th style="${TH}">NV 2+3: PC + LPPC (tỷ)</th><th style="${TH}">NV 4: hội viên + combo (tỷ)</th><th style="${TH}">Cộng 1+2+3+4 (tỷ)</th><th style="${TH}">% lấp GAP (làm đủ)</th><th style="${TH}">Còn thiếu / dư (tỷ)</th><th style="${TH}">NV 5: CAT (đệm, tỷ)</th>`;
 function blockAsm(C){

@@ -1534,12 +1534,12 @@ window.__z=function(b){var t=atob(b),u=new Uint8Array(t.length);for(var i=0;i<t.
 <script src="data/TDS11.js?v=1794450068"></script>
 <script src="js/t11x.js?v=1794450068"></script>
 <script src="js/cbt.js?v=1794369064"></script>
-<script src="js/gp.js?v=1794464001"></script>
-<script src="js/nv5.js?v=1794464001"></script>
-<script src="data/HS11.js?v=1794466001"></script>
-<script src="js/hs.js?v=1794466001"></script>
+<script src="js/gp.js?v=1794474001"></script>
+<script src="js/nv5.js?v=1794474001"></script>
+<script src="data/HS11.js?v=1794474001"></script>
+<script src="js/hs.js?v=1794474001"></script>
 <script src="js/t11s.js?v=1794450068"></script>
-<script src="js/t11.js?v=1794450068"></script>
+<script src="js/t11.js?v=1794472001"></script>
 <link rel="stylesheet" href="css/combo2.css?v=202611111730">
 <script src="js/combo2.js?v=202611111700"></script>
 <script src="js/hvt2.js?v=1794450068"></script>
@@ -3833,7 +3833,7 @@ function applyScope(){
   buildGrowth9(); buildSO9T(); const st=SO9T.reduce((a,r)=>a+r.target,0); T8_NORM=st?SO9T.reduce((a,r)=>a+r.so,0)/st*100:NaN;
   if(typeof HVF!=='undefined'){HVF.asm=F.asm;const hs=document.getElementById('hvAsm');if(hs)hs.value=F.asm;}
 }
-function refreshView(){applyMeat(MEAT);updScope();}
+function refreshView(){try{applyMeat(MEAT);}catch(er){console.error(er);}updScope();try{['pgNv|renderNv5','pgHs|renderHs'].forEach(x=>{const [i,f]=x.split('|');const e=document.getElementById(i);if(e&&!e.hidden&&window[f])window[f]();});}catch(er){}}
 function curPage(){const b=document.querySelector('#pageTabs button.on');return b?b.dataset.pg:'ov';}
 function updScope(){
   const el=document.getElementById('scopeNote'); if(!el) return;
@@ -5457,7 +5457,7 @@ applyMeat('all');document.querySelector('#fMonth button[data-m="10"]').click();u
   const save=()=>LS.set('f',{asm:F.asm,vip:F.vip,oo:F.oo,month:F.month,meat:MEAT});
   const ra=renderAll; renderAll=function(){const r=ra.apply(this,arguments);try{renderPc();renderCatKpi();syncHv();save();}catch(e){}return r;};
   const rs=renderSoM; renderSoM=function(){const r=rs.apply(this,arguments);try{renderPc();renderCatKpi();}catch(e){}return r;};
-  ['fAsm','fVip','fOO'].forEach(id=>{const e=document.getElementById(id);if(e)e.addEventListener('change',()=>setTimeout(()=>{save();if(CUR==='pc'||CUR==='cat')go(CUR);},0));});
+  ['fAsm','fVip','fOO'].forEach(id=>{const e=document.getElementById(id);if(e)e.addEventListener('change',()=>setTimeout(()=>{save();if(CUR==='pc'||CUR==='cat'||CUR==='nv5'||CUR==='hs')go(CUR);},0));});
   $('#fMeat')&&$('#fMeat').addEventListener('click',()=>setTimeout(()=>{save();if(['pc','cat','so'].includes(CUR))go(CUR);},0));
   $('#fMonth').addEventListener('click',()=>setTimeout(()=>{save();syncHv();if(CUR!=='ov')go(CUR);},0));
   $('#reset').addEventListener('click',()=>setTimeout(()=>{const mb=$('#fMeat button[data-k="all"]');if(mb&&MEAT!=='all')mb.click();save();go(CUR);},0));

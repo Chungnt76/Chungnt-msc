@@ -10,12 +10,14 @@ const TH='background:#0369A1;color:#fff;padding:7px 8px;font-size:12px;text-alig
 const card=(l,v,s,ac)=>`<div class="kpi" style="border-top:3px solid ${ac||'#0EA5E9'}"><div class="k-lab">${l}</div><div class="k-val">${v}</div><div class="k-sub">${s||''}</div></div>`;
 const T=(h,rows)=>`<div style="overflow-x:auto"><table class="t8asmtbl"><thead><tr>${h}</tr></thead><tbody>${rows}</tbody></table></div>`;
 const clean=s=>String(s||'').replace(/ \(.*\)/,'').trim(), base=s=>String(s||'').replace(' - Chi nhánh','').trim();
-let C=null;
+let C=null,CK='';
+const VN=['LẺ','VIP3','VIP5','VIPSI'];
 function build(){
-  if(C)return C; const M=HS11.meta, L=M.last_day, D=M.days;
+  const ck=F.oo+'|'+F.vip; if(C&&CK===ck)return C; CK=ck; const M=HS11.meta, L=M.last_day, D=M.days;
   const ALI=new Map(); T11.forEach(r=>{ if(((r.v['a|all']||{}).so||0)>0)return; const c=T11.find(q=>q!==r&&q.asm===r.asm&&base(q.npp)===base(r.npp)&&((q.v['a|all']||{}).so||0)>0); if(c)ALI.set(r.asm+'|'+r.ssn,c);});
   const sum=(a,f,t)=>{let s=0;for(let i=f;i<t;i++)s+=a[i];return s;};
-  const R=HS11.rows.map(r=>{const t=T11[r[0]]; const al=ALI.get(t.asm+'|'+t.ssn)||t;
+  const MG=new Map(); HS11.rows.forEach(r=>{ if(F.oo!=='all'&&(r[3]===1?'ON':'OFF')!==F.oo)return; if(F.vip!=='all'&&VN[r[4]]!==F.vip)return; const g=MG.get(r[2]); if(!g){MG.set(r[2],[r[0],r[1],r[2],r[5].slice(),r[6].slice(),r[7].slice(),r[8].slice(),r[9].slice()]);return;} for(let i=0;i<M.days;i++){g[3][i]+=r[5][i];g[4][i]+=r[6][i];g[5][i]+=r[7][i];g[6][i]+=r[8][i];g[7][i]+=r[9][i];}});
+  const R=[...MG.values()].map(r=>{const t=T11[r[0]]; const al=ALI.get(t.asm+'|'+t.ssn)||t;
     return {asm:al.asm,npp:al.npp,ss:al.ssn,sr:r[1],code:r[2],cp:r[3],pc:r[4],ip:r[5],op:r[6],so:r[7],
       cpM:sum(r[3],0,L),pcM:sum(r[4],0,L),ipM:sum(r[5],0,L),opM:sum(r[6],0,L),soM:sum(r[7],0,L)*1e3,cpR:sum(r[3],L,D)};});
   const SSm=new Map(); R.forEach(r=>{const k=r.asm+'|'+r.ss; if(!SSm.has(k))SSm.set(k,{cp:0,pc:0}); const o=SSm.get(k);o.cp+=r.cpM;o.pc+=r.pcM;});
@@ -27,7 +29,7 @@ const tgt=()=>{const v=parseFloat(String(LS.g('tg')||'').replace(',','.')); retu
 const agg=(L)=>{const o={cp:0,pc:0,ip:0,op:0,so:0,cpR:0,n:L.length};L.forEach(r=>{o.cp+=r.cpM;o.pc+=r.pcM;o.ip+=r.ipM;o.op+=r.opM;o.so+=r.soM;o.cpR+=r.cpR;});return o;};
 // SO thêm nếu đạt mục tiêu: từng ĐDKD dưới mục tiêu, trên call plan còn lại, × SO/PC của chính ĐDKD
 const gain=(L)=>{const t=tgt()/100;let pc=0,so=0;L.forEach(r=>{const e=r.cpM?r.pcM/r.cpM:0; if(!r.cpM||e>=t)return; const add=(t-e)*r.cpR; pc+=add; so+=add*(r.pcM?r.soM/r.pcM:0);});return {pc,so};};
-const sc=a=>S.asm==='all'||a===S.asm;
+const sc=a=>F.asm!=='all'?a===F.asm:(S.asm==='all'||a===S.asm);
 const DOW=['CN','T2','T3','T4','T5','T6','T7'];
 function dayBlock(){
   const c=build(), M=c.M, rs=c.R.filter(r=>sc(r.asm)); let rows='';
@@ -71,7 +73,7 @@ function render(){
   const lab=x=>window.GPX&&window.GPX.lab?window.GPX.lab(x):x;
   const sec=(n,t,b)=>`<div class="panel" style="margin-top:14px"><div class="tbl-head"><h3 style="display:inline;color:#0369A1">${n}. ${t}</h3></div>${b}</div>`;
   host.innerHTML=`<div class="panel" style="margin-top:14px;border-top:3px solid #0EA5E9"><div class="t8norm" style="margin-bottom:8px"><b>Hiệu suất bán hàng: PC / Call plan</b> · MCP T11 (${nf(c.M.mcp,0)} KH, bỏ Vãng lai) · đơn hàng đến hết <b>${c.M.asof}</b> (${T11_META.mtd_days} ngày làm việc đầu tháng)</div>
-   <div class="fg"><label>Phạm vi</label><div class="seg" id="hsScope"><button data-v="all">Toàn Miền</button>${AS.map(x=>`<button data-v="${esc(x)}">${esc(lab(x))}</button>`).join('')}</div></div>
+   ${(F.oo!=='all'||F.vip!=='all'||F.asm!=='all')?`<div class="pnote" style="margin-bottom:6px">Đang lọc theo bộ lọc chung: <b>${[F.asm!=='all'?F.asm:'',F.oo==='OFF'?'kênh Off Premise':F.oo==='ON'?'kênh On Premise':'',F.vip!=='all'?'nhóm '+F.vip:''].filter(Boolean).join(' · ')}</b>. Kênh và nhóm KH lấy theo thuộc tính của KH trong MCP T11 (cho cả call plan và PC). Bộ lọc Phạm vi SO (P.Meat &amp; Bia) không áp dụng ở tab này.</div>`:''}<div class="fg"><label>Phạm vi</label><div class="seg" id="hsScope"><button data-v="all">Toàn Miền</button>${AS.map(x=>`<button data-v="${esc(x)}">${esc(lab(x))}</button>`).join('')}</div></div>
    <div style="margin:10px 0"><label style="display:inline-flex;gap:6px;align-items:center">Mục tiêu hiệu suất % <input id="hsTg" value="${nf(tgt(),1)}" inputmode="decimal" style="width:64px;text-align:right;border:1px solid #38BDF8;background:#f0f9ff;border-radius:6px;padding:4px 6px;font:inherit"></label> <span class="pnote" style="display:inline">mặc định = mức top 25% SS của Miền (${nf(c.p75,1)}%), sửa được</span></div>
    <div class="kpis" style="grid-template-columns:repeat(5,1fr)">`+
    card('Call plan MTD',nf(a.cp,0),'KH theo lịch MCP, 1–'+c.L+'/11')+

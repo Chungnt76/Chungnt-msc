@@ -143,7 +143,7 @@ window.renderT11=function(){try{init();render();avail();}catch(e){console.error(
 
 /* Nút "Tháng 11" trong bộ lọc "Tháng phân tích": T11 = tab Tháng 11 + Hội viên Tết + Combo (không đổi tháng của các tab cũ) */
 (function(){
-  const IDS=['pgT11','pgGp','pgHvt','pgCombo'];
+  const IDS=['pgT11','pgGp','pgHvt','pgCombo','pgTds','pgNv','pgHs'];
   const vis=id=>{const e=document.getElementById(id);return !!(e&&!e.hidden);};
   const onT11=()=>IDS.some(vis);
   function chip(on){
