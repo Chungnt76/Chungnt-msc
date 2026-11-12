@@ -138,12 +138,22 @@ const METS={
   what:'Tỷ lệ KH Off có đơn combo / KH Off đã mua (active). KH thêm = mục tiêu × KH active − KH đã có đơn combo; SO thêm = KH thêm × chênh giá trị đơn combo so với đơn thường (dashboard) × '+'${CMB}'+'% do combo tạo ra.'}
 };
 const fillWhat=m=>String(m.what||'').replace('${LAST}',T11_META.last_date).replace('${HSQ}',nf(par('hsq'),0)).replace('${LPA}',nf(par('lpAdd'),1)).replace('${LPE}',nf(par('lpe'),0)).replace('${HV}',HVT11.meta.asof||'').replace('${CMB}',nf(X().par('cmb'),0));
+const LVL={0:['Cao','#16a34a','#d1fae5'],1:['Khá','#4d7c0f','#ecfccb'],2:['Khó','#b45309','#fef3c7'],3:['Rất khó','#b91c1c','#fee2e2']};
+function feas(m,L,C){
+  const v=m.v(L,C), tg=m.tg(L), a=v[2]; if(tg==null)return null;
+  const hist=[v[0],v[1]].filter(x=>x!=null), base=hist.length?Math.max(...hist):a, src=hist.length?'T9–T10':'T11 MTD';
+  if(base==null)return null; const g=tg-base, t1=m.u==='line'?0.15:0.05, t2=m.u==='line'?0.30:0.10;
+  const lv=g<=0?0:g<=t1?1:g<=t2?2:3;
+  return {g,lv,src,base,d10:v[1]!=null?tg-v[1]:null,d9:v[0]!=null?tg-v[0]:null,dm:a!=null?tg-a:null};
+}
+const fD=(m,x)=>x==null?'<span style="color:#94a3b8">—</span>':m.u==='line'?(x>=0?'+':'')+nf(x,2):(x>=0?'+':'')+nf(x*100,1)+' pp';
+const badge=f=>f?`<span style="background:${LVL[f.lv][2]};color:${LVL[f.lv][1]};padding:2px 8px;border-radius:10px;font-weight:700;white-space:nowrap">${LVL[f.lv][0]}</span>`:'—';
 function mcells(m,L,C){
   const v=m.v(L,C), a=v[2], mk=m.mark?`<sup style="color:#64748b">${m.mark}</sup>`:'', tgv=m.tg(L), so=m.so(L), gap=tgv!=null&&a!=null?a-tgv:null, nz=x=>x==null?`<span style="color:#94a3b8;font-size:12px">${m.na||'—'}</span>`:m.f(x);
-  const col=gap==null?'':(gap>=0?'color:#16a34a':'color:#dc2626');
+  const col=gap==null?'':(gap>=0?'color:#16a34a':'color:#dc2626'), F_=feas(m,L,C);
   const dTxt=gap==null?'—':m.u==='line'?(gap>=0?'+':'')+nf(gap,2)+' line':(gap>=0?'+':'')+nf(gap*100,1)+' pp';
   const tTxt=tgv!=null?m.f(tgv):(m.tgTxt?m.tgTxt(L):'—');
-  return `<td>${nz(v[0])}${v[0]!=null?mk:''}</td><td>${nz(v[1])}${v[1]!=null?mk:''}</td><td><b>${m.f(a)}</b></td><td>${tTxt}</td><td style="${col};font-weight:700">${dTxt}</td><td>${m.need(L,C)}</td><td><b>+${ty(so)}</b></td>`;
+  return `<td>${nz(v[0])}${v[0]!=null?mk:''}</td><td>${nz(v[1])}${v[1]!=null?mk:''}</td><td><b>${m.f(a)}</b></td><td>${tTxt}</td><td style="${col};font-weight:700">${dTxt}</td><td>${F_?fD(m,F_.d10):'—'}</td><td>${F_?fD(m,F_.d9):'—'}</td><td>${m.need(L,C)}</td><td><b>+${ty(so)}</b></td><td title="${F_?'So mục tiêu với mức cao nhất của '+F_.src:''}">${badge(F_)}</td>`;
 }
 function blockSummary(C){
   const L=C.list.filter(o=>sc(o.asm)), r=rollup(L), hc=C.hc, NT=NTF();
@@ -160,9 +170,9 @@ function blockGoals(C){
   const L=C.list.filter(o=>sc(o.asm));
   const rows=Object.keys(METS).map(k=>{const m=METS[k]; return `<tr><td style="text-align:left"><b>${m.t}</b></td>${mcells(m,L,C)}</tr>`;}).join('');
   const r=rollup(L);
-  const tot=`<tr class="tot" style="font-weight:700"><td style="text-align:left">Cộng 7 mục tiêu (sau chồng lấn ${nf(par('ov'),0)}%)</td><td colspan="6"></td><td>+${ty(r.core)}</td></tr>`;
-  const h=`<th style="${THL}">Mục tiêu T11</th><th style="${TH}">Thực đạt T9</th><th style="${TH}">Thực đạt T10 (cả tháng)</th><th style="${TH}">T11 MTD đến ${T11_META.last_date}</th><th style="${TH}">Mục tiêu T11</th><th style="${TH}">Chênh</th><th style="${TH}">Cần thêm để đạt</th><th style="${TH}">SO thêm (tỷ)</th>`;
-  return T(h,rows+tot)+`<div class="pnote" style="margin-top:6px">* PC/Call plan T9, T10 là <b>ước tính</b>: call plan = call plan/ĐDKD/ngày của T11 × số ĐDKD × ngày công tháng đó (chưa có lịch ghé T9–T10). † Hội viên T9, T10 là % KH đạt Hội viên Doanh nhân (tab Hội viên), T11 là % KH đạt NV1 Hội viên Tết: cùng ý nghĩa KH đạt, khác chương trình. Combo bắt đầu từ T11 nên chưa có T9, T10. SO thêm của từng dòng là tiềm năng riêng lẻ (chưa trừ chồng lấn). Chọn từng mục tiêu ở mục 3 để khoan ASM › NPP › SS.</div>`;
+  const tot=`<tr class="tot" style="font-weight:700"><td style="text-align:left">Cộng 7 mục tiêu (sau chồng lấn ${nf(par('ov'),0)}%)</td><td colspan="8"></td><td>+${ty(r.core)}</td><td></td></tr>`;
+  const h=`<th style="${THL}">Mục tiêu T11</th><th style="${TH}">Thực đạt T9</th><th style="${TH}">Thực đạt T10 (cả tháng)</th><th style="${TH}">T11 MTD đến ${T11_META.last_date}</th><th style="${TH}">Mục tiêu T11</th><th style="${TH}">Chênh T11 MTD</th><th style="${TH}">Phải tăng vs T10</th><th style="${TH}">Phải tăng vs T9</th><th style="${TH}">Cần thêm để đạt</th><th style="${TH}">SO thêm (tỷ)</th><th style="${TH}">Khả thi</th>`;
+  return T(h,rows+tot)+`<div class="pnote" style="margin-top:6px">* PC/Call plan T9, T10 là <b>ước tính</b>: call plan = call plan/ĐDKD/ngày của T11 × số ĐDKD × ngày công tháng đó (chưa có lịch ghé T9–T10). † Hội viên T9, T10 là % KH đạt Hội viên Doanh nhân (tab Hội viên), T11 là % KH đạt NV1 Hội viên Tết: cùng ý nghĩa KH đạt, khác chương trình. Combo bắt đầu từ T11 nên chưa có T9, T10. SO thêm của từng dòng là tiềm năng riêng lẻ (chưa trừ chồng lấn). <b>Khả thi</b> = so mục tiêu với mức cao nhất đã đạt ở T9–T10 (cả tháng): <b>Cao</b> đã từng đạt mức này; <b>Khá</b> cần tăng thêm ≤5 pp (LPPC ≤0,15 line); <b>Khó</b> ≤10 pp (LPPC ≤0,30); <b>Rất khó</b> trên mức đó. Combo chưa có T9–T10 nên so với T11 MTD. Chọn từng mục tiêu ở mục 5 để khoan ASM › NPP › SS.</div>`;
 }
 const H1=`<th style="${THL}">Phạm vi</th><th style="${TH}">Chỉ tiêu (tỷ)</th><th style="${TH}">%Đạt MTD</th><th style="${TH}">Giữ đà (tỷ)</th><th style="${TH}">GAP (tỷ)</th><th style="${TH}">ASO Off+On (tỷ)</th><th style="${TH}">PC/Call plan (tỷ)</th><th style="${TH}">LPPC Off (tỷ)</th><th style="${TH}">Hội viên Tết (tỷ)</th><th style="${TH}">Combo Off (tỷ)</th><th style="${TH}">Cộng sau chồng lấn (tỷ)</th><th style="${TH}">% lấp GAP</th>`;
 function lines(arr){
@@ -186,8 +196,17 @@ function blockTarget(C){
   const all=C.list.filter(o=>sc(o.asm));
   rows+=`<tr class="tot" style="font-weight:700"><td style="text-align:left">TOÀN MIỀN${S.asm==='all'?'':' (phạm vi chọn)'}</td>${mcells(m,all,C)}</tr>`;
   const btn=Object.keys(METS).map(k=>`<button data-m="${k}" class="${k===S.m?'on':''}">${METS[k].t}</button>`).join('');
-  const h=`<th style="${THL}">ASM › NPP › SS <span style="font-weight:400">(bấm ▸ để mở)</span></th><th style="${TH}">Thực đạt T9</th><th style="${TH}">Thực đạt T10 (cả tháng)</th><th style="${TH}">T11 MTD đến ${T11_META.last_date}</th><th style="${TH}">Mục tiêu T11</th><th style="${TH}">Chênh T11 vs mục tiêu</th><th style="${TH}">Cần thêm để đạt</th><th style="${TH}">SO thêm (tỷ)</th>`;
+  const h=`<th style="${THL}">ASM › NPP › SS <span style="font-weight:400">(bấm ▸ để mở)</span></th><th style="${TH}">Thực đạt T9</th><th style="${TH}">Thực đạt T10 (cả tháng)</th><th style="${TH}">T11 MTD đến ${T11_META.last_date}</th><th style="${TH}">Mục tiêu T11</th><th style="${TH}">Chênh T11 MTD</th><th style="${TH}">Phải tăng vs T10</th><th style="${TH}">Phải tăng vs T9</th><th style="${TH}">Cần thêm để đạt</th><th style="${TH}">SO thêm (tỷ)</th><th style="${TH}">Khả thi</th>`;
   return `<div class="seg" id="nvMet" style="margin-bottom:8px">${btn}</div><div style="margin-bottom:6px"><button id="nvOpenAll" style="padding:5px 12px;border:1px solid #38BDF8;background:#fff;border-radius:6px;cursor:pointer;font-size:14px">Mở hết</button> <button id="nvCloseAll" style="padding:5px 12px;border:1px solid #38BDF8;background:#fff;border-radius:6px;cursor:pointer;font-size:14px">Thu gọn</button></div>`+T(h,rows)+`<div class="pnote" style="margin-top:6px">${fillWhat(m)}</div>`;
+}
+function blockFeas(C){
+  const keys=Object.keys(METS), A=X().ASMS_(), cell=(m,L)=>{const f=feas(m,L,C), so=m.so(L); return `<td style="${f?'background:'+LVL[f.lv][2]:''};line-height:1.35"><b style="color:${f?LVL[f.lv][1]:'#64748b'}">${f?LVL[f.lv][0]:'—'}</b> <span style="color:#334155">${f?fD(m,f.g):''}</span><br><span style="font-size:12.5px;color:#0369A1;font-weight:700">+${ty(so)} tỷ</span></td>`;};
+  const h=`<th style="${THL}">ASM › SS</th>`+keys.map(k=>`<th style="${TH}">${METS[k].t}</th>`).join('')+`<th style="${TH}">Cộng sau chồng lấn</th>`;
+  let rows='';
+  const row=(name,L,cls,pad)=>`<tr class="${cls||''}" style="${cls==='tot'?'font-weight:700':pad?'font-size:13px':'font-weight:700;background:#f0f9ff'}"><td style="text-align:left;white-space:nowrap;padding-left:${pad||8}px">${esc(name)}</td>${keys.map(k=>cell(METS[k],L)).join('')}<td><b>+${ty(rollup(L).core)}</b></td></tr>`;
+  A.filter(a=>sc(a)).forEach(a=>{const L=C.list.filter(o=>o.asm===a); rows+=row(X().lab(a),L); L.slice().sort((p,q)=>q.core-p.core).forEach(o=>{rows+=row('SS '+o.ss+' · '+o.npps.join(' / '),[o],'',26);});});
+  rows+=row('TOÀN MIỀN'+(S.asm==='all'?'':' (phạm vi chọn)'),C.list.filter(o=>sc(o.asm)),'tot');
+  return T(h,rows)+`<div class="pnote" style="margin-top:6px">Mỗi ô: mức khả thi · số phải tăng so với mức cao nhất T9–T10 (pp; LPPC là line; Combo so với T11 MTD) · SO thêm nếu đạt (tỷ). Khả thi so với mức cao nhất T9–T10 của chính ASM/SS đó. PC/Call plan T9–T10 là ước tính (*); Hội viên T9–T10 là Hội viên Doanh nhân (†).</div>`;
 }
 function actions(o,C){
   const rem=C.rem, srN=o.srN, A=[], hvN=o.hv.need;
@@ -264,6 +283,7 @@ function render(){
    sec('7 mục tiêu T11: thực đạt vs mục tiêu và SO thêm',blockGoals(C),'toàn phạm vi đang chọn')+
    sec('GAP và mức lấp theo ASM',blockAsm(C),'SO thêm của từng mục tiêu trên số ngày còn lại')+
    sec('Từng mục tiêu: ASM → NPP → SS',blockTarget(C),'chọn mục tiêu ở hàng nút')+
+   sec('Khả thi 7 mục tiêu theo ASM › SS: phải tăng bao nhiêu và đem về bao nhiêu SO',blockFeas(C),'so với T9, T10')+
    sec('Phiếu giao việc theo SS (có tên quầy, hội viên, ĐDKD)',blockSheet(C),'mở từng SS để xem danh sách')+
    sec('Mốc kiểm soát 14/11 · 21/11 · 28/11 · 30/11',blockMoc(C))+
    sec('Tháng 12: giữ nhịp sau T11',blockT12(C),'theo mục tiêu T12 đã nhập');
