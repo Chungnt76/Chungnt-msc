@@ -10,7 +10,7 @@ const LSK='nv5:';
 const LS={g(k){try{return localStorage.getItem(LSK+k);}catch(e){return null;}},s(k,v){try{localStorage.setItem(LSK+k,v);}catch(e){}}};
 const PAR0={pc:13.6,lp:5.75,cap:12,aso:95,on:75,cat:0.3,hc:50,cb1:35,ov:30};
 const par=k=>{const v=X().pn(LS.g('p|'+k)); return v==null?PAR0[k]:v;};
-const S={asm:'all',open:new Set()};
+const S={asm:'all',m:'aso',open:new Set()};
 const clean=s=>String(s||'').replace(/ \(.*\)/,'').trim(), base=s=>String(s||'').replace(' - Chi nhánh','').trim();
 const TH='background:#0369A1;color:#fff;padding:7px 8px;font-size:12px;text-align:right;white-space:normal',THL=TH.replace('text-align:right','text-align:left');
 const card=(l,v,s,ac)=>`<div class="kpi" style="border-top:3px solid ${ac||'#0EA5E9'}"><div class="k-lab">${l}</div><div class="k-val">${v}</div><div class="k-sub">${s||''}</div></div>`;
@@ -23,29 +23,32 @@ function compute(){
   const key=[T11_META.last_date,['hc','pc','lp','cap','aso','on','cat','cb1'].map(par).join(',')].join('|');
   if(CACHE&&CK===key)return CACHE; CK=key;
   const x=X(), d=T11_META.mtd_days, D=T11_META.days_total, rem=D-d, k=x.accel().k, rf=rem/D;
-  const SS=new Map(), byClean=new Map();
-  const mk=(r)=>({asm:r.asm,npps:[],ss:r.ssn,so:0,tg:0,pc:0,li:0,aso:0,sm:0,mcp:0,asoOff:0,mcpOff:0,asoOn:0,mcpOn:0,t10:{so:0,aso:0,offSo:0,offAso:0,onSo:0,onAso:0},on7:{q:0,a:0},drop:0,dropSO:0,srn:0,top:[],hv:{n:0,chua:0,m1:0,sap:[],nv1x:0,gapSap:0},cbN:0,cbNhan:0,td:{n:0,ct:0,th:0,ok:0,near:0},cat:0,sr:[]});
-  T11.forEach(r=>{const kk=r.asm+'|'+r.ssn; let o=SS.get(kk); if(!o){o=mk(r);SS.set(kk,o);} const a=r.v['a|all']||{};
+  const SS=new Map(), byClean=new Map(), ALI=new Map();
+  T11.forEach(r=>{ if(((r.v['a|all']||{}).so||0)>0)return; const c=T11.find(q=>q!==r&&q.asm===r.asm&&base(q.npp)===base(r.npp)&&((q.v['a|all']||{}).so||0)>0); if(c)ALI.set(r.asm+'|'+r.ssn,c.asm+'|'+c.ssn);});
+  const K=(a,n)=>{const k=a+'|'+n; return ALI.get(k)||k;};
+  const mk=(r)=>({asm:r.asm,npps:[],ss:r.ssn,so:0,tg:0,pc:0,li:0,aso:0,sm:0,mcp:0,asoOff:0,mcpOff:0,asoOn:0,mcpOn:0,t10:{so:0,aso:0,offSo:0,offAso:0,onSo:0,onAso:0,pc:0,sm:0,li:0},t9:{off:0,on:0,pc:0,sm:0,li:0,so:0},on7:{q:0,a:0},drop:0,dropSO:0,srn:0,top:[],hv:{n:0,chua:0,m1:0,sap:[],nv1x:0,gapSap:0},cbN:0,cbNhan:0,td:{n:0,ct:0,th:0,ok:0,near:0},cat:0,sr:[]});
+  [...T11].sort((x,y)=>(ALI.has(x.asm+'|'+x.ssn)?1:0)-(ALI.has(y.asm+'|'+y.ssn)?1:0)).forEach(r=>{const kk=K(r.asm,r.ssn); let o=SS.get(kk); if(!o){o=mk(r);SS.set(kk,o);} const a=r.v['a|all']||{};
     if(o.npps.indexOf(r.npp)<0)o.npps.push(r.npp);
     o.so+=a.so||0;o.pc+=a.pc||0;o.li+=a.lines||0;o.aso+=a.aso||0;o.sm+=a.sm||0;o.mcp+=r.mcp||0;o.tg+=(((r.tgm||{})['11'])||[r.target||0])[0]||0;
     o.asoOff+=(r.v['a|OFF']||{}).aso||0; o.asoOn+=(r.v['a|ON']||{}).aso||0;
     byClean.set(clean(r.ss)+'|'+base(r.npp),o); byClean.set(clean(r.ssn)+'|'+base(r.npp),o);});
-  T10.forEach(r=>{const o=SS.get(r.asm+'|'+r.ssn); if(!o)return; const f=r.v['a|OFF']||{},n=r.v['a|ON']||{};
-    o.t10.so+=r.so||0;o.t10.aso+=r.aso||0;o.t10.offSo+=f.so||0;o.t10.offAso+=f.aso||0;o.t10.onSo+=n.so||0;o.t10.onAso+=n.aso||0;});
+  T10.forEach(r=>{const o=SS.get(K(r.asm,r.ssn)); if(!o)return; const f=r.v['a|OFF']||{},n=r.v['a|ON']||{};
+    o.t10.pc+=r.pc||0;o.t10.sm+=r.sm||0;o.t10.li+=r.lines||0;o.t10.so+=r.so||0;o.t10.aso+=r.aso||0;o.t10.offSo+=f.so||0;o.t10.offAso+=f.aso||0;o.t10.onSo+=n.so||0;o.t10.onAso+=n.aso||0;});
+  T9.forEach(r=>{const o=SS.get(K(r.asm,r.ssn)); if(!o)return; const a=r.v['a|all']||{};o.t9.off+=(r.v['a|OFF']||{}).aso||0;o.t9.on+=(r.v['a|ON']||{}).aso||0;o.t9.pc+=a.pc||0;o.t9.sm+=a.sm||0;o.t9.li+=a.lines||0;o.t9.so+=a.so||0;});
   T11S.DATA.forEach(r=>{const o=byClean.get(clean(r.ss)+'|'+base(r.npp)); if(!o)return; if(r.oo==='OFF')o.mcpOff+=r.q11||0; else o.mcpOn+=r.q11||0;});
   const on=ON7_11; const onIdx=on.k.map(q=>{let o=null; SS.forEach(v=>{if(!o&&v.asm===q[1]&&clean(v.ss)===clean(q[0]))o=v;}); return o;});
   on.r.forEach(r=>{const o=onIdx[r[1]]; if(!o||r[2]>6)return; o.on7.q+=r[4];o.on7.a+=r[5];});
-  const ssOf=m=>SS.get(m[2]+'|'+m[4]);
+  const ssOf=m=>SS.get(K(m[2],m[4]));
   GP11.rows.forEach(r=>{const o=ssOf(x.srOf(r[0])); if(!o)return; o.drop+=r[4];o.dropSO+=r[5];o.srn++;});
   GP11.top.forEach(t=>{const o=ssOf(x.srOf(t[0])); if(o)o.top.push({code:t[1],name:t[2],so:t[3],sr:x.srOf(t[0])[1]});});
-  HVT11.rows.forEach(r=>{const m=HVT11.sr[r[0]], o=SS.get(m[2]+'|'+m[4]); if(!o)return; const base=r[6],ds=r[5],t=r[3], b=[r[10],r[11],r[12],r[13]], s4=b[0]+b[1]+b[2]+b[3], nv2=t===1?b.every(q=>q>=150000):s4>=500000, m1=base>0&&ds/base>=0.95;
+  HVT11.rows.forEach(r=>{const m=HVT11.sr[r[0]], o=SS.get(K(m[2],m[4])); if(!o)return; const base=r[6],ds=r[5],t=r[3], b=[r[10],r[11],r[12],r[13]], s4=b[0]+b[1]+b[2]+b[3], nv2=t===1?b.every(q=>q>=150000):s4>=500000, m1=base>0&&ds/base>=0.95;
     o.hv.n++; if(!(ds>0))o.hv.chua++; if(m1)o.hv.m1++; if(m1&&!nv2)o.hv.nv1x++;
     if(!m1&&base>0&&(0.95*base-ds)<=0.3*base){o.hv.sap.push({code:r[1],name:r[2],gap:0.95*base-ds,sr:m[1]});o.hv.gapSap+=0.95*base-ds;}});
   CBT11.rows.forEach(r=>{ if(r[1]!==0)return; const o=ssOf(CBT11.sr[r[0]]); if(o){o.cbN+=r[2];o.cbNhan+=r[6];}});
   const tsr=TDS11.sr.map(q=>{let m=null; [HVT11.sr,COMBO11.sr,CBT11.sr].forEach(L=>{if(m)return; const f=L.find(z=>String(z[0])===String(q[0])&&z[2]&&z[2]!=='Chưa gán SS'); if(f)m=f;}); return m;});
   const MU=[1.2,1.15,1.3,1.2];
-  TDS11.rows.forEach(r=>{const m=tsr[r[0]]; if(!m)return; const o=SS.get(m[2]+'|'+m[4]); if(!o)return; const ct=r[4]*MU[r[3]],th=r[5],ok=th>0&&th>=ct-0.5; o.td.n++;o.td.ct+=ct;o.td.th+=th; if(ok)o.td.ok++; else if(ct&&th/ct>=0.7)o.td.near++;});
-  const sk=new Map(); T11.forEach(r=>{sk.set(r.ss+'|'+base(r.npp),r.asm+'|'+r.ssn); sk.set(r.ssn+'|'+base(r.npp),r.asm+'|'+r.ssn);});
+  TDS11.rows.forEach(r=>{const m=tsr[r[0]]; if(!m)return; const o=SS.get(K(m[2],m[4])); if(!o)return; const ct=r[4]*MU[r[3]],th=r[5],ok=th>0&&th>=ct-0.5; o.td.n++;o.td.ct+=ct;o.td.th+=th; if(ok)o.td.ok++; else if(ct&&th/ct>=0.7)o.td.near++;});
+  const sk=new Map(); T11.forEach(r=>{sk.set(r.ss+'|'+base(r.npp),K(r.asm,r.ssn)); sk.set(r.ssn+'|'+base(r.npp),K(r.asm,r.ssn));});
   const cs={}; T11S.CATD.forEach(r=>{ if(r[3]!=='all')return; const [s,n]=r[0].split('|'); const kk=sk.get(s+'|'+base(n)); if(!kk)return; cs[kk]=(cs[kk]||0)+r[5];});
   SS.forEach((o,kk)=>{o.cat=o.aso?(cs[kk]||0)/o.aso:0;});
   const pidx=DDK.p.length, nm=i=>i<pidx?DDK.p[i][1]:((T11S.DDK.newp[i-pidx]||[])[1]||('SR '+i));
@@ -141,7 +144,7 @@ function actions(o,C){
   return A.sort((p,q)=>q[0]-p[0]);
 }
 function blockSs(C){
-  const L=C.list.filter(o=>sc(o.asm)&&(o.tg>0||o.so>0));
+  const L=C.list.filter(o=>sc(o.asm));
   const rows=L.map(o=>{const gap=o.short, cov=gap>0?o.core/gap:null, a=actions(o,C), top=a.slice(0,3).map((x,i)=>(i+1)+'. '+x[1]).join('<br>');
     return `<tr><td style="text-align:left;white-space:nowrap">${esc(X().SHORT[o.asm]||o.asm)}</td><td style="text-align:left;white-space:normal">${esc(o.npps.join(' / '))}</td><td style="text-align:left;white-space:nowrap"><b>${esc(o.ss)}</b></td><td>${pc(o.so,o.tg)}</td><td><b>${gap>0?ty(gap):'Đủ'}</b></td><td>${pc(o.asoOff,o.mcpOff)}</td><td>${nf(o.n2.pcd,1)}</td><td>${nf(o.n2.lp,2)}</td><td>+${ty(o.n1.net)}</td><td>+${ty(o.n2.dsAll)}</td><td>+${ty(o.n4.tot)}</td><td><b>+${ty(o.core)}</b></td><td style="${cov==null?'':stc(cov)}">${cov==null?'—':cv(cov)}</td><td style="text-align:left;white-space:normal;min-width:360px">${top||'—'}</td></tr>`;}).join('');
   const h=`<th style="${THL}">ASM</th><th style="${THL}">NPP</th><th style="${THL}">SS</th><th style="${TH}">%Đạt MTD</th><th style="${TH}">GAP (tỷ)</th><th style="${TH}">ASO Off MTD</th><th style="${TH}">PC/ĐDKD/ngày</th><th style="${TH}">LPPC</th><th style="${TH}">ASO (tỷ)</th><th style="${TH}">PC + LPPC (tỷ)</th><th style="${TH}">Hội viên + combo (tỷ)</th><th style="${TH}">Cộng (tỷ)</th><th style="${TH}">% lấp GAP</th><th style="${THL}">3 việc ưu tiên (xếp theo SO thêm)</th>`;
@@ -170,6 +173,56 @@ function blockMoc(C){
   const h=`<th style="${THL}">Mốc</th><th style="${TH}">Ngày công lũy kế</th><th style="${TH}">SO lũy kế cần (đường về đích)</th><th style="${TH}">ASO Off lũy kế (tiến dần về ${nf(par('aso'),0)}%)</th><th style="${TH}">PC/ĐDKD · LPPC (đường tiến)</th><th style="${TH}">Combo L1 Off</th><th style="${THL}">Việc chốt</th>`;
   return T(h,rows)+`<div class="pnote" style="margin-top:6px">Mốc là đường tiến đều từ hiện tại đến mục tiêu, không phải chỉ tiêu chính thức. Review 14/11 · 21/11 · 28/11: dưới 85% mốc thì ASM báo nguyên nhân và bù trong tuần kế tiếp.</div>`;
 }
+
+const WD=m=>{try{return WORKDAYS[m];}catch(e){return m==='9'?26:27;}};
+const sum=(L,f)=>L.reduce((t,o)=>t+f(o),0);
+const dv=(a,b)=>b?a/b:null;
+const fPct=v=>v==null?'—':nf(v*100,1)+'%', fN1=v=>v==null?'—':nf(v,1), fN2=v=>v==null?'—':nf(v,2);
+const METS={
+ aso:{t:'ASO Off',f:fPct,u:'pp',tg:()=>par('aso')/100,den:o=>o.mcpOff,
+  v:(L,C)=>[dv(sum(L,o=>o.t9.off),sum(L,o=>o.mcpOff)),dv(sum(L,o=>o.t10.offAso),sum(L,o=>o.mcpOff)),dv(sum(L,o=>o.asoOff),sum(L,o=>o.mcpOff))],
+  need:L=>nf(sum(L,o=>o.n1.dOff),0)+' KH',so:L=>sum(L,o=>o.n1.dsOff),what:'Mục tiêu = % KH có đơn trên MCP Off. T9, T10 là cả tháng, T11 là MTD đến '+'${T11_META.last_date}'+' nên thấp hơn. "KH cần thêm" so với T10 cả tháng; SO thêm = KH thêm × SO/KH Off T10 × phần tháng còn lại.'},
+ on:{t:'ASO On (7 loại hình)',f:fPct,tg:()=>par('on')/100,
+  v:(L,C)=>[dv(sum(L,o=>o.t9.on),sum(L,o=>o.mcpOn)),dv(sum(L,o=>o.t10.onAso),sum(L,o=>o.mcpOn)),dv(sum(L,o=>o.asoOn),sum(L,o=>o.mcpOn))],
+  need:L=>nf(sum(L,o=>o.n1.dOn),0)+' KH',so:L=>sum(L,o=>o.n1.dsOn),what:'Cách tính như ASO Off, trên MCP kênh On.'},
+ pc:{t:'PC/ĐDKD/ngày',f:fN1,tg:()=>par('pc'),
+  v:(L,C)=>[dv(sum(L,o=>o.t9.pc),sum(L,o=>o.t9.sm)*WD('9')),dv(sum(L,o=>o.t10.pc),sum(L,o=>o.t10.sm)*WD('10')),dv(sum(L,o=>o.pc),sum(L,o=>o.sm)*C.d)],
+  need:(L,C)=>{const a=dv(sum(L,o=>o.pc),sum(L,o=>o.sm)*C.d);return a==null?'—':'+'+nf(Math.max(0,par('pc')-a),1)+' đơn/SR/ngày';},so:L=>sum(L,o=>o.n2.dsPc),what:'Mỗi SS tiến về mục tiêu nhưng không quá +'+'${par("cap")}'+'% so với hiện tại. SS đã vượt mục tiêu không bị trừ.'},
+ lp:{t:'LPPC',f:fN2,tg:()=>par('lp'),
+  v:(L,C)=>[dv(sum(L,o=>o.t9.li),sum(L,o=>o.t9.pc)),dv(sum(L,o=>o.t10.li),sum(L,o=>o.t10.pc)),dv(sum(L,o=>o.li),sum(L,o=>o.pc))],
+  need:L=>{const a=dv(sum(L,o=>o.li),sum(L,o=>o.pc));return a==null?'—':'+'+nf(Math.max(0,par('lp')-a),2)+' line/đơn';},so:L=>sum(L,o=>o.n2.dsLp),what:'Mỗi đơn chào thêm line ngành yếu; tính nối tiếp sau PC để không trùng.'},
+ hv:{t:'Hội viên Tết',f:fPct,tg:()=>null,tgTxt:'Đạt NV1 (≥95% nền)',
+  v:(L,C)=>[null,null,dv(sum(L,o=>o.hv.m1),sum(L,o=>o.hv.n))],
+  need:L=>nf(sum(L,o=>o.hv.sap.length),0)+' HV sắp đạt · '+nf(sum(L,o=>o.hv.chua),0)+' chưa mua',so:L=>sum(L,o=>o.n4.hv),what:'Không có số T9/T10 cho hội viên Tết. SO thêm = chốt hội viên sắp đạt + kích hoạt hội viên chưa mua.'},
+ cb:{t:'Combo L1 Off',f:fPct,tg:()=>par('cb1')/100,
+  v:(L,C)=>[null,null,dv(sum(L,o=>o.cbNhan),sum(L,o=>o.cbN))],
+  need:L=>nf(sum(L,o=>o.n4.more),0)+' KH nhận thêm',so:L=>sum(L,o=>o.n4.cb),what:'% KH Off nhận combo mức 1 so mục tiêu; SO thêm theo hiệu quả combo của dashboard Combo.'},
+ cat:{t:'Tăng CAT',f:fN2,tg:L=>null,tgTxt:'+'+'${par("cat")}'+' ngành/KH',
+  v:(L,C)=>[null,null,dv(sum(L,o=>o.cat*o.aso),sum(L,o=>o.aso))],
+  need:()=>'+'+nf(par('cat'),1)+' ngành/KH',so:L=>sum(L,o=>o.n5.ds),what:'Là lớp đệm, chồng một phần với PC/LPPC nên không cộng vào tổng.'}
+};
+Object.keys(METS).forEach(k=>{const m=METS[k]; if(m.what)m.what=m.what.replace("${T11_META.last_date}",T11_META.last_date).replace('${par("cap")}',nf(par('cap'),0)).replace('${par("cat")}',nf(par('cat'),1)); if(m.tgTxt)m.tgTxt=m.tgTxt.replace('${par("cat")}',nf(par('cat'),1));});
+function blockTarget(C){
+  const m=METS[S.m]||METS.aso, tgv=m.tg(), tg=tgv==null?null:tgv;
+  const grp=new Map(); C.list.filter(o=>sc(o.asm)).forEach(o=>{const nk=o.asm+'|'+o.npps.join(' / ');if(!grp.has(o.asm))grp.set(o.asm,new Map());const g=grp.get(o.asm);if(!g.has(nk))g.set(nk,{name:o.npps.join(' / '),L:[]});g.get(nk).L.push(o);});
+  const tgTxt=tg==null?(m.tgTxt||'—'):m.f(tg);
+  const cells=(L)=>{const v=m.v(L,C), a=v[2], so=m.so(L), gap=tg!=null&&a!=null?a-tg:null;
+    const col=gap==null?'':(gap>=0?'color:#16a34a':'color:#dc2626');
+    const dTxt=gap==null?'—':(m.f===fPct?(gap>=0?'+':'')+nf(gap*100,1)+' pp':(gap>=0?'+':'')+nf(gap,m.f===fN2?2:1));
+    return `<td>${m.f(v[0])}</td><td>${m.f(v[1])}</td><td><b>${m.f(a)}</b></td><td>${tgTxt}</td><td style="${col};font-weight:700">${dTxt}</td><td>${m.need(L,C)}</td><td><b>+${ty(so)}</b></td>`;};
+  let rows=''; const AS=X().ASMS_().filter(a=>grp.has(a));
+  const row=(lv,id,pid,name,L,show,hasKids)=>{const ind=lv*16; const op=S.open.has(id);
+    return `<tr data-id="${esc(id)}" data-p="${esc(pid)}" data-lv="${lv}" ${show?'':'hidden'} style="${lv===0?'font-weight:700;background:#f0f9ff':''}${lv===2?';font-size:12px':''}"><td style="text-align:left;white-space:normal;padding-left:${8+ind}px">${hasKids?`<span class="nvt" style="cursor:pointer;color:#0369A1">${op?'▾':'▸'}</span> `:'&nbsp;&nbsp;'}${esc(name)}</td>${cells(L)}</tr>`;};
+  AS.forEach(a=>{const g=grp.get(a), all=[]; g.forEach(n=>all.push(...n.L));
+    rows+=row(0,'a|'+a,'',X().lab(a),all,true,true);
+    [...g.values()].sort((p,q)=>sum(q.L,o=>o.short)-sum(p.L,o=>o.short)).forEach(n=>{const nid='n|'+a+'|'+n.name; rows+=row(1,nid,'a|'+a,n.name,n.L,S.open.has('a|'+a),n.L.length>0);
+      n.L.sort((p,q)=>q.short-p.short).forEach(o=>{rows+=row(2,'s|'+a+'|'+n.name+'|'+o.ss,nid,'SS '+o.ss,[o],S.open.has('a|'+a)&&S.open.has(nid),false);});});});
+  const all=C.list.filter(o=>sc(o.asm));
+  rows+=`<tr class="tot" style="font-weight:700"><td style="text-align:left">TOÀN MIỀN${S.asm==='all'?'':' (phạm vi chọn)'}</td>${cells(all)}</tr>`;
+  const btn=Object.keys(METS).map(k=>`<button data-m="${k}" class="${k===S.m?'on':''}">${METS[k].t}</button>`).join('');
+  const h=`<th style="${THL}">ASM › NPP › SS <span style="font-weight:400">(bấm ▸ để mở)</span></th><th style="${TH}">Thực đạt T9</th><th style="${TH}">Thực đạt T10 (cả tháng)</th><th style="${TH}">T11 MTD đến ${T11_META.last_date}</th><th style="${TH}">Mục tiêu T11</th><th style="${TH}">Chênh T11 vs mục tiêu</th><th style="${TH}">Cần thêm để đạt</th><th style="${TH}">SO thêm nếu đạt (tỷ)</th>`;
+  return `<div class="seg" id="nvMet" style="margin-bottom:8px">${btn}</div><div style="margin-bottom:6px"><button class="seg-b" id="nvOpenAll" style="padding:4px 10px;border:1px solid #38BDF8;background:#fff;border-radius:6px;cursor:pointer">Mở hết</button> <button id="nvCloseAll" style="padding:4px 10px;border:1px solid #38BDF8;background:#fff;border-radius:6px;cursor:pointer">Thu gọn</button></div>`+T(h,rows)+`<div class="pnote" style="margin-top:6px"><b>${m.t}:</b> ${m.what} SO thêm là ước tính, cộng được từ SS lên NPP, ASM và Miền (SS đã đạt mục tiêu ghi +0). Các mục tiêu cùng cộng vào kế hoạch sẽ trùng nhau một phần nên tổng ở trên phần GAP đã trừ chồng lấn ASO–PC.</div>`;
+}
 function render(){
   const pg=document.getElementById('pgNv'); if(!pg||typeof T11==='undefined'||!window.GPX)return;
   let host=document.getElementById('nvHost'); if(!host){host=document.createElement('div');host.id='nvHost';pg.appendChild(host);}
@@ -181,13 +234,15 @@ function render(){
    <div style="margin:10px 0">${pin('aso','ASO Off %')}${pin('on','ASO On %')}${pin('pc','PC/ĐDKD')}${pin('lp','LPPC',56)}${pin('cap','Trần tăng %')}${pin('cb1','Combo %')}${pin('ov','Chồng lấn ASO–PC %')}${pin('cat','+ngành/KH')}${pin('hc','Thực thi %')}</div>
    ${blockSummary(C)}</div>`+
    sec(1,'GAP và mức lấp theo ASM',blockAsm(C),'SO thêm của từng nhiệm vụ trên số ngày còn lại')+
-   sec(2,'Hiện trạng và mục tiêu 5 nhiệm vụ theo ASM',blockMetrics(C))+
-   sec(3,'Khoan sâu NPP',blockNpp(C),'GAP, đòn bẩy lớn nhất và quầy rơi')+
-   sec(4,'Khoan sâu SS · việc ưu tiên từng SS',blockSs(C),'45 SS')+
-   sec(5,'Phiếu giao việc theo SS (có tên quầy, hội viên, ĐDKD)',blockSheet(C),'mở từng SS để xem danh sách')+
-   sec(6,'Mốc kiểm soát 14/11 · 21/11 · 28/11 · 30/11',blockMoc(C));
+   sec(2,'Từng mục tiêu: thực đạt vs mục tiêu và SO thêm nếu đạt · ASM → NPP → SS',blockTarget(C),'chọn mục tiêu ở hàng nút')+
+   sec(3,'Phiếu giao việc theo SS (có tên quầy, hội viên, ĐDKD)',blockSheet(C),'mở từng SS để xem danh sách')+
+   sec(4,'Mốc kiểm soát 14/11 · 21/11 · 28/11 · 30/11',blockMoc(C));
   [...host.querySelectorAll('#nvScope button')].forEach(b=>b.classList.toggle('on',b.dataset.v===S.asm));
   host.querySelector('#nvScope').onclick=e=>{const b=e.target.closest('button');if(b){S.asm=b.dataset.v;render();}};
+  const mt=host.querySelector('#nvMet'); if(mt)mt.onclick=e=>{const b=e.target.closest('button');if(b){S.m=b.dataset.m;render();}};
+  host.querySelectorAll('tr[data-id] .nvt').forEach(t=>{t.onclick=()=>{const id=t.closest('tr').dataset.id; if(S.open.has(id))S.open.delete(id);else S.open.add(id); render();};});
+  const oa=host.querySelector('#nvOpenAll'); if(oa)oa.onclick=()=>{host.querySelectorAll('tr[data-id]').forEach(r=>S.open.add(r.dataset.id));render();};
+  const ca=host.querySelector('#nvCloseAll'); if(ca)ca.onclick=()=>{S.open.clear();render();};
   host.querySelectorAll('input[data-nv]').forEach(i=>{i.onchange=()=>{const id=i.dataset.nv; const v=X().pn(i.value); LS.s(id,v==null?'':String(v)); CACHE=null; render();};});
 }
 window.renderNv5=function(){try{render();}catch(e){console.error('NV5',e);}};
