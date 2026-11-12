@@ -10,13 +10,13 @@ const esc=s=>String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').rep
 const N0=n=>Math.round(n||0).toLocaleString('vi-VN');
 const P1=(a,b)=>b?(a/b*100).toFixed(1).replace('.',',')+'%':'–';
 const M1=n=>(Math.round((n||0)/1e5)/10).toLocaleString('vi-VN',{minimumFractionDigits:1,maximumFractionDigits:1});
-const BR=['Chanté','Chinsu','Kokomi','Nam Ngư'], NVB=150000, NVT=500000; let WD=8, WT=25, PROG=WD/WT, AS='10/11', MY={y:2026,m:11};
+const BR=['Chanté','Chinsu','Kokomi','Nam Ngư'], NVB=150000, NVT=500000; let WD=8, WT=25, PROG=WD/WT, AS='11/11', MY={y:2026,m:11};
 const S={asm:'',npp:'',ss:'',sr:'',tab:'all',open:new Set(),det:new Set(),fl:'push'};
 let SR=null, K=null;
 
 function prep(){
   if(K&&prep.d===HVT11&&prep.v===(window.__mtv||0))return; prep.d=HVT11;prep.v=window.__mtv||0; S.open.clear(); S.det.clear();
-  const M=HVT11.meta||{}; AS=M.asof||'10/11'; MY={y:M.y||2026,m:M.m||11}; if(M.wd_total){WD=M.wd_passed;WT=M.wd_total;} else {WD=8;WT=25;} PROG=WD/WT; SR=new Map();
+  const M=HVT11.meta||{}; AS=M.asof||'11/11'; MY={y:M.y||2026,m:M.m||11}; if(M.wd_total){WD=M.wd_passed;WT=M.wd_total;} else {WD=8;WT=25;} PROG=WD/WT; SR=new Map();
   HVT11.sr.forEach((x,i)=>{const c=String(x[0]);SR.set(i,{i,code:c,name:x[1],asm:x[2]||'—',npp:x[3]||'—',ss:x[4]||'—'});});
   K=HVT11.rows.map(r=>{const b=[r[10],r[11],r[12],r[13]],ds=r[5]||0,base=r[6]||0,isDs=r[3]===1,pct=base?ds/base:0,sum4=b.reduce((a,v)=>a+(v||0),0);
     const lvl=pct>=1.05?3:pct>=1?2:pct>=.95?1:0, ok4=b.every(v=>v>=NVB), nv2=isDs?ok4:sum4>=NVT, ok=lvl>0&&nv2;
