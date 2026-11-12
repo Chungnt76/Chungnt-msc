@@ -229,7 +229,7 @@ function blockTarget(C){
   return `<div class="seg" id="nvMet" style="margin-bottom:8px">${btn}</div><div style="margin-bottom:6px"><button class="seg-b" id="nvOpenAll" style="padding:4px 10px;border:1px solid #38BDF8;background:#fff;border-radius:6px;cursor:pointer">Mở hết</button> <button id="nvCloseAll" style="padding:4px 10px;border:1px solid #38BDF8;background:#fff;border-radius:6px;cursor:pointer">Thu gọn</button></div>`+T(h,rows)+`<div class="pnote" style="margin-top:6px"><b>${m.t}:</b> ${m.what} SO thêm là ước tính, cộng được từ SS lên NPP, ASM và Miền (SS đã đạt mục tiêu ghi +0). Các mục tiêu cùng cộng vào kế hoạch sẽ trùng nhau một phần nên tổng ở trên phần GAP đã trừ chồng lấn ASO–PC.</div>`;
 }
 function render(){
-  const pg=document.getElementById('pgNv'); if(!pg||typeof T11==='undefined'||!window.GPX)return;
+  const pg=document.getElementById('pgNv'); const sn=document.getElementById('scopeNote'); if(sn){sn.innerHTML='';sn.hidden=true;} if(!pg||typeof T11==='undefined'||!window.GPX)return;
   let host=document.getElementById('nvHost'); if(!host){host=document.createElement('div');host.id='nvHost';pg.appendChild(host);}
   const C=compute(), A=X().ASMS_();
   const sec=(n,t,b,s)=>`<div class="panel" style="margin-top:14px"><div class="tbl-head"><div><h3 style="display:inline;color:#0369A1">${n}. ${t}</h3> ${s?`<span class="pnote" style="display:inline">— ${s}</span>`:''}</div></div>${b}</div>`;

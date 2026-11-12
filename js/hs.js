@@ -67,7 +67,7 @@ function drillBlock(){
   return `<div style="margin-bottom:6px"><button id="hsOA" style="padding:4px 10px;border:1px solid #38BDF8;background:#fff;border-radius:6px;cursor:pointer">Mở hết</button> <button id="hsCA" style="padding:4px 10px;border:1px solid #38BDF8;background:#fff;border-radius:6px;cursor:pointer">Thu gọn</button></div>`+T(h,rows)+`<div class="pnote" style="margin-top:6px">SO thêm nếu đạt: mỗi ĐDKD dưới mục tiêu được kéo lên mục tiêu trên call plan còn lại (12–30/11) × SO/PC của chính ĐDKD đó; ĐDKD đã đạt ghi +0. Là ước tính, cộng được từ ĐDKD lên SS, NPP, ASM. Chưa trừ chồng lấn với PC/ASO ở tab "5 nhiệm vụ T11".</div>`;
 }
 function render(){
-  const pg=document.getElementById('pgHs'); if(!pg||typeof T11==='undefined'||typeof HS11==='undefined')return;
+  const pg=document.getElementById('pgHs'); const sn=document.getElementById('scopeNote'); if(sn){sn.innerHTML='';sn.hidden=true;} if(!pg||typeof T11==='undefined'||typeof HS11==='undefined')return;
   let host=document.getElementById('hsHost'); if(!host){host=document.createElement('div');host.id='hsHost';pg.appendChild(host);}
   const c=build(), rs=c.R.filter(r=>sc(r.asm)), a=agg(rs), g=gain(rs), AS=window.GPX&&window.GPX.ASMS_?window.GPX.ASMS_():[...new Set(c.R.map(r=>r.asm))];
   const lab=x=>window.GPX&&window.GPX.lab?window.GPX.lab(x):x;

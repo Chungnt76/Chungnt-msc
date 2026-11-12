@@ -164,6 +164,11 @@ window.renderT11=function(){try{init();render();avail();}catch(e){console.error(
       const flt=document.querySelector('.flt'); if(flt)flt.appendChild(b);}
     if(b){b.hidden=!msg; b.textContent=msg;}
   }
+  function ctxFix(on){
+    const e=document.getElementById('context'); if(!e)return; const h=e.innerHTML;
+    if(on&&/Tháng 10\s*$/.test(e.textContent.trim())&&!/Tháng 11/.test(e.textContent)){e.dataset.o11=h; e.innerHTML=h.replace(/Tháng 10(\s*(<\/[^>]+>)*\s*)$/,'Tháng 11 (MTD đến hết 11/11)$1');}
+    else if(!on&&e.dataset.o11){e.innerHTML=e.dataset.o11; delete e.dataset.o11;}
+  }
   function sync(){
     const fm=document.getElementById('fMonth'); if(!fm)return;
     const p7=vis('pgOn7');
@@ -171,7 +176,7 @@ window.renderT11=function(){try{init();render();avail();}catch(e){console.error(
     else if(!p7&&window.O7_11){window.O7_11=false;if(!shiftOn()&&!onT11()&&SUP.some(vis)){try{t11shiftEnter();}catch(er){console.error(er);}}}
     const on=onT11()||shiftOn()||(p7&&!!window.O7_11);
     [...fm.children].forEach(b=>b.classList.toggle('on',on?b.dataset.m==='11':b.dataset.m===F.month));
-    chip(onT11()); banner();
+    chip(onT11()); ctxFix(onT11()||shiftOn()); banner();
   }
   const navTo=k=>{const n=document.querySelector('#nav2 button[data-k="'+k+'"]'); if(n)n.click();};
   function bind(){
@@ -193,6 +198,7 @@ window.renderT11=function(){try{init();render();avail();}catch(e){console.error(
         if(bt.dataset.k==='ap'&&(shiftOn()||onT11()))setTimeout(()=>{const b=document.querySelector('#apqM button[data-m="1"]');if(b)b.click();},150);
         setTimeout(sync,80);},true);
       nv.addEventListener('click',()=>setTimeout(sync,120));}
+    const cx=document.getElementById('context'); if(cx&&!cx._o)new MutationObserver(()=>{if(cx.dataset.busy)return;cx.dataset.busy=1;ctxFix(onT11()||shiftOn());setTimeout(()=>{delete cx.dataset.busy;},50);}).observe(cx,{childList:true,subtree:true,characterData:true});
     const ch=document.getElementById('v3chips'); if(ch)new MutationObserver(()=>{if(onT11())chip(true);}).observe(ch,{childList:true,subtree:true,characterData:true});
   }
   const NOTE_PAGES=()=>Object.keys(NOTE).some(vis);
