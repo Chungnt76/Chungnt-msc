@@ -31,7 +31,7 @@ function compute(){
   const K=(a,n)=>{const kk=a+'|'+n; return ALI.get(kk)||kk;};
   const hh=()=>({cp:0,pc:0,so:0,cpr:0});
   const mk=(r)=>({asm:r.asm,npps:[],ss:r.ssn,so:0,tg:0,pc:0,li:0,aso:0,sm:0,mcp:0,asoOff:0,mcpOff:0,asoOn:0,mcpOn:0,soOff:0,pcOff:0,liOff:0,
-    t10:{so:0,offSo:0,offAso:0,onSo:0,onAso:0,offPc:0,offLi:0},t9:{off:0,on:0,offPc:0,offLi:0},on7:{q:0,a:0},drop:0,dropSO:0,srn:0,top:[],
+    t10:{so:0,offSo:0,offAso:0,onSo:0,onAso:0,offPc:0,offLi:0,sm:0,onPc:0},t9:{off:0,on:0,offPc:0,offLi:0,sm:0,onPc:0},hv9:{n:0,dat:0,n9:0,dat9:0},on7:{q:0,a:0},drop:0,dropSO:0,srn:0,top:[],
     hv:{n:0,m1:0,auto:0,L:[],need:0,pick:[],inc:0},cb:{n:0,mua:0,nhan:0,more:0,ds:0},hs:{O:hh(),N:hh()},hsM:new Map()});
   [...T11].sort((p,q)=>(ALI.has(p.asm+'|'+p.ssn)?1:0)-(ALI.has(q.asm+'|'+q.ssn)?1:0)).forEach(r=>{const kk=K(r.asm,r.ssn); let o=SS.get(kk); if(!o){o=mk(r);SS.set(kk,o);} const a=r.v[vk()]||{}, f=vo(r,'OFF'), n=vo(r,'ON');
     if(o.npps.indexOf(r.npp)<0)o.npps.push(r.npp);
@@ -40,8 +40,8 @@ function compute(){
     o.asoOff+=f.aso||0; o.asoOn+=n.aso||0; o.soOff+=f.so||0; o.pcOff+=f.pc||0; o.liOff+=f.lines||0;
     byClean.set(clean(r.ss)+'|'+base(r.npp),o); byClean.set(clean(r.ssn)+'|'+base(r.npp),o);});
   T10.forEach(r=>{const o=SS.get(K(r.asm,r.ssn)); if(!o)return; const f=vo(r,'OFF'),n=vo(r,'ON'),a10=r.v[vk()]||{};
-    o.t10.so+=a10.so||0;o.t10.offSo+=f.so||0;o.t10.offAso+=f.aso||0;o.t10.onSo+=n.so||0;o.t10.onAso+=n.aso||0;o.t10.offPc+=f.pc||0;o.t10.offLi+=f.lines||0;});
-  T9.forEach(r=>{const o=SS.get(K(r.asm,r.ssn)); if(!o)return; const f=vo(r,'OFF');o.t9.off+=f.aso||0;o.t9.on+=vo(r,'ON').aso||0;o.t9.offPc+=f.pc||0;o.t9.offLi+=f.lines||0;});
+    o.t10.so+=a10.so||0;o.t10.offSo+=f.so||0;o.t10.offAso+=f.aso||0;o.t10.onSo+=n.so||0;o.t10.onAso+=n.aso||0;o.t10.offPc+=f.pc||0;o.t10.offLi+=f.lines||0;o.t10.sm+=a10.sm||0;o.t10.onPc+=n.pc||0;});
+  T9.forEach(r=>{const o=SS.get(K(r.asm,r.ssn)); if(!o)return; const f=vo(r,'OFF');o.t9.off+=f.aso||0;o.t9.on+=vo(r,'ON').aso||0;o.t9.offPc+=f.pc||0;o.t9.offLi+=f.lines||0;o.t9.sm+=(r.v[vk()]||{}).sm||0;o.t9.onPc+=vo(r,'ON').pc||0;});
   T11S.DATA.forEach(r=>{const o=byClean.get(clean(r.ss)+'|'+base(r.npp)); if(!o)return; if((F.vip!=='all'&&r.vip!==F.vip)||(F.oo!=='all'&&r.oo!==F.oo))return; if(r.oo==='OFF')o.mcpOff+=r.q11||0; else o.mcpOn+=r.q11||0;});
   const on=ON7_11; const onIdx=on.k.map(q=>{let o=null; SS.forEach(v=>{if(!o&&v.asm===q[1]&&clean(v.ss)===clean(q[0]))o=v;}); return o;});
   on.r.forEach(r=>{const o=onIdx[r[1]]; if(!o||r[2]>6)return; o.on7.q+=r[4];o.on7.a+=r[5];});
@@ -59,6 +59,10 @@ function compute(){
   // Hội viên Tết: KH đạt NV1 (DS ≥ 95% nền); dự phóng cuối tháng = DS + DS/ngày × ngày còn lại × hệ số tăng tốc
   HVT11.rows.forEach(r=>{const m=HVT11.sr[r[0]], o=m&&ssOf(m); if(!o)return; const b=r[6],ds=r[5]; if(!(b>0))return;
     const h=o.hv; h.n++; if(ds>=0.95*b)h.m1++; const proj=ds+ds/d*rem*k; if(proj>=0.95*b)h.auto++; else h.L.push({gap:0.95*b-proj,code:r[1],name:r[2],sr:m[1],ds,base:b});});
+  // Hội viên Doanh nhân T9/T10 (tab Hội viên): % KH đạt, dùng làm mốc so sánh T9/T10 cho Hội viên Tết
+  try{ const byAS=new Map(); SS.forEach(o=>byAS.set(o.asm+'|'+clean(o.ss),o));
+    HV10.rows.forEach(r=>{ if(HV_STALE&&r[7]>=3)return; const a=hvA(r[2]), sn=hvS(r[4]); const o=SS.get(K(a,sn))||byAS.get(a+'|'+clean(sn)); if(!o)return; const g=o.hv9; g.n++; g.dat+=r[11]; if(r[14]){g.n9++;g.dat9+=r[14][3];}});
+  }catch(e){console.error('NV5 HV10',e);}
   // Combo Off: KH có đơn combo / KH Off đã mua
   CBT11.rows.forEach(r=>{ if(r[1]!==0)return; const o=ssOf(CBT11.sr[r[0]]); if(o){o.cb.n+=r[2];o.cb.mua+=r[5];o.cb.nhan+=r[6];}});
   const A=[]; SS.forEach(o=>{
@@ -98,6 +102,10 @@ const FLT_NOTE=()=>{const m=[F.oo==='OFF'?'kênh Off Premise':F.oo==='ON'?'kênh
   return `<div class="pnote" style="margin:8px 0;padding:8px 10px;background:#fff7ed;border:1px solid #fdba74;border-radius:8px">Đang lọc${m.length?' <b>'+m.join(' · ')+'</b>':''}${F.asm!=='all'?' · ASM <b>'+esc(X().lab(F.asm))+'</b>':''}${(typeof MEAT!=='undefined'&&MEAT==='excl')?' · không gồm Meat':''}. ASO, LPPC và hiệu suất PC/Call plan theo bộ lọc; Hội viên Tết và Combo luôn tính toàn bộ KH; chỉ tiêu SO chỉ có ở cấp Toàn Miền.</div>`;};
 const T=(h,rows)=>`<div style="overflow-x:auto"><table class="t8asmtbl" style="font-size:14px"><thead><tr>${h}</tr></thead><tbody>${rows}</tbody></table></div>`;
 /* ---------- bảng mục tiêu ---------- */
+const WDM=m=>{try{return WORKDAYS[m]||26;}catch(e){return 26;}};
+// PC/Call plan T9/T10 (ước tính): call plan = call plan/ĐDKD/ngày T11 × ĐDKD tháng đó × ngày công tháng đó
+const est=(L,mo,ch)=>{const t=mo===9?'t9':'t10', pcK=ch==='O'?'offPc':'onPc', h=ch==='O'?'O':'N', d=CACHE?CACHE.d:9;
+  const pcv=sum(L,o=>o[t][pcK]), cp=sum(L,o=>o.sm?o.hs[h].cp/(o.sm*d)*o[t].sm*WDM(String(mo)):0); return cp?pcv/cp:null;};
 const METS={
  aso:{t:'ASO Off 95%',f:fPct,tg:()=>par('aso')/100,
   v:L=>[dv(sum(L,o=>o.t9.off),sum(L,o=>o.mcpOff)),dv(sum(L,o=>o.t10.offAso),sum(L,o=>o.mcpOff)),dv(sum(L,o=>o.asoOff),sum(L,o=>o.mcpOff))],
@@ -107,18 +115,18 @@ const METS={
   v:L=>[dv(sum(L,o=>o.t9.on),sum(L,o=>o.mcpOn)),dv(sum(L,o=>o.t10.onAso),sum(L,o=>o.mcpOn)),dv(sum(L,o=>o.asoOn),sum(L,o=>o.mcpOn))],
   need:L=>nf(sum(L,o=>o.n1.dOn),0)+' KH',so:L=>sum(L,o=>o.n1.dsOn),what:'Cách tính như ASO Off, trên MCP kênh On.'},
  hsO:{t:'PC/Call plan Off 70%',f:fPct,tg:()=>par('hsO')/100,
-  v:L=>[null,null,dv(sum(L,o=>o.hs.O.pc),sum(L,o=>o.hs.O.cp))],na:'chưa có call plan',
+  v:L=>[est(L,9,'O'),est(L,10,'O'),dv(sum(L,o=>o.hs.O.pc),sum(L,o=>o.hs.O.cp))],mark:'*',
   need:L=>nf(sum(L,o=>o.n2.exO),0)+' PC thêm',so:L=>sum(L,o=>o.n2.dsO),
   what:'Hiệu suất = số đơn (PC) / số KH trong call plan (lịch MCP) đến '+'${LAST}'+'. PC thêm = (mục tiêu − hiện tại) × call plan các ngày còn lại; SO thêm = PC thêm × SO/PC của SS × '+'${HSQ}'+'% (đơn thêm thường nhỏ hơn bình quân). SS đã vượt mục tiêu không bị trừ.'},
  hsN:{t:'PC/Call plan On 50%',f:fPct,tg:()=>par('hsN')/100,
-  v:L=>[null,null,dv(sum(L,o=>o.hs.N.pc),sum(L,o=>o.hs.N.cp))],na:'chưa có call plan',
+  v:L=>[est(L,9,'N'),est(L,10,'N'),dv(sum(L,o=>o.hs.N.pc),sum(L,o=>o.hs.N.cp))],mark:'*',
   need:L=>nf(sum(L,o=>o.n2.exN),0)+' PC thêm',so:L=>sum(L,o=>o.n2.dsN),what:'Cách tính như Off, trên call plan kênh On.'},
  lp:{t:'LPPC Off +1 line',f:fN2,u:'line',tg:L=>(dv(sum(L,o=>o.liOff),sum(L,o=>o.pcOff))||0)+par('lpAdd'),
   v:L=>[dv(sum(L,o=>o.t9.offLi),sum(L,o=>o.t9.offPc)),dv(sum(L,o=>o.t10.offLi),sum(L,o=>o.t10.offPc)),dv(sum(L,o=>o.liOff),sum(L,o=>o.pcOff))],
   need:L=>{const a=dv(sum(L,o=>o.liOff),sum(L,o=>o.pcOff));return a==null?'—':'→ '+nf(a+par('lpAdd'),2)+' line/PC';},so:L=>sum(L,o=>o.n3.ds),
   what:'LPPC Off = số line / số đơn kênh Off. Mục tiêu mỗi SS tăng thêm '+'${LPA}'+' line/PC so với T11 hiện tại; SO thêm = SO Off còn lại × (line thêm ÷ LPPC) × '+'${LPE}'+'% (line thêm là ngành yếu nên nhỏ hơn bình quân).'},
  hv:{t:'Hội viên Tết 70%',f:fPct,tg:()=>par('hvT')/100,
-  v:L=>[null,null,dv(sum(L,o=>o.hv.m1),sum(L,o=>o.hv.n))],na:'CT mới T11',
+  v:L=>[dv(sum(L,o=>o.hv9.dat9),sum(L,o=>o.hv9.n9)),dv(sum(L,o=>o.hv9.dat),sum(L,o=>o.hv9.n)),dv(sum(L,o=>o.hv.m1),sum(L,o=>o.hv.n))],mark:'†',
   need:L=>nf(sum(L,o=>o.hv.need),0)+' KH thêm · tự đạt ~'+pc(sum(L,o=>o.hv.auto),sum(L,o=>o.hv.n),0),so:L=>sum(L,o=>o.hv.inc),
   what:'KH đạt = DS ≥ 95% chỉ tiêu nền (NV1). T11 hiện tại là % KH đã đạt đến '+'${HV}'+'; "tự đạt" là % KH dự kiến đạt nếu giữ đà. Cần thêm = số KH phải kéo để đủ mục tiêu, chọn KH gần đạt nhất trước; SO thêm = DS còn thiếu của các KH đó so với giữ đà. Chưa xét NV2 (đủ nhãn trọng điểm) để nhận thưởng.'},
  cb:{t:'Combo Off 70%',f:fPct,tg:()=>par('cbT')/100,
@@ -128,11 +136,11 @@ const METS={
 };
 const fillWhat=m=>String(m.what||'').replace('${LAST}',T11_META.last_date).replace('${HSQ}',nf(par('hsq'),0)).replace('${LPA}',nf(par('lpAdd'),1)).replace('${LPE}',nf(par('lpe'),0)).replace('${HV}',HVT11.meta.asof||'').replace('${CMB}',nf(X().par('cmb'),0));
 function mcells(m,L,C){
-  const v=m.v(L,C), a=v[2], tgv=m.tg(L), so=m.so(L), gap=tgv!=null&&a!=null?a-tgv:null, nz=x=>x==null?`<span style="color:#94a3b8;font-size:12px">${m.na||'—'}</span>`:m.f(x);
+  const v=m.v(L,C), a=v[2], mk=m.mark?`<sup style="color:#64748b">${m.mark}</sup>`:'', tgv=m.tg(L), so=m.so(L), gap=tgv!=null&&a!=null?a-tgv:null, nz=x=>x==null?`<span style="color:#94a3b8;font-size:12px">${m.na||'—'}</span>`:m.f(x);
   const col=gap==null?'':(gap>=0?'color:#16a34a':'color:#dc2626');
   const dTxt=gap==null?'—':m.u==='line'?(gap>=0?'+':'')+nf(gap,2)+' line':(gap>=0?'+':'')+nf(gap*100,1)+' pp';
   const tTxt=tgv!=null?m.f(tgv):(m.tgTxt?m.tgTxt(L):'—');
-  return `<td>${nz(v[0])}</td><td>${nz(v[1])}</td><td><b>${m.f(a)}</b></td><td>${tTxt}</td><td style="${col};font-weight:700">${dTxt}</td><td>${m.need(L,C)}</td><td><b>+${ty(so)}</b></td>`;
+  return `<td>${nz(v[0])}${v[0]!=null?mk:''}</td><td>${nz(v[1])}${v[1]!=null?mk:''}</td><td><b>${m.f(a)}</b></td><td>${tTxt}</td><td style="${col};font-weight:700">${dTxt}</td><td>${m.need(L,C)}</td><td><b>+${ty(so)}</b></td>`;
 }
 function blockSummary(C){
   const L=C.list.filter(o=>sc(o.asm)), r=rollup(L), hc=C.hc, NT=NTF();
@@ -151,7 +159,7 @@ function blockGoals(C){
   const r=rollup(L);
   const tot=`<tr class="tot" style="font-weight:700"><td style="text-align:left">Cộng 7 mục tiêu (sau chồng lấn ${nf(par('ov'),0)}%)</td><td colspan="6"></td><td>+${ty(r.core)}</td></tr>`;
   const h=`<th style="${THL}">Mục tiêu T11</th><th style="${TH}">Thực đạt T9</th><th style="${TH}">Thực đạt T10 (cả tháng)</th><th style="${TH}">T11 MTD đến ${T11_META.last_date}</th><th style="${TH}">Mục tiêu T11</th><th style="${TH}">Chênh</th><th style="${TH}">Cần thêm để đạt</th><th style="${TH}">SO thêm (tỷ)</th>`;
-  return T(h,rows+tot)+`<div class="pnote" style="margin-top:6px">SO thêm của từng dòng là tiềm năng riêng lẻ (chưa trừ chồng lấn). Chọn từng mục tiêu ở mục 3 để khoan ASM › NPP › SS.</div>`;
+  return T(h,rows+tot)+`<div class="pnote" style="margin-top:6px">* PC/Call plan T9, T10 là <b>ước tính</b>: call plan = call plan/ĐDKD/ngày của T11 × số ĐDKD × ngày công tháng đó (chưa có lịch ghé T9–T10). † Hội viên T9, T10 là % KH đạt Hội viên Doanh nhân (tab Hội viên), T11 là % KH đạt NV1 Hội viên Tết: cùng ý nghĩa KH đạt, khác chương trình. Combo bắt đầu từ T11 nên chưa có T9, T10. SO thêm của từng dòng là tiềm năng riêng lẻ (chưa trừ chồng lấn). Chọn từng mục tiêu ở mục 3 để khoan ASM › NPP › SS.</div>`;
 }
 const H1=`<th style="${THL}">Phạm vi</th><th style="${TH}">Chỉ tiêu (tỷ)</th><th style="${TH}">%Đạt MTD</th><th style="${TH}">Giữ đà (tỷ)</th><th style="${TH}">GAP (tỷ)</th><th style="${TH}">ASO Off+On (tỷ)</th><th style="${TH}">PC/Call plan (tỷ)</th><th style="${TH}">LPPC Off (tỷ)</th><th style="${TH}">Hội viên Tết (tỷ)</th><th style="${TH}">Combo Off (tỷ)</th><th style="${TH}">Cộng sau chồng lấn (tỷ)</th><th style="${TH}">% lấp GAP</th>`;
 function lines(arr){
@@ -228,7 +236,7 @@ function blockT12(C){
    ['Combo Off',`≥ ${nf(par('cbT'),0)}% KH active có đơn combo`,'Đẩy combo cho KH chưa có đơn combo','Đánh giá lại KH nhận combo, giữ nhóm đã nhận']];
   const h2=`<th style="${THL}">Mục tiêu</th><th style="${TH}">Chuẩn giữ T12 (đề xuất)</th><th style="${THL}">Tuần 1–2/12</th><th style="${THL}">Tuần 3–4/12</th>`;
   return T(h1,rows)+`<div class="pnote" style="margin:6px 0 10px">AP T12 lấy từ chỉ tiêu AP Quý 4 trong dashboard (E/HE/O). SO/ngày cần = E ÷ ${wd12} ngày công T12; SO/ngày T11 cam kết = (giữ đà + 7 mục tiêu × thực thi ${nf(C.hc*100,0)}%) ÷ ${C.D} ngày công. Cột tăng: đỏ trên 15%, vàng 0–15%, xanh khi T11 cam kết đã vượt mức cần.</div>`+
-   T(h2,acts.map(r=>`<tr><td style="text-align:left"><b>${r[0]}</b></td><td>${r[1]}</td><td style="text-align:left;white-space:normal">${r[2]}</td><td style="text-align:left;white-space:normal">${r[3]}</td></tr>`).join(''))+`<div class="pnote" style="margin-top:6px">Chưa có chỉ tiêu 7 mục tiêu cho T12 chính thức: bảng đề xuất giữ mục tiêu T11 làm sàn; cập nhật khi có số T12. T9/T10 của PC/Call plan chưa có vì chưa có file lịch ghé (call plan) tháng 9–10; Hội viên Tết và Combo bắt đầu từ T11.</div>`;
+   T(h2,acts.map(r=>`<tr><td style="text-align:left"><b>${r[0]}</b></td><td>${r[1]}</td><td style="text-align:left;white-space:normal">${r[2]}</td><td style="text-align:left;white-space:normal">${r[3]}</td></tr>`).join(''))+`<div class="pnote" style="margin-top:6px">Chưa có chỉ tiêu 7 mục tiêu cho T12 chính thức: bảng đề xuất giữ mục tiêu T11 làm sàn; cập nhật khi có số T12. Combo bắt đầu từ T11 nên chưa có số T9, T10.</div>`;
 }
 function render(){
   const pg=document.getElementById('pgNv'); const sn=document.getElementById('scopeNote'); if(sn){sn.innerHTML='';sn.hidden=true;} if(!pg||typeof T11==='undefined'||!window.GPX)return;
