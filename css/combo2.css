@@ -626,3 +626,25 @@
 #hvv11 tr.team td.winc,#hvv11 tr.tot td.winc{background:#d1fae5!important}
 #hvv11 .winp{display:inline-block;background:#16a34a;color:#fff!important;font-weight:900;border-radius:999px;padding:3px 10px;font-size:12px;white-space:nowrap}
 :root[data-theme="dark"] #hvv11 .kc.win{background:linear-gradient(135deg,#064e3b,#0b2e22)!important}:root[data-theme="dark"] #hvv11 .kc.win b,:root[data-theme="dark"] #hvv11 .kc.win small,:root[data-theme="dark"] #hvv11 .kc.win em,:root[data-theme="dark"] #hvv11 .kc.win span{color:#bbf7d0!important}
+
+/* Cỡ chữ lớn hơn (yêu cầu 12/11) cho 3 tab Hội viên Tết · Tăng doanh số · Combo */
+:is(#cbv11,#hvv11,#tdsv11) table,:is(#cbv11,#hvv11,#tdsv11) table.fund{font-size:15px!important}
+:is(#cbv11,#hvv11,#tdsv11) table td,:is(#cbv11,#hvv11,#tdsv11) table.fund td{font-size:15px!important;padding:9px 12px!important}
+:is(#cbv11,#hvv11,#tdsv11) table.fund thead th,:is(#cbv11,#hvv11,#tdsv11) table thead th{font-size:14px!important;padding:11px 10px!important}
+:is(#cbv11,#hvv11,#tdsv11) table.fund thead tr:first-child th{font-size:15px!important}
+:is(#cbv11,#hvv11,#tdsv11) .ovf thead tr:nth-child(2) th{font-size:13.5px!important;top:42px}
+:is(#cbv11,#hvv11,#tdsv11) table.fund tr.tot td,:is(#cbv11,#hvv11,#tdsv11) table.fund tr.team td{font-size:16px!important}
+:is(#cbv11,#hvv11,#tdsv11) small.s{font-size:12.5px!important}
+:is(#cbv11,#hvv11,#tdsv11) .pill,:is(#cbv11,#hvv11,#tdsv11) table.fund .pill,:is(#cbv11,#hvv11,#tdsv11) .tp{font-size:14px!important}
+:is(#cbv11,#hvv11,#tdsv11) .note{font-size:14.5px!important}
+:is(#cbv11,#hvv11,#tdsv11) .sub{font-size:15px!important}
+:is(#cbv11,#hvv11,#tdsv11) .ttl{font-size:20px!important}
+:is(#cbv11,#hvv11,#tdsv11) .ttl small{font-size:14px!important}
+:is(#cbv11,#hvv11,#tdsv11) .flt,:is(#cbv11,#hvv11,#tdsv11) select,:is(#cbv11,#hvv11,#tdsv11) .btn,:is(#cbv11,#hvv11,#tdsv11) .chip{font-size:15px!important}
+:is(#cbv11,#hvv11,#tdsv11) .kc small,:is(#cbv11,#hvv11,#tdsv11) .kc2 small{font-size:14px!important}
+:is(#cbv11,#hvv11,#tdsv11) .kc span,:is(#cbv11,#hvv11,#tdsv11) .kc2 span{font-size:14px!important}
+:is(#cbv11,#hvv11,#tdsv11) .pc .rule,:is(#cbv11,#hvv11,#tdsv11) .pc .mx{font-size:14px!important}
+
+:is(#cbv11,#hvv11,#tdsv11) table.fund td,:is(#cbv11,#hvv11,#tdsv11) table.bt td{min-width:0!important;padding:8px 7px!important}
+:is(#cbv11,#hvv11,#tdsv11) table thead th{padding:10px 6px!important}
+:is(#cbv11,#hvv11,#tdsv11) .wrap,:is(#cbv11,#hvv11,#tdsv11) .ovf{overflow-x:auto}

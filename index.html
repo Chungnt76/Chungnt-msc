@@ -1534,13 +1534,13 @@ window.__z=function(b){var t=atob(b),u=new Uint8Array(t.length);for(var i=0;i<t.
 <script src="data/TDS11.js?v=1794450068"></script>
 <script src="js/t11x.js?v=1794450068"></script>
 <script src="js/cbt.js?v=1794369064"></script>
-<script src="js/gp.js?v=1794476001"></script>
-<script src="js/nv5.js?v=1794476001"></script>
-<script src="data/HS11.js?v=1794476001"></script>
-<script src="js/hs.js?v=1794476001"></script>
+<script src="js/gp.js?v=1794477001"></script>
+<script src="js/nv5.js?v=1794477001"></script>
+<script src="data/HS11.js?v=1794477001"></script>
+<script src="js/hs.js?v=1794477001"></script>
 <script src="js/t11s.js?v=1794450068"></script>
-<script src="js/t11.js?v=1794476001"></script>
-<link rel="stylesheet" href="css/combo2.css?v=202611111730">
+<script src="js/t11.js?v=1794477001"></script>
+<link rel="stylesheet" href="css/combo2.css?v=1794477001">
 <script src="js/combo2.js?v=202611111700"></script>
 <script src="js/hvt2.js?v=1794450068"></script>
 <script src="js/tds2.js?v=202611111700"></script>
@@ -5082,7 +5082,7 @@ applyMeat('all');document.querySelector('#fMonth button[data-m="10"]').click();u
     (root||document).querySelectorAll('table').forEach(tb=>{
       if(tb.offsetParent===null)return; const w=box(tb); if(!w)return;
       tb.style.zoom=''; const cs=getComputedStyle(w), cw=w.clientWidth-parseFloat(cs.paddingLeft||0)-parseFloat(cs.paddingRight||0), sw=tb.scrollWidth;
-      if(cw>50&&sw>cw+2)tb.style.zoom=Math.max(0.4,cw/sw).toFixed(3);});
+      if(cw>50&&sw>cw+2)tb.style.zoom=Math.max(tb.closest('#hvv11,#cbv11,#tdsv11')?0.78:0.4,cw/sw).toFixed(3);});
   }
   let USER=1; try{USER=+localStorage.getItem('presScale')||1;}catch(e){}
   const kidsOf=pn=>[...pn.children].filter(c=>!c.classList.contains('pfocus')&&!c.classList.contains('ppres'));
