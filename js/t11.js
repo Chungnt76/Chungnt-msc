@@ -1,7 +1,7 @@
 /* ===== Tab Tháng 11 — tracking SO / Active / PC / LPPC (T11 so với T10 & T9) =====
    Dữ liệu: data/T11.js (T11, T11CH, T11_META). Chưa có dữ liệu thì tab hiện khung + cột T9, T10 để đối chiếu. */
 (function(){
-const D9=24, D10=9;   // D10 = số ngày làm việc T10 cùng kỳ (01–11/10, không tính CN)                       // ngày làm việc T9, T10
+const D9=24, D10=10;   // D10 = số ngày làm việc T10 cùng kỳ (01–12/10, không tính CN)                       // ngày làm việc T9, T10
 const S={meat:'a',oo:'all',vip:'all',asm:new Set(),npp:new Set()};
 const dash='<span class="fx">—</span>';
 const mx=()=>T11_META||{};
@@ -96,10 +96,10 @@ function render(){
   MAPS=null;
   const d=d11(),has=d!=null,M=agg(()=>true),s11=has?M.so11/d:null;
   el('t11Banner').innerHTML=has?
-    `Dữ liệu Tháng 11 đã cập nhật <b>đến ngày ${mx().last_date}</b> (MTD · ${d}/${dTot()} ngày làm việc) — so sánh T10 <b>cùng kỳ (01–11/10, 9 ngày làm việc)</b> theo lũy kế và bình quân/ngày làm việc; Tiến độ = %Đạt chia % ngày làm việc đã qua (100 = đúng tiến độ).`:
+    `Dữ liệu Tháng 11 đã cập nhật <b>đến ngày ${mx().last_date}</b> (MTD · ${d}/${dTot()} ngày làm việc) — so sánh T10 <b>cùng kỳ (01–12/10, 10 ngày làm việc)</b> theo lũy kế và bình quân/ngày làm việc; Tiến độ = %Đạt chia % ngày làm việc đã qua (100 = đúng tiến độ).`:
     `⏳ <b>Chưa có dữ liệu Tháng 11</b> — khung đã dựng sẵn (T11 có ${dTot()} ngày làm việc). Khi có file sell-out T11 (cùng định dạng T10), toàn bộ cột T11 sẽ tự hiện; hiện các cột T9 &amp; T10 để đối chiếu.`;
   const row=(lab,a,b,c,fmt,g)=>`<tr><td style="text-align:left;font-weight:600">${lab}</td><td>${fmt(a)}</td><td>${fmt(b)}</td><td style="font-weight:700">${has?fmt(c):dash}</td><td>${has&&g?gd(c,b):dash}</td><td>${has&&g===true?gd(c,a):dash}</td></tr>`;
-  el('t11CmpTbl').innerHTML=`<thead><tr><th style="text-align:left">Chỉ số toàn Miền</th><th>Tháng 9</th><th>Tháng 10 (cùng kỳ 01–11/10)</th><th>Tháng 11 (01–11/11)</th><th>Δ % T11 vs T10</th><th>Δ % T11 vs T9</th></tr></thead><tbody>`+
+  el('t11CmpTbl').innerHTML=`<thead><tr><th style="text-align:left">Chỉ số toàn Miền</th><th>Tháng 9</th><th>Tháng 10 (cùng kỳ 01–12/10)</th><th>Tháng 11 (01–12/11)</th><th>Δ % T11 vs T10</th><th>Δ % T11 vs T9</th></tr></thead><tbody>`+
     row('SO (lũy kế MTD)',M.so9,M.so10,M.so11,gFmt,2)+
     row('SO bình quân/ngày',M.so9/D9,M.so10/D10,s11,gFmt,true)+
     row('Active (ASO)',M.a9,M.a10,M.a11,fi,2)+
@@ -128,7 +128,7 @@ function init(){
 function avail(){
   const el=document.getElementById('t11Avail'); if(!el)return;
   const card=(l,v,sb,ac)=>`<div class="kpi" style="border-top:3px solid ${ac}"><div class="k-lab" style="color:${ac}">${l}</div><div class="k-val">${v}</div><div class="k-sub">${sb}</div></div>`;
-  let h='<div class="panel" style="margin-top:14px;border-top:3px solid #7c5cbf"><div class="tbl-head"><div><h3 style="display:inline;color:#7c5cbf">📌 Số liệu Tháng 11 đã có (MTD)</h3> <span class="pnote" style="display:inline">— SO / Active / PC / LPPC đã cập nhật đến hết 11/11; Hội viên Tết và Combo đã có số</span></div></div><div class="kpis" style="grid-template-columns:repeat(4,1fr)">';
+  let h='<div class="panel" style="margin-top:14px;border-top:3px solid #7c5cbf"><div class="tbl-head"><div><h3 style="display:inline;color:#7c5cbf">📌 Số liệu Tháng 11 đã có (MTD)</h3> <span class="pnote" style="display:inline">— SO / Active / PC / LPPC đã cập nhật đến hết 12/11; Hội viên Tết và Combo đến 11/11</span></div></div><div class="kpis" style="grid-template-columns:repeat(4,1fr)">';
   if(typeof HVT11!=='undefined'){let n=0,d=0,sp=0,ps=0;HVT11.rows.forEach(r=>{n++;if(r[5]>0)ps++;if(r[7]>0)d++;else if(r[6]>0&&r[5]<0.95*r[6]&&0.95*r[6]-r[5]<=0.3*r[6])sp++;});
     h+=card('Hội viên Tết · đạt',fi(d),fp(n?d/n*100:0)+' của '+fi(n)+' hội viên · sắp đạt '+fi(sp)+' · phát sinh DS '+fi(ps),'#0369a1');}
   if(typeof COMBO11!=='undefined'){const kh=new Set();let su=0,ng=0;COMBO11.rows.forEach(r=>{kh.add(r[1]);su+=r[6];if(!r[9])ng++;});
@@ -150,13 +150,13 @@ window.renderT11=function(){try{init();render();avail();}catch(e){console.error(
     const c=document.getElementById('v3chips'); if(!c)return;
     c.querySelectorAll('.chip').forEach(e=>{
       if(e.children.length)return; const t=e.textContent;
-      if(on&&/^Tháng \d+ · MTD đến \d+\/\d+ \(/.test(t)){e.dataset.orig=t; e.textContent='Tháng 11 · MTD đến hết 11/11 (hội viên) · 11/11 (combo)';}
+      if(on&&/^Tháng \d+ · MTD đến \d+\/\d+ \(/.test(t)){e.dataset.orig=t; e.textContent='Tháng 11 · MTD đến hết 12/11 (SO) · 11/11 (hội viên, combo)';}
       else if(!on&&e.dataset.orig){e.textContent=e.dataset.orig; delete e.dataset.orig;}});
   }
   const shiftOn=()=>!!(window.T11SHIFT&&T11SHIFT.on);
   const SUP=['pgOv','pgSoM','pgPc','pgCat','pgR360'];            // tab chạy được chế độ Tháng 11 (dịch khe tháng)
   const NOTE={pgGrow:'Tăng trưởng 10T là lũy kế 10 tháng so cùng kỳ 2025/2024/2023 — chưa có số cùng kỳ T11 nên chưa chạy được Tháng 11. Số T11 xem ở tab Tháng 11.',
-    pgApq:'AP Quý 4: đang xem Tháng 11 — SO T11 sell-out MTD đến 11/11 so với chỉ tiêu AP tháng 11 (đổi tháng ở bộ chọn riêng của tab).',pgAp9:'Thực hiện AP 9 tháng — không theo bộ lọc tháng.',pgPlan:'Plan AP Quý 4 — không theo bộ lọc tháng.'};
+    pgApq:'AP Quý 4: đang xem Tháng 11 — SO T11 sell-out MTD đến 12/11 so với chỉ tiêu AP tháng 11 (đổi tháng ở bộ chọn riêng của tab).',pgAp9:'Thực hiện AP 9 tháng — không theo bộ lọc tháng.',pgPlan:'Plan AP Quý 4 — không theo bộ lọc tháng.'};
   function banner(){
     let b=document.getElementById('t11Banner2'); const on=shiftOn()||onT11();
     const pg=Object.keys(NOTE).find(k=>vis(k)); const msg=(on&&pg)?NOTE[pg]:'';
@@ -166,7 +166,7 @@ window.renderT11=function(){try{init();render();avail();}catch(e){console.error(
   }
   function ctxFix(on){
     const e=document.getElementById('context'); if(!e)return; const h=e.innerHTML;
-    if(on&&/Tháng 10\s*$/.test(e.textContent.trim())&&!/Tháng 11/.test(e.textContent)){e.dataset.o11=h; e.innerHTML=h.replace(/Tháng 10(\s*(<\/[^>]+>)*\s*)$/,'Tháng 11 (MTD đến hết 11/11)$1');}
+    if(on&&/Tháng 10\s*$/.test(e.textContent.trim())&&!/Tháng 11/.test(e.textContent)){e.dataset.o11=h; e.innerHTML=h.replace(/Tháng 10(\s*(<\/[^>]+>)*\s*)$/,'Tháng 11 (MTD đến hết 12/11)$1');}
     else if(!on&&e.dataset.o11){e.innerHTML=e.dataset.o11; delete e.dataset.o11;}
   }
   function sync(){

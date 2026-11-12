@@ -1,12 +1,12 @@
 /* ===== Chế độ Tháng 11 cho các tab cũ (Tổng quan, SO & Chỉ tiêu, PC & LPPC, Ngành hàng, Review 360) =====
    Các tab này chạy theo 4 "khe tháng" 7→10 (khe 10 = tháng MTD). Khi chọn Tháng 11, dữ liệu được DỊCH khe:
-   khe7←T8, khe8←T9, khe9←T10, khe10←T11 (MTD đến 11/11); nhãn "T7..T10 / Tháng 7..10" được cộng 1 khi hiển thị.
+   khe7←T8, khe8←T9, khe9←T10, khe10←T11 (MTD đến 12/11); nhãn "T7..T10 / Tháng 7..10" được cộng 1 khi hiển thị.
    Dữ liệu T11 lấy từ data/T11S.js (sinh từ raw đơn hàng + Visit Schedule + TARGETACTUAL). Thoát chế độ = khôi phục nguyên trạng. */
 (function(){
 const ST={on:false,orig:null,txt:new Map(),outs:new Set()};
 window.T11SHIFT=ST;
-const KCY=9/27;   // chỉ tiêu T10 quy về cùng kỳ 01–11/10: 9/27 ngày làm việc
-const WD11={'7':26,'8':24,'9':9,'10':25};   // khe 9 = T10 cùng kỳ 01–11/10 (9 ngày làm việc)
+const KCY=10/27;   // chỉ tiêu T10 quy về cùng kỳ 01–12/10: 10/27 ngày làm việc
+const WD11={'7':26,'8':24,'9':10,'10':25};   // khe 9 = T10 cùng kỳ 01–12/10 (10 ngày làm việc)
 const k3=r=>r.asm+'|'+r.npp+'|'+r.ssn;
 const clone=o=>Object.assign({},o);
 function baseRow(r){            // đưa dòng T9/T10 về giá trị gốc (trước bộ lọc Kênh/Nhóm KH/Phạm vi SO)
@@ -47,7 +47,7 @@ function enter(){
   const cyCH=r=>{const o=baseCH(r), c=cy[k3(r)]; if(!c||!c.v)return o; const f=k=>{const b=c.v[k]||{}; return {so:b.so||0,aso:b.aso||0,pc:b.pc||0};};
     const A=f('a|'+r.oo); o.so=A.so;o.aso=A.aso;o.pc=A.pc;o.x=f('x|'+r.oo);
     if(r.vv){o.vv={}; Object.keys(r.vv).forEach(g=>{o.vv[g]=Object.assign({},r.vv[g],f('a|'+r.oo+'|'+g),{x:f('x|'+r.oo+'|'+g)});});}
-    return o;};            // T10 cùng kỳ (01–11/10) theo kênh: lấy từ T10CY, không dùng cả tháng T10
+    return o;};            // T10 cùng kỳ (01–12/10) theo kênh: lấy từ T10CY, không dùng cả tháng T10
   FULL.T9CH=O.T10CH.map(cyCH); FULL.T10CH=T11CH.map(clone);
   const dk={}; S.DATA.forEach(d=>dk[d.npp+'|'+d.ss+'|'+d.oo+'|'+d.vip]=d);
   const sv=(r,m)=>r._a&&r._a['s'+m]!=null?r._a['s'+m]:r['s'+m];
@@ -101,7 +101,7 @@ function hdr(on){
 }
 /* ---- cộng 1 vào nhãn tháng (T7..T10 → T8..T11) trong các tab chạy bằng khe tháng ---- */
 const RE=/((?<![A-Za-zÀ-ỹ0-9])T|[Tt]háng |THÁNG )(7|8|9|10)(?!\d)/g;
-const sh=s=>s.replace(RE,(m,p,n)=>p+(+n+1)).replace(/T10 \(cả tháng\)|T10 cả tháng/g,'T10 cùng kỳ (01–11/10)').replace(/(T10|[Tt]háng 10|THÁNG 10)(?!\d)(?! cùng)(?! CÙNG)(?!–T11)(?!\s*→)/g,'$1 cùng kỳ');
+const sh=s=>s.replace(RE,(m,p,n)=>p+(+n+1)).replace(/T10 \(cả tháng\)|T10 cả tháng/g,'T10 cùng kỳ (01–12/10)').replace(/(T10|[Tt]háng 10|THÁNG 10)(?!\d)(?! cùng)(?! CÙNG)(?!–T11)(?!\s*→)/g,'$1 cùng kỳ');
 ST.sh=sh;
 const ROOTS=['pgOv','pgSoM','pgPc','pgCat','pgR360','v3chips','context','tblNote'];
 let OBS=null; const POKE=new Set();

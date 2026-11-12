@@ -1344,7 +1344,7 @@ body.presenting .nav2,body.pfocus-open .nav2{z-index:10}
   <div id="pgT11" hidden>
   <div id="t11Avail"></div>
   <div class="panel" style="margin-top:14px;border-top:3px solid #0ea5e9">
-    <div class="tbl-head"><div><h3 style="display:inline;color:#7c5cbf">📅 Tháng 11/2026 — so sánh với Tháng 10 &amp; Tháng 9</h3> <span class="pnote" style="display:inline">— SO, Active, PC, LPPC · so sánh theo <b>bình quân/ngày</b> (T9: cả tháng 24 ngày; <b>T10: cùng kỳ 01–11/10 = 9 ngày làm việc</b>; T11: 01–11/11 = 9 ngày làm việc, cả tháng 25) · cấp ASM → NPP → SS · tách kênh Off / On</span></div></div>
+    <div class="tbl-head"><div><h3 style="display:inline;color:#7c5cbf">📅 Tháng 11/2026 — so sánh với Tháng 10 &amp; Tháng 9</h3> <span class="pnote" style="display:inline">— SO, Active, PC, LPPC · so sánh theo <b>bình quân/ngày</b> (T9: cả tháng 24 ngày; <b>T10: cùng kỳ 01–12/10 = 10 ngày làm việc</b>; T11: 01–12/11 = 10 ngày làm việc, cả tháng 25) · cấp ASM → NPP → SS · tách kênh Off / On</span></div></div>
     <div class="t8norm" id="t11Banner"></div>
     <div class="flt2" style="display:flex;flex-wrap:wrap;gap:14px;margin:10px 0">
       <div class="fg"><label>Ngành hàng</label><div class="seg" id="t11Meat"><button data-v="a" class="on">Tất cả</button><button data-v="x">Không P.Meat &amp; Bia</button></div></div>
@@ -1521,32 +1521,32 @@ window.__z=function(b){var t=atob(b),u=new Uint8Array(t.length);for(var i=0;i<t.
 <script src="data/DDK.js?v=202611111400"></script>
 <script src="data/G9W.js?v=202611111400"></script>
 <script src="data/ON7.js?v=202611111400"></script>
-<script src="data/ON7_11.js?v=1794450068"></script>
-<script src="data/T10CY.js?v=1794450068"></script>
-<script src="data/T10CYS.js?v=1794450068"></script>
+<script src="data/ON7_11.js?v=1794523075"></script>
+<script src="data/T10CY.js?v=1794523075"></script>
+<script src="data/T10CYS.js?v=1794523075"></script>
 <script src="data/G9.js?v=202611111400"></script>
 <script src="data/G9SS.js?v=202611111400"></script>
 <script src="data/MBS78_DATA.js?v=202611111400"></script>
-<script src="data/T11.js?v=1794450068"></script>
-<script src="data/T11S.js?v=1794450068"></script>
+<script src="data/T11.js?v=1794523075"></script>
+<script src="data/T11S.js?v=1794523075"></script>
 <script src="data/HVT11.js?v=1794450158"></script>
-<script src="data/GP11.js?v=1794450274"></script>
-<script src="data/CBT11.js?v=1794450068"></script>
+<script src="data/GP11.js?v=1794523075"></script>
+<script src="data/CBT11.js?v=1794523075"></script>
 <script src="data/COMBO11.js?v=1794450158"></script>
 <script src="data/TDS11.js?v=1794450068"></script>
 <script src="js/t11x.js?v=1794450068"></script>
 <script src="js/cbt.js?v=1794369064"></script>
-<script src="js/gp.js?v=1794477001"></script>
+<script src="js/gp.js?v=1794523075"></script>
 <script src="js/nv5.js?v=1794520461"></script>
-<script src="data/HS11.js?v=1794477001"></script>
+<script src="data/HS11.js?v=1794523075"></script>
 <script src="js/hs.js?v=1794477001"></script>
 <script src="data/TB11.js?v=1794480001"></script>
 <script src="data/SPT11.js?v=1794521000"></script>
 <script src="js/tb.js?v=1794480100"></script>
 <script src="js/spt.js?v=1794521000"></script>
 <script src="js/pnz.js?v=1794478001"></script>
-<script src="js/t11s.js?v=1794450068"></script>
-<script src="js/t11.js?v=1794477001"></script>
+<script src="js/t11s.js?v=1794523075"></script>
+<script src="js/t11.js?v=1794523075"></script>
 <link rel="stylesheet" href="css/combo2.css?v=1794477001">
 <script src="js/combo2.js?v=202611111700"></script>
 <script src="js/hvt2.js?v=1794450068"></script>
@@ -5595,7 +5595,7 @@ applyMeat('all');document.querySelector('#fMonth button[data-m="10"]').click();u
     // 3. cần can thiệp
     const iss=[],sts=[];
     if(!single){const bad=sc.map(a=>({a,x:calc([a])})).filter(z=>z.x.tien!=null&&z.x.tien<80);if(bad.length){iss.push(`<b>${bad.length}/${sc.length} ASM</b> dưới 80% tiến độ: ${bad.map(z=>esc(shortASM(z.a))).join(', ')}`);sts.push('bad');}}
-    if(F.oo!=='OFF'&&window.T11SHIFT&&T11SHIFT.on){const on=agg(rowsOf(sc,'ON'));if(on.q){const p=act(on)/on.q*100,pp=on.a9/on.q*100;if(p<pp-1){iss.push(`Kênh On ${fp(p)} quầy active (01–11/11), thấp hơn cùng kỳ tháng trước ${fp(pp)} (${sg(p-pp)} điểm), còn ${fi(on.q-act(on))} quầy chưa phát sinh`);sts.push('bad');}else{iss.push(`Kênh On ${fp(p)} quầy active (01–11/11), ngang cùng kỳ tháng trước ${fp(pp)}`);sts.push('warn');}}}
+    if(F.oo!=='OFF'&&window.T11SHIFT&&T11SHIFT.on){const on=agg(rowsOf(sc,'ON'));if(on.q){const p=act(on)/on.q*100,pp=on.a9/on.q*100;if(p<pp-1){iss.push(`Kênh On ${fp(p)} quầy active (01–12/11), thấp hơn cùng kỳ tháng trước ${fp(pp)} (${sg(p-pp)} điểm), còn ${fi(on.q-act(on))} quầy chưa phát sinh`);sts.push('bad');}else{iss.push(`Kênh On ${fp(p)} quầy active (01–12/11), ngang cùng kỳ tháng trước ${fp(pp)}`);sts.push('warn');}}}
     else if(F.oo!=='OFF'){const on=agg(rowsOf(sc,'ON'));if(on.q){const p=act(on)/on.q*100;if(p<70){iss.push(`Kênh On chỉ <span class="neg">${fp(p)}</span> quầy active (ngưỡng 70%), còn ${fi(on.q-act(on))} quầy chưa phát sinh`);sts.push('bad');}else if(p<85){iss.push(`Kênh On ${fp(p)} quầy active, cần theo dõi`);sts.push('warn');}}}
     const nb=nbv(o); if(o.q&&nb/o.q>0.1){iss.push(`<b>${fi(nb)}</b> quầy ${NBLAB().replace(/^\w/,c=>c.toLowerCase())} (${fp(nb/o.q*100)} tổng quầy)`);sts.push('warn');}
     items.push({st:iss.length?worst(sts):'ok',html:iss.length?'Cần can thiệp: '+iss.join(' · ')+'.':'Chưa có ASM hoặc kênh nào dưới ngưỡng cảnh báo.'});
