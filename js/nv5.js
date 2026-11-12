@@ -8,7 +8,7 @@ const ty=n=>(n==null||isNaN(n))?'—':nf(n/1e9,2);
 const pc=(a,b,d)=>b?nf(a/b*100,d==null?1:d)+'%':'—';
 const LSK='nv5:';
 const LS={g(k){try{return localStorage.getItem(LSK+k);}catch(e){return null;}},s(k,v){try{localStorage.setItem(LSK+k,v);}catch(e){}}};
-const PAR0={pc:13.6,lp:5.75,cap:12,aso:95,on:75,cat:0.3,hc:50,cb1:35};
+const PAR0={pc:13.6,lp:5.75,cap:12,aso:95,on:75,cat:0.3,hc:50,cb1:35,ov:30};
 const par=k=>{const v=X().pn(LS.g('p|'+k)); return v==null?PAR0[k]:v;};
 const S={asm:'all',open:new Set()};
 const clean=s=>String(s||'').replace(/ \(.*\)/,'').trim(), base=s=>String(s||'').replace(' - Chi nhánh','').trim();
@@ -68,14 +68,14 @@ function compute(){
     const h=x.hvCb({asm:o.asm,ss:o.ss}); o.n4={hv:h.hv,cb:h.cb,more:h.more,sapN:h.sapN,tot:h.hv+h.cb,cbp:o.cbN?o.cbNhan/o.cbN:0};
     // N5
     o.n5={cat:o.cat,ds:o.aso*par('cat')*150000*rf};
-    o.core=o.n2.dsAll+o.n4.tot; o.srN=srN; A.push(o);});
+    o.n1.net=(o.n1.dsOff+o.n1.dsOn)*(1-par('ov')/100); o.core=o.n1.net+o.n2.dsAll+o.n4.tot; o.srN=srN; A.push(o);});
   const hc=par('hc')/100;
   CACHE={d,D,rem,k,rf,hc,list:A.sort((p,q)=>q.short-p.short)}; return CACHE;
 }
 const sumBy=(arr,f)=>arr.reduce((t,o)=>t+f(o),0);
 function rollup(arr){
-  const r={so:0,tg:0,B:0,fc:0,short:0,mcpOff:0,asoOff:0,t10OffAso:0,tOff:0,dOff:0,dsOff:0,mcpOn:0,asoOn:0,dOn:0,dsOn:0,on7q:0,on7a:0,pc:0,li:0,sm:0,aso:0,dsPc:0,dsLp:0,dsAll:0,hv:0,cb:0,tot:0,core:0,cat:0,catDs:0,hvN:0,hvChua:0,hvM1:0,hvSap:0,hvNv1x:0,cbN:0,cbNhan:0,tdN:0,tdCt:0,tdTh:0,tdOk:0,tdNear:0,drop:0,dropSO:0,srn:0,t10OnAso:0};
-  arr.forEach(o=>{r.so+=o.so;r.tg+=o.tg;r.B+=o.B;r.fc+=o.fc;r.mcpOff+=o.mcpOff;r.asoOff+=o.asoOff;r.t10OffAso+=o.t10.offAso;r.tOff+=o.n1.tOff;r.dOff+=o.n1.dOff;r.dsOff+=o.n1.dsOff;r.mcpOn+=o.mcpOn;r.asoOn+=o.asoOn;r.t10OnAso+=o.t10.onAso;r.dOn+=o.n1.dOn;r.dsOn+=o.n1.dsOn;r.on7q+=o.on7.q;r.on7a+=o.on7.a;
+  const r={asoNet:0,so:0,tg:0,B:0,fc:0,short:0,mcpOff:0,asoOff:0,t10OffAso:0,tOff:0,dOff:0,dsOff:0,mcpOn:0,asoOn:0,dOn:0,dsOn:0,on7q:0,on7a:0,pc:0,li:0,sm:0,aso:0,dsPc:0,dsLp:0,dsAll:0,hv:0,cb:0,tot:0,core:0,cat:0,catDs:0,hvN:0,hvChua:0,hvM1:0,hvSap:0,hvNv1x:0,cbN:0,cbNhan:0,tdN:0,tdCt:0,tdTh:0,tdOk:0,tdNear:0,drop:0,dropSO:0,srn:0,t10OnAso:0};
+  arr.forEach(o=>{r.so+=o.so;r.tg+=o.tg;r.B+=o.B;r.fc+=o.fc;r.mcpOff+=o.mcpOff;r.asoOff+=o.asoOff;r.t10OffAso+=o.t10.offAso;r.tOff+=o.n1.tOff;r.dOff+=o.n1.dOff;r.dsOff+=o.n1.dsOff;r.asoNet+=o.n1.net;r.mcpOn+=o.mcpOn;r.asoOn+=o.asoOn;r.t10OnAso+=o.t10.onAso;r.dOn+=o.n1.dOn;r.dsOn+=o.n1.dsOn;r.on7q+=o.on7.q;r.on7a+=o.on7.a;
     r.pc+=o.pc;r.li+=o.li;r.sm+=o.sm;r.aso+=o.aso;r.dsPc+=o.n2.dsPc;r.dsLp+=o.n2.dsLp;r.dsAll+=o.n2.dsAll;r.hv+=o.n4.hv;r.cb+=o.n4.cb;r.core+=o.core;r.cat+=o.cat*o.aso;r.catDs+=o.n5.ds;
     r.hvN+=o.hv.n;r.hvChua+=o.hv.chua;r.hvM1+=o.hv.m1;r.hvSap+=o.hv.sap.length;r.hvNv1x+=o.hv.nv1x;r.cbN+=o.cbN;r.cbNhan+=o.cbNhan;r.tdN+=o.td.n;r.tdCt+=o.td.ct;r.tdTh+=o.td.th;r.tdOk+=o.td.ok;r.tdNear+=o.td.near;r.drop+=o.drop;r.dropSO+=o.dropSO;r.srn+=o.srn;
     r.short+=o.short;});
@@ -90,20 +90,20 @@ function blockSummary(C){
    card('Chỉ tiêu T11',ty(r.tg)+' tỷ','SO MTD '+ty(r.so)+' tỷ · '+pc(r.so,r.tg)+' đến '+T11_META.last_date)+
    card('Dự kiến giữ đà',ty(r.fc)+' tỷ',pc(r.fc,r.tg)+' chỉ tiêu · hệ số tăng tốc '+nf(C.k,2))+
    card('GAP cần lấp',gap>0?ty(gap)+' tỷ':'Đủ (dư '+ty(-gap)+')','SO/ngày '+ty(r.so/C.d)+' → cần '+ty(Math.max(0,r.tg-r.so)/C.rem)+' tỷ',gap>0?'#dc2626':'#16a34a')+
-   card('Nhiệm vụ 2+3+4 (PC·LPPC·MBS)','+'+ty(rawCover)+' tỷ','đủ '+nf(cov*100,0)+'% GAP nếu làm 100% · ASO và CAT là lớp đệm, không cộng',cov>=1?'#16a34a':'#d97706')+
+   card('Nhiệm vụ 1+2+3+4 (ASO·PC·LPPC·MBS)','+'+ty(rawCover)+' tỷ','đủ '+nf(cov*100,0)+'% GAP nếu làm 100% · CAT là lớp đệm, không cộng',cov>=1?'#16a34a':'#d97706')+
    card('Thực thi '+nf(hc*100,0)+'%','+'+ty(exec)+' tỷ','→ '+ty(scen)+' tỷ = '+pc(scen,r.tg)+' chỉ tiêu (mức cam kết sàn)',scen>=r.tg?'#16a34a':'#d97706')+`</div>`+
-  `<div class="pnote" style="margin:8px 0">Cách tính: mỗi nhiệm vụ tính SO thêm cho từng SS trên <b>${C.rem} ngày công còn lại</b> (từ ${Number(T11_META.last_date.split('/')[0])+1}/11). ASO: kéo số KH về ${nf(par('aso'),0)}% MCP Off / ${nf(par('on'),0)}% On so với T10 cả tháng. PC và LPPC: mỗi SS tiến về mục tiêu Miền (PC ${nf(par('pc'),1)}, LPPC ${nf(par('lp'),2)}) nhưng không quá +${nf(par('cap'),0)}% so với hiện tại (không đòi SS vượt quá khả năng). MBS: hội viên sắp đạt + chưa mua, combo L1 Off lên ${nf(par('cb1'),0)}%. Tăng CAT: +${nf(par('cat'),1)} ngành/KH × 150K. Tất cả là <b>ước tính</b>; ô xanh sửa được, lưu trên trình duyệt.</div>`;
+  `<div class="pnote" style="margin:8px 0">Cách tính: mỗi nhiệm vụ tính SO thêm cho từng SS trên <b>${C.rem} ngày công còn lại</b> (từ ${Number(T11_META.last_date.split('/')[0])+1}/11). ASO: kéo số KH có đơn về ${nf(par('aso'),0)}% MCP Off / ${nf(par('on'),0)}% On (mục tiêu Miền), trừ ${nf(par('ov'),0)}% phần chồng lấn với PC. PC và LPPC: mỗi SS tiến về mục tiêu Miền (PC ${nf(par('pc'),1)}, LPPC ${nf(par('lp'),2)}) nhưng không quá +${nf(par('cap'),0)}% so với hiện tại (không đòi SS vượt quá khả năng). MBS: hội viên sắp đạt + chưa mua, combo L1 Off lên ${nf(par('cb1'),0)}%. Tăng CAT: +${nf(par('cat'),1)} ngành/KH × 150K. Tất cả là <b>ước tính</b>; ô xanh sửa được, lưu trên trình duyệt.</div>`;
 }
 const T=(h,rows)=>`<div style="overflow-x:auto"><table class="t8asmtbl"><thead><tr>${h}</tr></thead><tbody>${rows}</tbody></table></div>`;
 function lines(arr,asmOn){ // bảng theo ASM hoặc NPP: GAP + 3 nhóm giải pháp
   return arr.map(([name,L,isT])=>{const r=rollup(L), gap=r.tg-r.fc, cov=gap>0?r.core/gap:null;
-    return `<tr${isT?' class="tot"':''}><td style="text-align:left;white-space:nowrap">${esc(name)}</td><td>${ty(r.tg)}</td><td>${pc(r.so,r.tg)}</td><td>${ty(r.fc)}</td><td><b>${gap>0?ty(gap):'Đủ'}</b></td><td>+${ty(r.dsAll)}</td><td>+${ty(r.tot)}</td><td><b>+${ty(r.core)}</b></td><td style="${cov==null?'':stc(cov)}">${cov==null?'—':cv(cov)}</td><td>${gap>0?(r.core>=gap?'Đủ, dư '+ty(r.core-gap):'Thiếu '+ty(gap-r.core)):'Dư '+ty(-gap+r.core)}</td><td>${ty(r.dsOff+r.dsOn)}</td><td>${ty(r.catDs)}</td></tr>`;}).join('');
+    return `<tr${isT?' class="tot"':''}><td style="text-align:left;white-space:nowrap">${esc(name)}</td><td>${ty(r.tg)}</td><td>${pc(r.so,r.tg)}</td><td>${ty(r.fc)}</td><td><b>${gap>0?ty(gap):'Đủ'}</b></td><td>+${ty(r.asoNet)}</td><td>+${ty(r.dsAll)}</td><td>+${ty(r.tot)}</td><td><b>+${ty(r.core)}</b></td><td style="${cov==null?'':stc(cov)}">${cov==null?'—':cv(cov)}</td><td>${gap>0?(r.core>=gap?'Đủ, dư '+ty(r.core-gap):'Thiếu '+ty(gap-r.core)):'Dư '+ty(-gap+r.core)}</td><td>${ty(r.catDs)}</td></tr>`;}).join('');
 }
-const H1=`<th style="${THL}">Phạm vi</th><th style="${TH}">Chỉ tiêu (tỷ)</th><th style="${TH}">%Đạt MTD</th><th style="${TH}">Dự kiến giữ đà (tỷ)</th><th style="${TH}">GAP (tỷ)</th><th style="${TH}">NV 2+3: PC + LPPC (tỷ)</th><th style="${TH}">NV 4: hội viên + combo (tỷ)</th><th style="${TH}">Cộng 2+3+4 (tỷ)</th><th style="${TH}">% lấp GAP (làm đủ)</th><th style="${TH}">Còn thiếu / dư (tỷ)</th><th style="${TH}">NV 1: ASO (đệm, tỷ)</th><th style="${TH}">NV 5: CAT (đệm, tỷ)</th>`;
+const H1=`<th style="${THL}">Phạm vi</th><th style="${TH}">Chỉ tiêu (tỷ)</th><th style="${TH}">%Đạt MTD</th><th style="${TH}">Dự kiến giữ đà (tỷ)</th><th style="${TH}">GAP (tỷ)</th><th style="${TH}">NV 1: ASO (tỷ)</th><th style="${TH}">NV 2+3: PC + LPPC (tỷ)</th><th style="${TH}">NV 4: hội viên + combo (tỷ)</th><th style="${TH}">Cộng 1+2+3+4 (tỷ)</th><th style="${TH}">% lấp GAP (làm đủ)</th><th style="${TH}">Còn thiếu / dư (tỷ)</th><th style="${TH}">NV 5: CAT (đệm, tỷ)</th>`;
 function blockAsm(C){
   const A=X().ASMS_(), L=C.list;
   const rows=lines(A.map(a=>[X().lab(a),L.filter(o=>o.asm===a)]).concat([['TOÀN MIỀN',L,true]]));
-  return T(H1,rows)+`<div class="pnote" style="margin-top:6px">% lấp GAP = SO thêm của nhiệm vụ 2+3+4 (làm đủ 100%) ÷ GAP. ASO và CAT chồng một phần với PC/LPPC nên chỉ là lớp đệm. Làm thực tế khoảng ${nf(C.hc*100,0)}% thì nhân đôi số thiếu: xem thẻ "Thực thi" ở trên.</div>`;
+  return T(H1,rows)+`<div class="pnote" style="margin-top:6px">% lấp GAP = SO thêm của nhiệm vụ 1+2+3+4 (làm đủ 100%) ÷ GAP. ASO đã trừ phần chồng lấn với PC; CAT chồng với PC/LPPC nên chỉ là lớp đệm. Nếu thực tế chỉ làm được ${nf(C.hc*100,0)}%: xem thẻ "Thực thi" ở trên.</div>`;
 }
 function blockMetrics(C){
   const A=X().ASMS_(), L=C.list;
@@ -121,8 +121,8 @@ function blockNpp(C){
   const g=new Map(); C.list.filter(o=>sc(o.asm)&&o.tg>0).forEach(o=>{o.npps.forEach(n=>{});const kk=o.asm+'|'+o.npps.join(' / '); if(!g.has(kk))g.set(kk,{asm:o.asm,npp:o.npps.join(' / '),L:[]}); g.get(kk).L.push(o);});
   const rows=[...g.values()].map(n=>({n,r:rollup(n.L)})).sort((p,q)=>(q.r.tg-q.r.fc)-(p.r.tg-p.r.fc)).map(({n,r})=>{const gap=r.tg-r.fc, cov=gap>0?r.core/gap:null, tp=r.pc/Math.max(1,r.sm)/C.d, lp=r.pc?r.li/r.pc:0;
     const lead=[['ASO Off',r.dsOff],['PC',r.dsPc],['LPPC',r.dsLp],['Hội viên',r.hv],['Combo',r.cb]].sort((a,b)=>b[1]-a[1])[0];
-    return `<tr><td style="text-align:left">${esc(X().SHORT[n.asm]||n.asm)}</td><td style="text-align:left;white-space:normal">${esc(n.npp)}</td><td>${ty(r.tg)}</td><td>${pc(r.so,r.tg)}</td><td><b>${gap>0?ty(gap):'Đủ'}</b></td><td>${pc(r.asoOff,r.mcpOff)}</td><td>${nf(tp,1)}</td><td>${nf(lp,2)}</td><td>+${ty(r.dsAll)}</td><td>+${ty(r.tot)}</td><td><b>+${ty(r.core)}</b></td><td style="${cov==null?'':stc(cov)}">${cov==null?'—':cv(cov)}</td><td style="text-align:left">${lead[1]>0?lead[0]+' (+'+ty(lead[1])+')':'—'}</td><td>${nf(r.drop,0)}</td></tr>`;}).join('');
-  const h=`<th style="${THL}">ASM</th><th style="${THL}">NPP</th><th style="${TH}">Chỉ tiêu (tỷ)</th><th style="${TH}">%Đạt MTD</th><th style="${TH}">GAP (tỷ)</th><th style="${TH}">ASO Off MTD</th><th style="${TH}">PC/ĐDKD/ngày</th><th style="${TH}">LPPC</th><th style="${TH}">PC + LPPC (tỷ)</th><th style="${TH}">Hội viên + combo (tỷ)</th><th style="${TH}">Cộng (tỷ)</th><th style="${TH}">% lấp GAP</th><th style="${THL}">Đòn bẩy lớn nhất</th><th style="${TH}">Quầy rơi</th>`;
+    return `<tr><td style="text-align:left">${esc(X().SHORT[n.asm]||n.asm)}</td><td style="text-align:left;white-space:normal">${esc(n.npp)}</td><td>${ty(r.tg)}</td><td>${pc(r.so,r.tg)}</td><td><b>${gap>0?ty(gap):'Đủ'}</b></td><td>${pc(r.asoOff,r.mcpOff)}</td><td>${nf(tp,1)}</td><td>${nf(lp,2)}</td><td>+${ty(r.asoNet)}</td><td>+${ty(r.dsAll)}</td><td>+${ty(r.tot)}</td><td><b>+${ty(r.core)}</b></td><td style="${cov==null?'':stc(cov)}">${cov==null?'—':cv(cov)}</td><td style="text-align:left">${lead[1]>0?lead[0]+' (+'+ty(lead[1])+')':'—'}</td><td>${nf(r.drop,0)}</td></tr>`;}).join('');
+  const h=`<th style="${THL}">ASM</th><th style="${THL}">NPP</th><th style="${TH}">Chỉ tiêu (tỷ)</th><th style="${TH}">%Đạt MTD</th><th style="${TH}">GAP (tỷ)</th><th style="${TH}">ASO Off MTD</th><th style="${TH}">PC/ĐDKD/ngày</th><th style="${TH}">LPPC</th><th style="${TH}">ASO (tỷ)</th><th style="${TH}">PC + LPPC (tỷ)</th><th style="${TH}">Hội viên + combo (tỷ)</th><th style="${TH}">Cộng (tỷ)</th><th style="${TH}">% lấp GAP</th><th style="${THL}">Đòn bẩy lớn nhất</th><th style="${TH}">Quầy rơi</th>`;
   return T(h,rows)+`<div class="pnote" style="margin-top:6px">Xếp theo GAP giảm dần. NPP có nhiều SS được gộp theo cặp NPP của SS đó.</div>`;
 }
 function ssRow(o,C){
@@ -143,8 +143,8 @@ function actions(o,C){
 function blockSs(C){
   const L=C.list.filter(o=>sc(o.asm)&&(o.tg>0||o.so>0));
   const rows=L.map(o=>{const gap=o.short, cov=gap>0?o.core/gap:null, a=actions(o,C), top=a.slice(0,3).map((x,i)=>(i+1)+'. '+x[1]).join('<br>');
-    return `<tr><td style="text-align:left;white-space:nowrap">${esc(X().SHORT[o.asm]||o.asm)}</td><td style="text-align:left;white-space:normal">${esc(o.npps.join(' / '))}</td><td style="text-align:left;white-space:nowrap"><b>${esc(o.ss)}</b></td><td>${pc(o.so,o.tg)}</td><td><b>${gap>0?ty(gap):'Đủ'}</b></td><td>${pc(o.asoOff,o.mcpOff)}</td><td>${nf(o.n2.pcd,1)}</td><td>${nf(o.n2.lp,2)}</td><td>+${ty(o.n2.dsAll)}</td><td>+${ty(o.n4.tot)}</td><td><b>+${ty(o.core)}</b></td><td style="${cov==null?'':stc(cov)}">${cov==null?'—':cv(cov)}</td><td style="text-align:left;white-space:normal;min-width:360px">${top||'—'}</td></tr>`;}).join('');
-  const h=`<th style="${THL}">ASM</th><th style="${THL}">NPP</th><th style="${THL}">SS</th><th style="${TH}">%Đạt MTD</th><th style="${TH}">GAP (tỷ)</th><th style="${TH}">ASO Off MTD</th><th style="${TH}">PC/ĐDKD/ngày</th><th style="${TH}">LPPC</th><th style="${TH}">PC + LPPC (tỷ)</th><th style="${TH}">Hội viên + combo (tỷ)</th><th style="${TH}">Cộng (tỷ)</th><th style="${TH}">% lấp GAP</th><th style="${THL}">3 việc ưu tiên (xếp theo SO thêm)</th>`;
+    return `<tr><td style="text-align:left;white-space:nowrap">${esc(X().SHORT[o.asm]||o.asm)}</td><td style="text-align:left;white-space:normal">${esc(o.npps.join(' / '))}</td><td style="text-align:left;white-space:nowrap"><b>${esc(o.ss)}</b></td><td>${pc(o.so,o.tg)}</td><td><b>${gap>0?ty(gap):'Đủ'}</b></td><td>${pc(o.asoOff,o.mcpOff)}</td><td>${nf(o.n2.pcd,1)}</td><td>${nf(o.n2.lp,2)}</td><td>+${ty(o.n1.net)}</td><td>+${ty(o.n2.dsAll)}</td><td>+${ty(o.n4.tot)}</td><td><b>+${ty(o.core)}</b></td><td style="${cov==null?'':stc(cov)}">${cov==null?'—':cv(cov)}</td><td style="text-align:left;white-space:normal;min-width:360px">${top||'—'}</td></tr>`;}).join('');
+  const h=`<th style="${THL}">ASM</th><th style="${THL}">NPP</th><th style="${THL}">SS</th><th style="${TH}">%Đạt MTD</th><th style="${TH}">GAP (tỷ)</th><th style="${TH}">ASO Off MTD</th><th style="${TH}">PC/ĐDKD/ngày</th><th style="${TH}">LPPC</th><th style="${TH}">ASO (tỷ)</th><th style="${TH}">PC + LPPC (tỷ)</th><th style="${TH}">Hội viên + combo (tỷ)</th><th style="${TH}">Cộng (tỷ)</th><th style="${TH}">% lấp GAP</th><th style="${THL}">3 việc ưu tiên (xếp theo SO thêm)</th>`;
   return T(h,rows)+`<div class="pnote" style="margin-top:6px">Xếp theo GAP giảm dần. Ô % lấp GAP: xanh ≥100%, vàng 80–99%, đỏ &lt;80%: SS đỏ không tự đủ, ASM phải điều SR kèm hoặc chốt cam kết thấp hơn.</div>`;
 }
 function blockSheet(C){
@@ -178,7 +178,7 @@ function render(){
   const pin=(k,l,w)=>`<label style="display:inline-flex;gap:4px;align-items:center;margin-right:10px">${l} ${inp('p|'+k,nf(par(k),k==='lp'?2:1),w)}</label>`;
   host.innerHTML=`<div class="panel" style="margin-top:14px;border-top:3px solid #0EA5E9"><div class="t8norm" style="margin-bottom:8px"><b>5 nhiệm vụ trọng tâm T11</b> (ASO · PC/ĐDKD · LPPC · MBS Tết · Tăng CAT) · số liệu SO đến hết <b>${T11_META.last_date}</b> (${C.d}/${C.D} ngày công, còn ${C.rem} ngày) · hội viên đến ${HVT11.meta.asof||'—'} · combo đến ${COMBO11.meta.asof||'—'} · gắn kết đến ${TDS11.meta.asof||'—'}</div>
    <div class="flt2" style="display:flex;flex-wrap:wrap;gap:14px;align-items:flex-end"><div class="fg"><label>Phạm vi</label><div class="seg" id="nvScope"><button data-v="all">Toàn Miền</button>${A.map(a=>`<button data-v="${esc(a)}">${esc(X().lab(a))}</button>`).join('')}</div></div></div>
-   <div style="margin:10px 0">${pin('aso','ASO Off %')}${pin('on','ASO On %')}${pin('pc','PC/ĐDKD')}${pin('lp','LPPC',56)}${pin('cap','Trần tăng %')}${pin('cb1','Combo %')}${pin('cat','+ngành/KH')}${pin('hc','Thực thi %')}</div>
+   <div style="margin:10px 0">${pin('aso','ASO Off %')}${pin('on','ASO On %')}${pin('pc','PC/ĐDKD')}${pin('lp','LPPC',56)}${pin('cap','Trần tăng %')}${pin('cb1','Combo %')}${pin('ov','Chồng lấn ASO–PC %')}${pin('cat','+ngành/KH')}${pin('hc','Thực thi %')}</div>
    ${blockSummary(C)}</div>`+
    sec(1,'GAP và mức lấp theo ASM',blockAsm(C),'SO thêm của từng nhiệm vụ trên số ngày còn lại')+
    sec(2,'Hiện trạng và mục tiêu 5 nhiệm vụ theo ASM',blockMetrics(C))+
