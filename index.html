@@ -1538,6 +1538,7 @@ window.__z=function(b){var t=atob(b),u=new Uint8Array(t.length);for(var i=0;i<t.
 <script src="js/nv5.js?v=1794477001"></script>
 <script src="data/HS11.js?v=1794477001"></script>
 <script src="js/hs.js?v=1794477001"></script>
+<script src="js/pnz.js?v=1794478001"></script>
 <script src="js/t11s.js?v=1794450068"></script>
 <script src="js/t11.js?v=1794477001"></script>
 <link rel="stylesheet" href="css/combo2.css?v=1794477001">
@@ -5100,14 +5101,14 @@ applyMeat('all');document.querySelector('#fMonth button[data-m="10"]').click();u
     } else { const h=ch(); if(h>avail)apply(Math.max(0.6,avail/h)); }
   }
   function unfitPanel(pn){[...pn.children].forEach(c=>c.style.zoom='');}
-  let tm=null; const run=()=>{clearTimeout(tm);tm=setTimeout(()=>{const f=document.querySelector('.panel.pfocused');if(f)fitPanel(f);else fitTables();addBtns();},120);};
+  let tm=null; const run=()=>{clearTimeout(tm);tm=setTimeout(()=>{const f=document.querySelector('.panel.pfocused');if(f)fitPanel(f);else fitTables();try{window.v2AddFocus&&window.v2AddFocus();}catch(e){}addBtns();},120);};
   new MutationObserver(m=>{if(m.some(x=>x.type==='childList'))run();}).observe(document.body,{childList:true,subtree:true});
   window.addEventListener('resize',run); document.addEventListener('click',()=>setTimeout(run,60));
   new MutationObserver(ms=>ms.forEach(x=>{const pn=x.target;if(!pn.classList||!pn.classList.contains('panel'))return;if(pn.classList.contains('pfocused'))setTimeout(()=>fitPanel(pn),30);else{unfitPanel(pn);run();}})).observe(document.body,{attributes:true,attributeFilter:['class'],subtree:true});
   // thanh điều khiển trình chiếu
   const nav=document.createElement('div');nav.id='presNav';nav.innerHTML='<button data-d="-1" title="Mục trước (←)">◀</button><span id="presInfo"></span><button data-d="1" title="Mục sau (→)">▶</button><span class="sep"></span><button data-z="-1" title="Chữ nhỏ hơn (−)">A−</button><span id="presZ"></span><button data-z="1" title="Chữ to hơn (+)">A+</button><span class="sep"></span><button data-d="0" title="Thoát (Esc)">✕ Thoát</button>';document.body.appendChild(nav);
   let L=[],i=0;
-  const isLab=c=>/^H[1-6]$/.test(c.tagName)||c.classList.contains('xbar')||c.classList.contains('tbl-head')||c.classList.contains('tabseg')||c.classList.contains('t8norm')||c.classList.contains('pnote')||c.classList.contains('ov-lab');
+  const isLab=c=>/^H[1-6]$/.test(c.tagName)||c.classList.contains('sec')||c.classList.contains('ttl')||c.classList.contains('tools')||c.classList.contains('note')||c.classList.contains('xbar')||c.classList.contains('tbl-head')||c.classList.contains('tabseg')||c.classList.contains('t8norm')||c.classList.contains('pnote')||c.classList.contains('ov-lab');
   const vis=c=>c.getClientRects().length>0&&getComputedStyle(c).display!=='none';
   function blocksOf(pn){
     const flat=c=>(c.tagName==='DIV'&&!c.classList.length&&c.querySelector(':scope > .tbl-head'))?[...c.children].flatMap(flat):[c];
@@ -5427,6 +5428,7 @@ applyMeat('all');document.querySelector('#fMonth button[data-m="10"]').click();u
   const runX=()=>XCH.forEach(c=>c.run&&c.run());
 
   /* nút Tập trung cho các khối mới (giống khối gốc) */
+  window.v2AddFocus=function(){addFocus();};
   function addFocus(){$$('.panel').forEach(pn=>{if(pn.querySelector(':scope > .pfocus, :scope > .tbl-head > .pfocus'))return;
     const b=document.createElement('button');b.type='button';b.className='pfocus';b.title='Phóng to mục này để xem tập trung (Esc để thoát)';b.innerHTML='🎯 Tập trung';
     const h=pn.querySelector(':scope > .tbl-head');if(h){b.style.marginLeft='auto';h.appendChild(b);}else{b.classList.add('abs');pn.insertBefore(b,pn.firstChild);}
