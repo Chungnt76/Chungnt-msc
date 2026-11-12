@@ -36,7 +36,7 @@ function compute(){
     hv:{n:0,m1:0,auto:0,L:[],need:0,pick:[],inc:0},cb:{n:0,mua:0,nhan:0,more:0,ds:0},hs:{O:hh(),N:hh()},hsM:new Map()});
   [...T11].sort((p,q)=>(ALI.has(p.asm+'|'+p.ssn)?1:0)-(ALI.has(q.asm+'|'+q.ssn)?1:0)).forEach(r=>{const kk=K(r.asm,r.ssn); let o=SS.get(kk); if(!o){o=mk(r);SS.set(kk,o);} const a=r.v[vk()]||{}, f=vo(r,'OFF'), n=vo(r,'ON');
     if(o.npps.indexOf(r.npp)<0)o.npps.push(r.npp);
-    o.so+=a.so||0;o.pc+=a.pc||0;o.li+=a.lines||0;o.aso+=a.aso||0;o.sm+=a.sm||0;o.mcp+=r.mcp||0;
+    o.soA=(o.soA||0)+((r.v[((typeof MEAT!=='undefined'&&MEAT==='excl')?'x':'a')+'|all']||{}).so||0);o.so+=a.so||0;o.pc+=a.pc||0;o.li+=a.lines||0;o.aso+=a.aso||0;o.sm+=a.sm||0;o.mcp+=r.mcp||0;
     o.tgFull+=((((r.tgm||{})['11'])||[r.target||0])[(typeof MEAT!=='undefined'&&MEAT==='excl')?1:0])||0;
     o.asoOff+=f.aso||0; o.asoOn+=n.aso||0; o.soOff+=f.so||0; o.pcOff+=f.pc||0; o.liOff+=f.lines||0;
     byClean.set(clean(r.ss)+'|'+base(r.npp),o); byClean.set(clean(r.ssn)+'|'+base(r.npp),o);});
@@ -68,7 +68,7 @@ function compute(){
   CBT11.rows.forEach(r=>{ if(r[1]!==0)return; const o=ssOf(CBT11.sr[r[0]]); if(o){o.cb.n+=r[2];o.cb.mua+=r[5];o.cb.nhan+=r[6];}});
   const EST=F.oo!=='all'||F.vip!=='all';
   const A=[]; SS.forEach(o=>{
-    o.tg=EST?(o.t10.soAll?o.tgFull*o.t10.so/o.t10.soAll:0):o.tgFull;
+    o.tg=o.tgFull; o.so=o.soA||0;
     o.cur=o.so/d; o.B=o.cur*k*rem; o.fc=o.so+o.B; o.short=Math.max(0,o.tg-o.fc);
     // 1) ASO Off / On
     const tOff=par('aso')/100*o.mcpOff, dOff=Math.max(0,tOff-o.t10.offAso), kOff=o.t10.offAso?o.t10.offSo/o.t10.offAso:0;
@@ -102,7 +102,7 @@ function rollup(arr){
 const NTF=()=>false, EST=()=>F.oo!=='all'||F.vip!=='all';
 const sc=a=>F.asm!=='all'?a===F.asm:(S.asm==='all'||a===S.asm);
 const FLT_NOTE=()=>{const m=[F.oo==='OFF'?'kênh Off Premise':F.oo==='ON'?'kênh On Premise':'',F.vip!=='all'?'nhóm '+F.vip:''].filter(Boolean); if(!m.length&&!(typeof MEAT!=='undefined'&&MEAT==='excl')&&F.asm==='all')return '';
-  return `<div class="pnote" style="margin:8px 0;padding:8px 10px;background:#fff7ed;border:1px solid #fdba74;border-radius:8px">Đang lọc${m.length?' <b>'+m.join(' · ')+'</b>':''}${F.asm!=='all'?' · ASM <b>'+esc(X().lab(F.asm))+'</b>':''}${(typeof MEAT!=='undefined'&&MEAT==='excl')?' · không gồm Meat':''}. ASO, LPPC và hiệu suất PC/Call plan theo bộ lọc; Hội viên Tết và Combo luôn tính toàn bộ KH; chỉ tiêu SO của phạm vi lọc là <b>ước tính</b> theo tỷ trọng SO T10 (chưa có chỉ tiêu theo kênh/nhóm KH).</div>`;};
+  return `<div class="pnote" style="margin:8px 0;padding:8px 10px;background:#fff7ed;border:1px solid #fdba74;border-radius:8px">Đang lọc${m.length?' <b>'+m.join(' · ')+'</b>':''}${F.asm!=='all'?' · ASM <b>'+esc(X().lab(F.asm))+'</b>':''}${(typeof MEAT!=='undefined'&&MEAT==='excl')?' · không gồm Meat':''}. ASO, LPPC và hiệu suất PC/Call plan theo bộ lọc; Hội viên Tết và Combo luôn tính toàn bộ KH; Chỉ tiêu SO lấy đúng theo file (chỉ có cấp SS, không tách kênh/nhóm KH) nên SO, dự kiến giữ đà và GAP luôn tính trên toàn kênh.</div>`;};
 const T=(h,rows)=>`<div style="overflow-x:auto"><table class="t8asmtbl" style="font-size:14px"><thead><tr>${h}</tr></thead><tbody>${rows}</tbody></table></div>`;
 /* ---------- bảng mục tiêu ---------- */
 const WDM=m=>{try{return WORKDAYS[m]||26;}catch(e){return 26;}};
@@ -149,7 +149,7 @@ function blockSummary(C){
   const L=C.list.filter(o=>sc(o.asm)), r=rollup(L), hc=C.hc, NT=NTF();
   const gap=r.tg-r.fc, cov=gap>0?r.core/gap:0, exec=r.core*hc, scen=r.fc+exec;
   return `<div class="kpis" style="grid-template-columns:repeat(5,1fr)">`+
-   card('Chỉ tiêu SO T11',ty(r.tg)+' tỷ','SO MTD '+ty(r.so)+' tỷ · '+pc(r.so,r.tg)+' đến '+T11_META.last_date+(EST()?' · chỉ tiêu ước tính theo tỷ trọng T10':''))+
+   card('Chỉ tiêu SO T11',ty(r.tg)+' tỷ','SO MTD '+ty(r.so)+' tỷ · '+pc(r.so,r.tg)+' đến '+T11_META.last_date+(EST()?' · chỉ tiêu theo file, SO toàn kênh':''))+
    card('Dự kiến giữ đà',ty(r.fc)+' tỷ',pc(r.fc,r.tg)+' chỉ tiêu · hệ số tăng tốc '+nf(C.k,2))+
    card('GAP cần lấp',NT?'—':gap>0?ty(gap)+' tỷ':'Đủ (dư '+ty(-gap)+')',(NT?'Chỉ tiêu chỉ có cấp Toàn Miền':'SO/ngày '+ty(r.so/C.d)+' → cần '+ty(Math.max(0,r.tg-r.so)/C.rem)+' tỷ'),gap>0?'#dc2626':'#16a34a')+
    card('Đạt đủ 7 mục tiêu','+'+ty(r.core)+' tỷ','gộp '+ty(r.gross)+' − chồng lấn '+ty(r.gross-r.core-0)+(NT?'':' · lấp '+nf(cov*100,0)+'% GAP'),cov>=1?'#16a34a':'#d97706')+
@@ -247,7 +247,7 @@ function blockGoalsSet(C){
   const cur=k=>{const m=METS[k]; const v=m.v(L,C)[2]; return m.f(v);};
   const h=`<th style="${THL}">Mục tiêu</th><th style="${TH}">Đơn vị</th><th style="${TH}">Mục tiêu T11</th><th style="${TH}">Mục tiêu T12</th><th style="${TH}">T11 MTD đến ${T11_META.last_date}</th><th style="${THL}">Cách tính</th>`;
   const rt=rollup(L), ap0=(()=>{let e=0; APQ.forEach(r=>{ if(S.asm!=='all'&&r[0]!==S.asm)return; e+=r[5][2];}); return e;})();
-  const soRow=`<tr><td style="text-align:left"><b>Chỉ tiêu SO (tỷ)</b></td><td>tỷ</td><td><b>${ty(rt.tg)}</b></td><td>${inp('p|so12',nf(par12('so'),2),70)}</td><td>${ty(rt.so)}</td><td style="text-align:left;white-space:normal">T11 lấy từ chỉ tiêu SO trong dashboard${EST()?' (ước tính theo tỷ trọng T10 khi lọc kênh/nhóm KH)':''}; T12 mặc định theo AP Quý 4 (E)</td></tr>`;
+  const soRow=`<tr><td style="text-align:left"><b>Chỉ tiêu SO (tỷ)</b></td><td>tỷ</td><td><b>${ty(rt.tg)}</b></td><td>${inp('p|so12',nf(par12('so'),2),70)}</td><td>${ty(rt.so)}</td><td style="text-align:left;white-space:normal">T11 lấy từ chỉ tiêu SO trong dashboard${EST()?' (theo file, không tách kênh)':''}; T12 mặc định theo AP Quý 4 (E)</td></tr>`;
   const tr=soRow+rows.map(([pk,t,mk,d])=>`<tr><td style="text-align:left"><b>${t}</b></td><td>${U[pk]}</td><td>${inp('p|'+pk,nf(par(pk),pk==='lpAdd'?1:0),70)}</td><td>${inp('p|'+pk+'12',nf(par12(pk),pk==='lpAdd'?1:0),70)}</td><td>${cur(mk)}</td><td style="text-align:left;white-space:normal">${d}</td></tr>`).join('');
   const as=[['hsq','SO/PC của đơn thêm so với bình quân (%)'],['lpe','Hiệu quả của line thêm so với bình quân (%)'],['ov','Chồng lấn giữa ASO, PC/Call plan, Hội viên, Combo (%)'],['hc','Mức thực thi cam kết (%)']].map(([k,l])=>`<label style="display:inline-flex;gap:6px;align-items:center;margin:0 16px 6px 0;font-size:14px">${l} ${inp('p|'+k,nf(par(k),0),60)}</label>`).join('');
   return T(h,tr)+`<div style="margin-top:10px"><b style="font-size:14px;color:#0369A1">Giả định tính SO thêm</b><div style="margin-top:6px">${as}</div></div><div class="pnote" style="margin-top:6px">Sửa số ở ô xanh, toàn tab tính lại ngay. Mục tiêu T12 để trống thì lấy bằng T11. Mục tiêu T11 dùng cho mục 1–5, mục tiêu T12 dùng cho mục 6.</div>`;
