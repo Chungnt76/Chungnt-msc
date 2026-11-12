@@ -1327,6 +1327,7 @@ body.presenting .nav2,body.pfocus-open .nav2{z-index:10}
     <div class="gnote">Nguồn: 5 file sell-out chi tiết T9/2026 anh gửi (đủ tháng 01–30/09, 45 SS; SO = DS trước CK, ASO = outlet có mua, PC = outlet×ngày có đơn, LPPC = dòng SKU không KM / PC; Chỉ tiêu &amp; MCP giữ nguyên bản trước) · %Đạt = SO / Chỉ tiêu cả tháng (cộng dồn rồi mới chia) · vs Time gone (T10) = %Đạt MTD − % ngày làm việc đã qua (T10: ngày làm việc đã qua ÷ 27), tính bằng điểm %: ▲ = vượt nhịp, ▼ = chậm nhịp · tháng đủ (T7–T9) cột này = %Đạt · %Phủ = ASO/MCP · LPPC = tổng SKU thoả MOQ / tổng đơn hàng (PC).</div>
   </div>
   </div>
+  <div id="pgNv" hidden></div>
   <div id="pgGp" hidden>
   </div>
   <div id="pgHvt" hidden>
@@ -1532,7 +1533,8 @@ window.__z=function(b){var t=atob(b),u=new Uint8Array(t.length);for(var i=0;i<t.
 <script src="data/TDS11.js?v=1794450068"></script>
 <script src="js/t11x.js?v=1794450068"></script>
 <script src="js/cbt.js?v=1794369064"></script>
-<script src="js/gp.js?v=1794450158"></script>
+<script src="js/gp.js?v=1794460001"></script>
+<script src="js/nv5.js?v=1794460001"></script>
 <script src="js/t11s.js?v=1794450068"></script>
 <script src="js/t11.js?v=1794450068"></script>
 <link rel="stylesheet" href="css/combo2.css?v=202611111730">
@@ -2033,7 +2035,7 @@ function initGrowthUI(){
     const b=e.target.closest('button');if(!b)return;
     [...e.currentTarget.children].forEach(x=>x.classList.toggle('on',x===b));
     const pg=b.dataset.pg, map={ov:'pgOv',gr:'pgGrow',som:'pgSoM',hv:'pgMbs78',apq:'pgApq',ap9:'pgAp9',r360:'pgR360',plan:'pgPlan',on7:'pgOn7'};
-    ['pgOv','pgGrow','pgSoM','pgMbs78','pgSo','pgT9','pgT10','pgT11','pgGp','pgHvt','pgTds','pgCombo','pgApq','pgAp9','pgR360','pgPlan','pgOn7'].forEach(id=>{const el=document.getElementById(id);if(el)el.hidden=true;});
+    ['pgOv','pgGrow','pgSoM','pgMbs78','pgSo','pgT9','pgT10','pgT11','pgGp','pgNv','pgHvt','pgTds','pgCombo','pgApq','pgAp9','pgR360','pgPlan','pgOn7'].forEach(id=>{const el=document.getElementById(id);if(el)el.hidden=true;});
     document.getElementById(map[pg]).hidden=false;
     if(pg==='gr')renderG9Trend(); if(pg==='som')renderSoM(); if(pg==='hv'){renderT10HV();hvSync();} if(pg==='apq')renderApq(); if(pg==='ap9')renderAp9(); if(pg==='r360')render360(); if(pg==='plan')renderPlan(); if(pg==='on7')renderOn7();
   };
@@ -5187,6 +5189,7 @@ applyMeat('all');document.querySelector('#fMonth button[data-m="10"]').click();u
   const NAV=[
     {k:'ov',ic:'🏠',t:'Tổng quan',old:'ov',pg:'pgOv',d:'Quầy, Active, %Đạt, 2 tháng liền không mua, SO, VPO · Off vs On · cơ cấu nhóm KH · %Đạt theo ASM'},
     {k:'t11',ic:'📅',t:'Tháng 11',old:'ov',pg:'pgT11',d:'Tracking T11 so với T10 & T9: SO/ngày, %Đạt, tiến độ vs time gone, Active, PC, LPPC · Off vs On · ASM → NPP → SS'},
+    {k:'nv5',ic:'🎯',t:'5 nhiệm vụ T11',old:'ov',pg:'pgNv',d:'Giải pháp đạt chỉ tiêu T11 theo 5 nhiệm vụ trọng tâm: ASM → NPP → SS, phiếu giao việc từng SS'},
     {k:'gp',ic:'🧭',t:'Giải pháp T11–T12',old:'ov',pg:'pgGp',d:'T11–T12: hiện trạng, dự kiến và cam kết theo ASM, mốc theo tuần, bảng giải pháp, cơ hội bán hàng, chỉ tiêu tháng 12 · ngày cắt dữ liệu ở đầu tab'},
     {k:'so',ic:'📈',t:'SO & Chỉ tiêu',old:'som',pg:'pgSoM',d:'SO T7 → T10, SO/ngày, Δ% so với tháng trước, %Đạt so với Time gone · lũy kế 9 tháng'},
     {k:'pc',ic:'🧾',t:'PC & LPPC',old:'som',pg:'pgPc',d:'PC/ngày, LPPC, tăng/giảm so với tháng trước · có / không P.Meat & Bia'},
@@ -5216,7 +5219,7 @@ applyMeat('all');document.querySelector('#fMonth button[data-m="10"]').click();u
   /* ---------- 2. Trang mới & tiêu đề từng tab ---------- */
   const mk=(id,html)=>{const d=document.createElement('div');d.id=id;d.hidden=true;if(html)d.innerHTML=html;return d;};
   const pgOv=$('#pgOv');
-  ['pgOv','pgGrow','pgSoM','pgMbs78','pgSo','pgT9','pgT10','pgT11','pgGp','pgHvt','pgTds','pgCombo','pgApq','pgAp9','pgR360','pgPlan','pgOn7','pgGr','pgG9','pgT8'].forEach(id=>{const e=document.getElementById(id);if(e&&!wrap.contains(e))wrap.appendChild(e);});
+  ['pgOv','pgGrow','pgSoM','pgMbs78','pgSo','pgT9','pgT10','pgT11','pgGp','pgNv','pgHvt','pgTds','pgCombo','pgApq','pgAp9','pgR360','pgPlan','pgOn7','pgGr','pgG9','pgT8'].forEach(id=>{const e=document.getElementById(id);if(e&&!wrap.contains(e))wrap.appendChild(e);});
   const pgPc=mk('pgPc'), pgCat=mk('pgCat'), apBar=mk('apBar');
   pgOv.after(pgPc); pgPc.after(pgCat); pgCat.after(apBar);
   const head=n=>`<div class="pghead"><div><h2>${n.ic} ${n.t}</h2><p>${n.d}</p></div><div class="legend3"><span><i style="background:var(--green)"></i>Đạt / tăng (≥ 100%)</span><span><i style="background:var(--amber)"></i>Theo dõi (80–99%)</span><span><i style="background:var(--red)"></i>Báo động (&lt; 80% / giảm)</span></div></div>`;
@@ -5426,7 +5429,7 @@ applyMeat('all');document.querySelector('#fMonth button[data-m="10"]').click();u
   addFocus();
 
   /* ---------- 9. Router ---------- */
-  const ALLPG=['pgOv','pgGrow','pgSoM','pgMbs78','pgSo','pgT9','pgT10','pgT11','pgGp','pgHvt','pgTds','pgCombo','pgApq','pgAp9','pgR360','pgPlan','pgOn7','pgPc','pgCat','apBar'];
+  const ALLPG=['pgOv','pgGrow','pgSoM','pgMbs78','pgSo','pgT9','pgT10','pgT11','pgGp','pgNv','pgHvt','pgTds','pgCombo','pgApq','pgAp9','pgR360','pgPlan','pgOn7','pgPc','pgCat','apBar'];
   let CUR='ov', APCUR=LS.get('apsub')||'apq';
   function go(k,sub){
     const n=NAV.find(x=>x.k===k)||NAV[0]; CUR=n.k; if(n.k==='ap'&&sub)APCUR=sub;
@@ -5435,7 +5438,7 @@ applyMeat('all');document.querySelector('#fMonth button[data-m="10"]').click();u
     if(n.k==='ap'){apBar.hidden=false;document.getElementById(APS.find(s=>s.k===APCUR).pg).hidden=false;$$('#apSub button').forEach(b=>b.classList.toggle('on',b.dataset.s===APCUR));LS.set('apsub',APCUR);}
     else document.getElementById(n.pg).hidden=false;
     $$('#nav2 button').forEach(b=>b.classList.toggle('on',b.dataset.k===n.k));
-    if(n.k==='t11')renderT11(); if(n.k==='gp')renderGp(); if(n.k==='hvt')renderHvt(); if(n.k==='combo')renderCombo(); if(n.k==='tds'&&window.renderTds)window.renderTds(); if(n.k==='pc')renderPc(); if(n.k==='cat')renderCatKpi(); if(n.k==='hv')syncHv(); if(n.k==='r360')tagR3(); runX();
+    if(n.k==='t11')renderT11(); if(n.k==='gp')renderGp(); if(n.k==='nv5'&&window.renderNv5)window.renderNv5(); if(n.k==='hvt')renderHvt(); if(n.k==='combo')renderCombo(); if(n.k==='tds'&&window.renderTds)window.renderTds(); if(n.k==='pc')renderPc(); if(n.k==='cat')renderCatKpi(); if(n.k==='hv')syncHv(); if(n.k==='r360')tagR3(); runX();
     LS.set('tab',n.k); window.dispatchEvent(new Event('resize'));
   }
   window.v2go=go;

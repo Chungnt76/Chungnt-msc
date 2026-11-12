@@ -382,6 +382,7 @@ function openPrint(){
   ov.hidden=false;
 }
 window.renderGp=function(){try{render();}catch(e){console.error('GP',e);}};
+window.GPX={accel,drv,agg,hvCb,par,BM,srOf,ASMS_,lab,SHORT,pn,LS};
 window.gpExport=function(){
   const D=drv(), A=agg().ss, out=[];
   D.R.forEach(x=>{const t=ssTier(x), a=A.find(z=>z.asm===x.asm&&z.ss===x.ss)||{}, sr=GP11.rows.filter(q=>{const m=srOf(q[0]);return m[2]===x.asm&&m[4]===x.ss;}).length;
