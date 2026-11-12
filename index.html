@@ -1330,6 +1330,7 @@ body.presenting .nav2,body.pfocus-open .nav2{z-index:10}
   <div id="pgNv" hidden></div>
   <div id="pgHs" hidden></div>
   <div id="pgTb" hidden></div>
+  <div id="pgSpt" hidden></div>
   <div id="pgGp" hidden>
   </div>
   <div id="pgHvt" hidden>
@@ -1540,7 +1541,9 @@ window.__z=function(b){var t=atob(b),u=new Uint8Array(t.length);for(var i=0;i<t.
 <script src="data/HS11.js?v=1794477001"></script>
 <script src="js/hs.js?v=1794477001"></script>
 <script src="data/TB11.js?v=1794480001"></script>
+<script src="data/SPT11.js?v=1794521000"></script>
 <script src="js/tb.js?v=1794480100"></script>
+<script src="js/spt.js?v=1794521000"></script>
 <script src="js/pnz.js?v=1794478001"></script>
 <script src="js/t11s.js?v=1794450068"></script>
 <script src="js/t11.js?v=1794477001"></script>
@@ -2042,7 +2045,7 @@ function initGrowthUI(){
     const b=e.target.closest('button');if(!b)return;
     [...e.currentTarget.children].forEach(x=>x.classList.toggle('on',x===b));
     const pg=b.dataset.pg, map={ov:'pgOv',gr:'pgGrow',som:'pgSoM',hv:'pgMbs78',apq:'pgApq',ap9:'pgAp9',r360:'pgR360',plan:'pgPlan',on7:'pgOn7'};
-    ['pgOv','pgGrow','pgSoM','pgMbs78','pgSo','pgT9','pgT10','pgT11','pgGp','pgNv','pgHs','pgTb','pgHvt','pgTds','pgCombo','pgApq','pgAp9','pgR360','pgPlan','pgOn7'].forEach(id=>{const el=document.getElementById(id);if(el)el.hidden=true;});
+    ['pgOv','pgGrow','pgSoM','pgMbs78','pgSo','pgT9','pgT10','pgT11','pgGp','pgNv','pgHs','pgTb','pgSpt','pgHvt','pgTds','pgCombo','pgApq','pgAp9','pgR360','pgPlan','pgOn7'].forEach(id=>{const el=document.getElementById(id);if(el)el.hidden=true;});
     document.getElementById(map[pg]).hidden=false;
     if(pg==='gr')renderG9Trend(); if(pg==='som')renderSoM(); if(pg==='hv'){renderT10HV();hvSync();} if(pg==='apq')renderApq(); if(pg==='ap9')renderAp9(); if(pg==='r360')render360(); if(pg==='plan')renderPlan(); if(pg==='on7')renderOn7();
   };
@@ -3837,11 +3840,11 @@ function applyScope(){
   buildGrowth9(); buildSO9T(); const st=SO9T.reduce((a,r)=>a+r.target,0); T8_NORM=st?SO9T.reduce((a,r)=>a+r.so,0)/st*100:NaN;
   if(typeof HVF!=='undefined'){HVF.asm=F.asm;const hs=document.getElementById('hvAsm');if(hs)hs.value=F.asm;}
 }
-function refreshView(){try{applyMeat(MEAT);}catch(er){console.error(er);}updScope();try{['pgNv|renderNv5','pgHs|renderHs','pgTb|renderTb'].forEach(x=>{const [i,f]=x.split('|');const e=document.getElementById(i);if(e&&!e.hidden&&window[f])window[f]();});}catch(er){}}
+function refreshView(){try{applyMeat(MEAT);}catch(er){console.error(er);}updScope();try{['pgNv|renderNv5','pgHs|renderHs','pgTb|renderTb','pgSpt|renderSpt'].forEach(x=>{const [i,f]=x.split('|');const e=document.getElementById(i);if(e&&!e.hidden&&window[f])window[f]();});}catch(er){}}
 function curPage(){const b=document.querySelector('#pageTabs button.on');return b?b.dataset.pg:'ov';}
 function updScope(){
   const el=document.getElementById('scopeNote'); if(!el) return;
-  if(['pgNv','pgHs','pgTb'].some(i=>{const e=document.getElementById(i);return e&&!e.hidden;})){el.innerHTML='';el.hidden=true;return;}
+  if(['pgNv','pgHs','pgTb','pgSpt'].some(i=>{const e=document.getElementById(i);return e&&!e.hidden;})){el.innerHTML='';el.hidden=true;return;}
   const pg=curPage(), oo=F.oo!=='all', vip=F.vip!=='all', msg=[];
   const OO=F.oo==='OFF'?'Off Premise':'On Premise';
   const ytd=pg==='som'&&!document.getElementById('somYtd').hidden;
@@ -5199,6 +5202,7 @@ applyMeat('all');document.querySelector('#fMonth button[data-m="10"]').click();u
     {k:'t11',ic:'📅',t:'Tháng 11',old:'ov',pg:'pgT11',d:'Tracking T11 so với T10 & T9: SO/ngày, %Đạt, tiến độ vs time gone, Active, PC, LPPC · Off vs On · ASM → NPP → SS'},
     {k:'nv5',ic:'🎯',t:'Giải pháp T11–12',old:'ov',pg:'pgNv',d:'Giải pháp đạt 7 mục tiêu T11 (ASO, LPPC, PC/Call plan, Hội viên Tết, Combo): ASM → NPP → SS, phiếu giao việc từng SS'},
     {k:'hs',ic:'📞',t:'Hiệu suất bán hàng',old:'ov',pg:'pgHs',d:'PC / Call plan theo MCP T11 và đơn hàng hàng ngày · ASM → NPP → SS → ĐDKD, SO thêm nếu đạt mục tiêu'},
+    {k:'spt',ic:'🎯',t:'SP tập trung T11',old:'ov',pg:'pgSpt',d:'Sản phẩm tập trung T11: Đại sứ ngành hàng, KH Trọng điểm, B\'fast, Tea 365, Xúc xích · ASM → NPP → SS → ĐDKD'},
     {k:'tb',ic:'🏬',t:'Trưng bày T11',old:'ov',pg:'pgTb',d:'Chương trình trưng bày T11: KH tham gia, hình chụp, thưởng · ASM → NPP → SS → ĐDKD'},
     {k:'so',ic:'📈',t:'SO & Chỉ tiêu',old:'som',pg:'pgSoM',d:'SO T7 → T10, SO/ngày, Δ% so với tháng trước, %Đạt so với Time gone · lũy kế 9 tháng'},
     {k:'pc',ic:'🧾',t:'PC & LPPC',old:'som',pg:'pgPc',d:'PC/ngày, LPPC, tăng/giảm so với tháng trước · có / không P.Meat & Bia'},
@@ -5228,7 +5232,7 @@ applyMeat('all');document.querySelector('#fMonth button[data-m="10"]').click();u
   /* ---------- 2. Trang mới & tiêu đề từng tab ---------- */
   const mk=(id,html)=>{const d=document.createElement('div');d.id=id;d.hidden=true;if(html)d.innerHTML=html;return d;};
   const pgOv=$('#pgOv');
-  ['pgOv','pgGrow','pgSoM','pgMbs78','pgSo','pgT9','pgT10','pgT11','pgGp','pgNv','pgHs','pgTb','pgHvt','pgTds','pgCombo','pgApq','pgAp9','pgR360','pgPlan','pgOn7','pgGr','pgG9','pgT8'].forEach(id=>{const e=document.getElementById(id);if(e&&!wrap.contains(e))wrap.appendChild(e);});
+  ['pgOv','pgGrow','pgSoM','pgMbs78','pgSo','pgT9','pgT10','pgT11','pgGp','pgNv','pgHs','pgTb','pgSpt','pgHvt','pgTds','pgCombo','pgApq','pgAp9','pgR360','pgPlan','pgOn7','pgGr','pgG9','pgT8'].forEach(id=>{const e=document.getElementById(id);if(e&&!wrap.contains(e))wrap.appendChild(e);});
   const pgPc=mk('pgPc'), pgCat=mk('pgCat'), apBar=mk('apBar');
   pgOv.after(pgPc); pgPc.after(pgCat); pgCat.after(apBar);
   const head=n=>`<div class="pghead"><div><h2>${n.ic} ${n.t}</h2><p>${n.d}</p></div><div class="legend3"><span><i style="background:var(--green)"></i>Đạt / tăng (≥ 100%)</span><span><i style="background:var(--amber)"></i>Theo dõi (80–99%)</span><span><i style="background:var(--red)"></i>Báo động (&lt; 80% / giảm)</span></div></div>`;
@@ -5439,7 +5443,7 @@ applyMeat('all');document.querySelector('#fMonth button[data-m="10"]').click();u
   addFocus();
 
   /* ---------- 9. Router ---------- */
-  const ALLPG=['pgOv','pgGrow','pgSoM','pgMbs78','pgSo','pgT9','pgT10','pgT11','pgGp','pgNv','pgHs','pgTb','pgHvt','pgTds','pgCombo','pgApq','pgAp9','pgR360','pgPlan','pgOn7','pgPc','pgCat','apBar'];
+  const ALLPG=['pgOv','pgGrow','pgSoM','pgMbs78','pgSo','pgT9','pgT10','pgT11','pgGp','pgNv','pgHs','pgTb','pgSpt','pgHvt','pgTds','pgCombo','pgApq','pgAp9','pgR360','pgPlan','pgOn7','pgPc','pgCat','apBar'];
   let CUR='ov', APCUR=LS.get('apsub')||'apq';
   function go(k,sub){
     const n=NAV.find(x=>x.k===k)||NAV[0]; CUR=n.k; if(n.k==='ap'&&sub)APCUR=sub;
@@ -5448,7 +5452,7 @@ applyMeat('all');document.querySelector('#fMonth button[data-m="10"]').click();u
     if(n.k==='ap'){apBar.hidden=false;document.getElementById(APS.find(s=>s.k===APCUR).pg).hidden=false;$$('#apSub button').forEach(b=>b.classList.toggle('on',b.dataset.s===APCUR));LS.set('apsub',APCUR);}
     else document.getElementById(n.pg).hidden=false;
     $$('#nav2 button').forEach(b=>b.classList.toggle('on',b.dataset.k===n.k));
-    if(n.k==='t11')renderT11(); if(n.k==='gp')renderGp(); if(n.k==='nv5'&&window.renderNv5)window.renderNv5(); if(n.k==='hs'&&window.renderHs)window.renderHs(); if(n.k==='tb'&&window.renderTb)window.renderTb(); if(n.k==='hvt')renderHvt(); if(n.k==='combo')renderCombo(); if(n.k==='tds'&&window.renderTds)window.renderTds(); if(n.k==='pc')renderPc(); if(n.k==='cat')renderCatKpi(); if(n.k==='hv')syncHv(); if(n.k==='r360')tagR3(); runX();
+    if(n.k==='t11')renderT11(); if(n.k==='gp')renderGp(); if(n.k==='nv5'&&window.renderNv5)window.renderNv5(); if(n.k==='hs'&&window.renderHs)window.renderHs(); if(n.k==='tb'&&window.renderTb)window.renderTb(); if(n.k==='spt'&&window.renderSpt)window.renderSpt(); if(n.k==='hvt')renderHvt(); if(n.k==='combo')renderCombo(); if(n.k==='tds'&&window.renderTds)window.renderTds(); if(n.k==='pc')renderPc(); if(n.k==='cat')renderCatKpi(); if(n.k==='hv')syncHv(); if(n.k==='r360')tagR3(); runX();
     LS.set('tab',n.k); window.dispatchEvent(new Event('resize'));
   }
   window.v2go=go;
@@ -5463,7 +5467,7 @@ applyMeat('all');document.querySelector('#fMonth button[data-m="10"]').click();u
   const save=()=>LS.set('f',{asm:F.asm,vip:F.vip,oo:F.oo,month:F.month,meat:MEAT});
   const ra=renderAll; renderAll=function(){const r=ra.apply(this,arguments);try{renderPc();renderCatKpi();syncHv();save();}catch(e){}return r;};
   const rs=renderSoM; renderSoM=function(){const r=rs.apply(this,arguments);try{renderPc();renderCatKpi();}catch(e){}return r;};
-  ['fAsm','fVip','fOO'].forEach(id=>{const e=document.getElementById(id);if(e)e.addEventListener('change',()=>setTimeout(()=>{save();if(CUR==='pc'||CUR==='cat'||CUR==='nv5'||CUR==='hs'||CUR==='tb')go(CUR);},0));});
+  ['fAsm','fVip','fOO'].forEach(id=>{const e=document.getElementById(id);if(e)e.addEventListener('change',()=>setTimeout(()=>{save();if(CUR==='pc'||CUR==='cat'||CUR==='nv5'||CUR==='hs'||CUR==='tb'||CUR==='spt')go(CUR);},0));});
   $('#fMeat')&&$('#fMeat').addEventListener('click',()=>setTimeout(()=>{save();if(['pc','cat','so'].includes(CUR))go(CUR);},0));
   $('#fMonth').addEventListener('click',()=>setTimeout(()=>{save();syncHv();if(CUR!=='ov')go(CUR);},0));
   $('#reset').addEventListener('click',()=>setTimeout(()=>{const mb=$('#fMeat button[data-k="all"]');if(mb&&MEAT!=='all')mb.click();save();go(CUR);},0));
