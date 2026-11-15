@@ -4,10 +4,9 @@
 (function(){
   var MONTHS=[7,8,9,10,11];
   var GROUPS=[
-    ['Điều hành tháng 11',['t11','nv5','hs','spt','tb','hvt','tds','combo']],
-    ['Sell-out',['ov','so','pc','cat','gr']],
-    ['Khách hàng',['hv','r360']],
-    ['AP và Kênh On',['ap','on7']]];
+    ['1 · MCP tracking',['ov','on7']],
+    ['2 · Fundamental: Hiệu suất, PC, LPPC',['hs','pc','nv5']],
+    ['3 · SO',['t11','so','cat','gr','ap','spt','tb','hvt','tds','combo','hv','r360']]];
   /* tháng có số liệu riêng cho từng tab (kiểm bằng cách đổi tháng và so nội dung tab) */
   var AV={t11:[11],nv5:[11],hs:[11],spt:[11],tb:[11],hvt:[11],tds:[11],combo:[11],
           ov:[7,8,9,10,11],so:[7,8,9,10,11],pc:[7,8,9,10,11],cat:[7,8,9,10,11],gr:[10],
