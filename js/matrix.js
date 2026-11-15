@@ -6,7 +6,11 @@
   var GROUPS=[
     ['1 · MCP tracking',['ov','on7']],
     ['2 · Fundamental: Hiệu suất, PC, LPPC',['hs','pc','nv5']],
-    ['3 · SO',['t11','so','cat','gr','ap','spt','tb','hvt','tds','combo','hv','r360']]];
+    ['3 · SO',['t11','so','cat','ap','spt','tb','r360']],
+    ['4 · Tăng trưởng',['gr']],
+    ['5 · Hội viên',['hv','hvt']],
+    ['6 · Combo',['combo']],
+    ['7 · Tăng doanh số',['tds']]];
   /* tháng có số liệu riêng cho từng tab (kiểm bằng cách đổi tháng và so nội dung tab) */
   var AV={t11:[11],nv5:[11],hs:[11],spt:[11],tb:[11],hvt:[11],tds:[11],combo:[11],
           ov:[7,8,9,10,11],so:[7,8,9,10,11],pc:[7,8,9,10,11],cat:[7,8,9,10,11],gr:[10],
