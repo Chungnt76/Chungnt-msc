@@ -14,8 +14,8 @@
   /* tháng có số liệu riêng cho từng tab (kiểm bằng cách đổi tháng và so nội dung tab) */
   var AV={t11:[11],nv5:[11],hs:[11],spt:[11],tb:[11],hvt:[11],tds:[11],combo:[11],
           ov:[7,8,9,10,11],so:[7,8,9,10,11],pc:[7,8,9,10,11],cat:[7,8,9,10,11],gr:[10],
-          hv:[9,10],r360:[10,11],ap:[10,11],on7:[10]};
-  var NOTE={gr:'10 tháng 2026 so với các năm trước',hv:'Hội viên Doanh nhân: T9 và T10',ap:'Chỉ tiêu E · HE · O quý 4',on7:'Số tháng 10 MTD',r360:'Review 360 theo tháng 10 và 11'};
+          hv:[9,10],r360:[10,11],ap:[10,11],on7:[10,11]};
+  var NOTE={gr:'10 tháng 2026 so với các năm trước',hv:'Hội viên Doanh nhân: T9 và T10',ap:'Chỉ tiêu E · HE · O quý 4',on7:'MTD tháng 10 và tháng 11',r360:'Review 360 theo tháng 10 và 11'};
   var $=function(s,r){return (r||document).querySelector(s)}, $$=function(s,r){return [].slice.call((r||document).querySelectorAll(s))};
   function ready(f){if(document.getElementById('v3sticky')&&window.v2go)f();else setTimeout(function(){ready(f)},150);}
   ready(function(){
@@ -78,6 +78,7 @@
     function pick(k,m){
       open(false);
       var mb=m&&$('#fMonth button[data-m="'+m+'"]');
+      if(k==='on7'){window.v2go(k);setTimeout(function(){if(mb&&!mb.classList.contains('on'))mb.click();setTimeout(update,60);},70);return;}
       if(mb&&!mb.classList.contains('on'))mb.click();
       setTimeout(function(){window.v2go(k);update();var t=$('#v3sticky');if(t&&window.scrollY>t.offsetTop+200)window.scrollTo({top:t.offsetTop,behavior:'auto'});},70);
     }

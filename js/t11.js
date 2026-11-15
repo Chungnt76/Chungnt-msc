@@ -176,7 +176,7 @@ window.renderT11=function(){try{init();render();avail();}catch(e){console.error(
     else if(!p7&&window.O7_11){window.O7_11=false;if(!shiftOn()&&!onT11()&&SUP.some(vis)){try{t11shiftEnter();}catch(er){console.error(er);}}}
     const on=onT11()||shiftOn()||(p7&&!!window.O7_11);
     [...fm.children].forEach(b=>b.classList.toggle('on',on?b.dataset.m==='11':b.dataset.m===F.month));
-    chip(onT11()); ctxFix(onT11()||shiftOn()); banner();
+    chip(onT11()||(p7&&!!window.O7_11)); ctxFix(onT11()||shiftOn()); banner();
   }
   const navTo=k=>{const n=document.querySelector('#nav2 button[data-k="'+k+'"]'); if(n)n.click();};
   function bind(){
@@ -184,7 +184,7 @@ window.renderT11=function(){try{init();render();avail();}catch(e){console.error(
     fm.addEventListener('click',e=>{const b=e.target.closest('button'); if(!b)return;
       if(b.dataset.m==='11'){e.stopImmediatePropagation();e.stopPropagation();
         if(onT11()){setTimeout(sync,30);return;}
-        if(vis('pgOn7')){window.O7_11=true;try{renderOn7();}catch(er){console.error(er);}setTimeout(sync,30);return;}
+        if(vis('pgOn7')){window.O7_11=true;try{renderOn7();}catch(er){console.error(er);}setTimeout(sync,30);setTimeout(sync,300);setTimeout(sync,800);return;}
         if(vis('pgMbs78')){navTo('hvt');setTimeout(sync,60);return;}
         if(SUP.some(vis)){try{t11shiftEnter();}catch(er){console.error(er);} }
         else if(!NOTE_PAGES()){navTo('t11');}
