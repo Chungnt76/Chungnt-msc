@@ -42,7 +42,7 @@
     '#mxp td.rl{text-align:left;padding:0}'+
     '#mxp td.rl button{width:100%;display:flex;align-items:center;gap:9px;border:0;background:transparent;color:var(--ink);font:600 13.5px/1.2 inherit;padding:9px 10px;border-radius:8px;cursor:pointer;text-align:left}'+
     '#mxp td.rl button:hover{background:var(--chip)}#mxp tr.cur td.rl button{color:var(--sky7);font-weight:800;background:var(--skybg)}'+
-    '#mxp td.rl .ic svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}'+
+    '#mxp td.rl .ic{display:inline-flex;width:16px;height:16px;flex:none}#mxp td.rl .ic svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}'+
     '#mxp .c{display:inline-flex;align-items:center;justify-content:center;width:100%;height:34px;border:0;border-radius:8px;background:transparent;cursor:pointer}'+
     '#mxp .c i{width:14px;height:14px;border-radius:50%;background:var(--sky4);display:block}'+
     '#mxp .c:hover{background:var(--skybg)}#mxp .c:hover i{background:var(--sky)}'+
