@@ -1,0 +1,69 @@
+/* ===== LAYOUT 4 · Tinh gọn & nổi bật — chỉ đổi giao diện, không đổi số liệu =====
+   Nguyên tắc (Few · Tufte · NN/g): 1 thanh điều hướng gọn; KPI lên trước và to; ít viền – dùng khoảng trắng để nhóm;
+   màu chỉ để báo trạng thái; chữ phụ nhỏ, nhạt; mật độ bảng vừa đủ. */
+:root{--bg:#f4f7fb;--l4-line:#e6edf5;--l4-shadow:0 1px 2px rgba(15,23,42,.04),0 1px 8px rgba(15,23,42,.03)}
+body{background:var(--bg)}
+
+/* 1 · Header một dòng */
+header.h2{display:flex!important;align-items:center;gap:16px;padding:8px 14px!important;min-height:0;border-radius:14px;box-shadow:var(--l4-shadow);border:1px solid var(--l4-line)}
+header.h2 .brand{display:flex;align-items:center;gap:10px;flex:1;min-width:0}
+header.h2 .logo{width:34px;height:34px;border-radius:9px;font-size:12px;flex:none}
+header.h2 .eyebrow,header.h2 .brand .sub{display:none!important}
+header.h2 h1{font-size:18px!important;line-height:1.2;margin:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+header.h2 h1 span,header.h2 h1 small{font-weight:600;color:var(--muted)}
+header.h2 .tg{display:flex;align-items:center;gap:10px;padding:4px 12px 4px 6px!important;border-radius:12px;background:var(--chip);border:0!important;box-shadow:none!important;min-width:0}
+header.h2 .tg svg{width:34px!important;height:34px!important;flex:none}
+header.h2 .tg .tv{font-size:18px!important;font-weight:800;line-height:1.1}
+header.h2 .tg .tl{font-size:11px!important;line-height:1.35;color:var(--muted);white-space:nowrap}
+header.h2 .tg .tl b{color:var(--ink)}
+.hdrbtns{display:flex!important;flex-wrap:nowrap!important;gap:4px!important;margin:0!important}
+.hdrbtns .themebtn{font-size:0!important;width:34px;height:34px;padding:0!important;display:inline-flex;align-items:center;justify-content:center;border-radius:9px}
+.hdrbtns .themebtn>span{margin:0!important}
+
+/* 2 · Thanh điều hướng + bộ lọc gọn */
+#v3sticky{margin-top:8px!important;padding-top:6px!important;padding-bottom:8px!important;background:color-mix(in srgb,var(--bg) 92%,transparent)!important;backdrop-filter:blur(8px)}
+#mx{margin:0 0 6px!important}
+#mxbar{border-radius:12px!important;padding:5px 6px!important;box-shadow:var(--l4-shadow);border-color:var(--l4-line)!important}
+#mxbtn{height:32px!important;padding:0 12px!important;border-radius:8px!important}
+#mxm button{height:32px!important;min-width:46px!important}
+#mxcur{font-size:14px!important}
+#v3sticky .flt{margin:0!important}
+#v3sticky .flt .filters{display:flex!important;flex-wrap:wrap;gap:6px 10px!important;align-items:center!important}
+#v3sticky .flt .fg{display:flex!important;align-items:center;gap:6px;flex-direction:row!important;margin:0!important}
+#v3sticky .flt .fg label{margin:0!important;white-space:nowrap}
+#v3sticky .flt .fg:has(#fMonth){display:none!important}
+#v3sticky .flt select{height:32px!important;min-width:112px!important;max-width:176px;font-size:12.5px!important;line-height:1.2!important;padding:0 8px!important;border-radius:8px!important}
+#v3sticky .flt .seg button{height:32px!important;font-size:12px!important;padding:0 10px!important}
+#v3sticky .flt .reset{margin-left:auto;height:30px!important;padding:0 10px!important;font-size:12px!important}
+#v3chips{margin-top:6px!important;gap:5px!important}
+#v3chips .lab{display:none}
+#v3chips .chip{font-size:11px!important;padding:2px 9px!important;font-weight:600}
+
+/* 3 · Đầu trang: tiêu đề nhỏ gọn, chú thích ở cùng hàng */
+.pghead{display:flex!important;align-items:flex-end;justify-content:space-between;gap:12px;margin:14px 2px 8px!important}
+.pghead h2{font-size:22px!important;letter-spacing:-.2px;margin:0!important}
+.pghead p{font-size:12px!important;color:var(--muted);margin:2px 0 0!important;max-width:760px;line-height:1.4}
+.legend3{font-size:11px!important;gap:10px!important;white-space:nowrap}
+
+/* 4 · Thẻ & KPI: ít viền, số to, màu theo trạng thái */
+.panel,.v3card,.kpi,.v3k{border:1px solid var(--l4-line)!important;box-shadow:var(--l4-shadow)!important;border-radius:12px!important}
+.panel{padding:14px 16px!important;margin-bottom:12px!important}
+.kpis{gap:10px!important}
+.kpi,.v3k{position:relative;overflow:hidden;padding:12px 14px 12px 16px!important;background:var(--card)!important}
+.kpi{min-height:0!important}
+.kpi::before,.v3k::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--sky4)}
+.kpi.hl::before,.v3k.brand::before{background:var(--sky7)}
+.v3k.warn::before{background:#f59e0b}.v3k.bad::before,.kpi.bad::before{background:#dc2626}.v3k.good::before,.kpi.good::before{background:#16a34a}
+.k-lab,.v3k .l{font-size:10.5px!important;font-weight:700!important;letter-spacing:.6px;text-transform:uppercase;color:var(--muted)!important}
+.k-val,.v3k .v{font-size:28px!important;font-weight:800!important;letter-spacing:-.5px;line-height:1.15;color:var(--ink)}
+.k-sub,.v3k .s{font-size:11.5px!important;color:var(--muted)!important;line-height:1.35}
+.tbl-head h3,.panel h3{font-size:15px!important}
+
+/* 5 · Bảng: gọn, tiêu đề cố định, dòng kẻ mảnh */
+table{font-variant-numeric:tabular-nums}
+.panel table th{font-size:11px!important;letter-spacing:.3px}
+.panel table td{padding-top:6px!important;padding-bottom:6px!important}
+.panel table tbody tr:hover td{background:color-mix(in srgb,var(--skybg) 55%,transparent)}
+.pnote,.t8norm{font-size:11.5px!important}
+@media(max-width:900px){header.h2{flex-wrap:wrap}header.h2 .tg .tl:nth-of-type(2){display:none}.pghead{flex-direction:column;align-items:flex-start}}
+@media(max-width:700px){header.h2 .tg .tl{white-space:normal!important}header.h2 h1{white-space:normal!important}}
