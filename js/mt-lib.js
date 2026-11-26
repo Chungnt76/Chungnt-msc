@@ -59,7 +59,7 @@ function buildCombo(aoa,ctx){
     if(!a){const wd=new Date(Date.UTC(t.y,t.m-1,t.d)).getUTCDay(),col=['',c.T2,c.T3,c.T4,c.T5,c.T6,c.T7][wd];
       a=[si.get(code),kh,String(r[c.khn]||''),G(r[c.grp]),pi.get(pid),t.d,0,0,0,col!==''&&col!=null&&String(r[col]).toUpperCase()==='Y'?1:0];agg.set(k,a);}
     a[6]+=num(r[c.rew]);
-    if(c.line){const dk=k+'|'+num(r[c.qty])+'|'+num(r[c.amt]);if(seen.has(dk))continue;seen.add(dk);}
+    /* file dạng dòng quà: cộng đủ mọi dòng để khớp dòng Total của file */
     a[7]+=num(r[c.qty]);a[8]+=num(r[c.amt]);}
   if(!mx)throw new Error('File combo không có ngày đặt hàng');
   const rows=[...agg.values()];rows.forEach(a=>a[8]=Math.round(a[8]));
