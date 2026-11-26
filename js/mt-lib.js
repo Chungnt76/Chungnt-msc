@@ -46,9 +46,9 @@ function detect(head){
 
 /* ===== COMBO: file PROMOTION - OUTLET DETAIL ===== */
 function buildCombo(aoa,ctx){
-  const c=cols(aoa[0],{sr:'SF_LV5_UID]',srn:'SF_LV5_FULLNAME]',kh:'OUTLET_CD]',khn:['MCP-MASTER[OUTLET]','OUTLET]'],T2:'MCP[T2]',T3:'MCP[T3]',T4:'MCP[T4]',T5:'MCP[T5]',T6:'MCP[T6]',T7:'MCP[T7]',
-    grp:'PROMO_GROUP]',pid:'PROMO_ID]',pname:'PAR_PROMOTION_NAME]',st:'PROG_START_DT]',en:'PROG_END_DT]',date:'ORDER_DATE]',qty:'[TOTAL_QTY]',rew:'[SumQTY_REWARD]',amt:'[SumRETAILER_AMOUNT]'});
-  const SRM=srMap(ctx),sr=[],si=new Map(),promos=[],pi=new Map(),agg=new Map();let mx=null;
+  const c=cols(aoa[0],{sr:['SF_LV5_UID]','SM UID'],srn:['SF_LV5_FULLNAME]','SM Name'],kh:['OUTLET_CD]','OUTLET_CD'],khn:['MCP-MASTER[OUTLET]','OUTLET]','OUTLET'],T2:['MCP[T2]','T2'],T3:['MCP[T3]','T3'],T4:['MCP[T4]','T4'],T5:['MCP[T5]','T5'],T6:['MCP[T6]','T6'],T7:['MCP[T7]','T7'],
+    grp:['PROMO_GROUP]','PROMO_GROUP'],pid:['PROMO_ID]','PROMO_ID'],pname:['PAR_PROMOTION_NAME]','PAR_PROMOTION_NAME'],st:['PROG_START_DT]','PROG_START_DT'],en:['PROG_END_DT]','PROG_END_DT'],date:['ORDER_DATE]','ORDER_DATE'],qty:['[TOTAL_QTY]','TOTAL QTY'],rew:['[SumQTY_REWARD]','FREE ITEM QUANTITY'],amt:['[SumRETAILER_AMOUNT]','TOTAL VALUE']});
+  const SRM=srMap(ctx),sr=[],si=new Map(),promos=[],pi=new Map(),agg=new Map(),seen=new Set();let mx=null;c.line=/FREE ITEM QUANTITY/.test(String(aoa[0].join('|')));
   const G=g=>/NH[ÀA] H[ÀA]NG/i.test(g)?2:/\bON\b/i.test(g)?1:0, GN=['Combo OFF','Combo ON','Combo NHÀ HÀNG'];
   const fd=v=>{const t=ymd(v);return t?pad(t.d)+'/'+pad(t.m):'';};
   for(let i=1;i<aoa.length;i++){const r=aoa[i];if(!r||r[c.kh]==null||r[c.kh]==='')continue;
@@ -58,7 +58,9 @@ function buildCombo(aoa,ctx){
     const kh=String(r[c.kh]),k=kh+'|'+t.d+'|'+pid;let a=agg.get(k);
     if(!a){const wd=new Date(Date.UTC(t.y,t.m-1,t.d)).getUTCDay(),col=['',c.T2,c.T3,c.T4,c.T5,c.T6,c.T7][wd];
       a=[si.get(code),kh,String(r[c.khn]||''),G(r[c.grp]),pi.get(pid),t.d,0,0,0,col!==''&&col!=null&&String(r[col]).toUpperCase()==='Y'?1:0];agg.set(k,a);}
-    a[6]+=num(r[c.rew]);a[7]+=num(r[c.qty]);a[8]+=num(r[c.amt]);}
+    a[6]+=num(r[c.rew]);
+    if(c.line){const dk=k+'|'+num(r[c.qty])+'|'+num(r[c.amt]);if(seen.has(dk))continue;seen.add(dk);}
+    a[7]+=num(r[c.qty]);a[8]+=num(r[c.amt]);}
   if(!mx)throw new Error('File combo không có ngày đặt hàng');
   const rows=[...agg.values()];rows.forEach(a=>a[8]=Math.round(a[8]));
   const C=cal(mx.y,mx.m,mx.d);
@@ -115,7 +117,7 @@ function buildHV2(aoa,ctx,asof){
 
 /* ===== TĂNG DOANH SỐ: file data tăng doanh số (MBS ONTOP) ===== */
 function buildTDS(aoa,ctx,asof){
-  const c=cols(aoa[0],{sr:'SF_LV5_UID]',srn:'SF_LV5_FULLNAME]',ym:'YearMonthnumber]',kh:'OUTLET_CODE]',khn:['MCP-MASTER[OUTLET]','OUTLET]'],desc:'[DESCRIPTION]',ql:'[QualifiedLevel]',ct:'[Chỉ_tiêu_doanh_số]',th:'[Doanh_số_thực_hiện__Paid___Invoiced_]',pt:'[Điểm_thưởng_dự_kiến__ONTOP_]'});
+  const c=cols(aoa[0],{sr:'SF_LV5_UID]',srn:'SF_LV5_FULLNAME]',ym:'YearMonthnumber]',kh:'OUTLET_CODE]',khn:['MCP-MASTER[OUTLET]','OUTLET]','OUTLET'],desc:'[DESCRIPTION]',ql:'[QualifiedLevel]',ct:'[Chỉ_tiêu_doanh_số]',th:'[Doanh_số_thực_hiện__Paid___Invoiced_]',pt:'[Điểm_thưởng_dự_kiến__ONTOP_]'});
   const P=s=>/Bia/i.test(s)?3:/Chant/i.test(s)?1:/Mì|Mi\b/i.test(s)?0:/Cà phê|Ca phe/i.test(s)?2:-1;
   const SRM=srMap(ctx),sr=[],si=new Map(),rows=[],skip=new Map();let ym='';
   for(let i=1;i<aoa.length;i++){const r=aoa[i];if(!r||r[c.kh]==null||r[c.kh]==='')continue;ym=ym||String(r[c.ym]||'');
