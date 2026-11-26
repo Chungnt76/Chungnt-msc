@@ -18,9 +18,10 @@ function prep(){
   if(K&&prep.d===HVT11&&prep.v===(window.__mtv||0))return; prep.d=HVT11;prep.v=window.__mtv||0; S.open.clear(); S.det.clear();
   const M=HVT11.meta||{}; AS=M.asof||'13/11'; MY={y:M.y||2026,m:M.m||11}; if(M.wd_total){WD=M.wd_passed;WT=M.wd_total;} else {WD=8;WT=25;} PROG=WD/WT; SR=new Map();
   HVT11.sr.forEach((x,i)=>{const c=String(x[0]);SR.set(i,{i,code:c,name:x[1],asm:x[2]||'—',npp:x[3]||'—',ss:x[4]||'—'});});
-  K=HVT11.rows.map(r=>{const b=[r[10],r[11],r[12],r[13]],ds=r[5]||0,base=r[6]||0,isDs=r[3]===1,pct=base?ds/base:0,sum4=b.reduce((a,v)=>a+(v||0),0);
-    const lvl=pct>=1.05?3:pct>=1?2:pct>=.95?1:0, ok4=b.every(v=>v>=NVB), nv2=isDs?ok4:sum4>=NVT, ok=lvl>0&&nv2;
-    return {o:SR.get(r[0]),c:String(r[1]),n:r[2],isDs,ds,base,pct,lvl,b,oth:Math.max(ds-sum4,0),sum4,ok4:isDs&&ok4,nv2,ok,ql:r[7]||0,vc:r[14]||0,pd:r[4]||0,
+  const NB=!!(HVT11.meta&&HVT11.meta.nobrand);
+  K=HVT11.rows.map(r=>{const b=[r[10]||0,r[11]||0,r[12]||0,r[13]||0],ds=r[5]||0,base=r[6]||0,isDs=r[3]===1,pct=base?ds/base:0,n4=NB?(r[15]>=0?r[15]:0):null,sum4=NB?(r[16]||0):b.reduce((a,v)=>a+(v||0),0);
+    const lvl=pct>=1.05?3:pct>=1?2:pct>=.95?1:0, ok4=NB?n4>=4:b.every(v=>v>=NVB), nv2=isDs?ok4:sum4>=NVT, ok=lvl>0&&nv2;
+    return {o:SR.get(r[0]),c:String(r[1]),n:r[2],isDs,ds,base,pct,lvl,b,nb:NB,n4,oth:NB?0:Math.max(ds-sum4,0),sum4,ok4:isDs&&ok4,nv2,ok,ql:r[7]||0,vc:r[14]||0,pd:r[4]||0,
       m3:base*1.05,th:ok?ds*(lvl===3?.02:lvl===2?.015:.012):0,nhip:ds>0&&pct>=.7*PROG};});
 }
 const inScope=o=>(!S.asm||o.asm===S.asm)&&(!S.npp||o.npp===S.npp)&&(!S.ss||o.ss===S.ss)&&(!S.sr||o.code===S.sr);
@@ -76,9 +77,9 @@ function cells(L,tot){
 function detail(code,L0){
   const fl=S.fl, L=L0.filter(h=>fl==='all'?true:fl==='none'?h.ds<=0:fl==='m1'?h.lvl>=1:fl==='nv2'?h.lvl>0&&!h.nv2:fl==='win'?h.ok:h.ds<h.m3).sort((a,b)=>(b.m3-b.ds)-(a.m3-a.ds));
   const mo=v=>v>0?`<span class="pos">${v>=1e6?M1(v):Math.round(v/1000)+'k'}</span>`:'–';
-  const rows=L.slice(0,400).map(h=>{const need=Math.max(h.m3-h.ds,0),n95=Math.max(h.base*.95-h.ds,0),nb=h.b.filter(v=>v>=NVB).length;
-    const miss=h.isDs?BR.filter((n,i)=>h.b[i]<NVB):[], nv2t=h.nv2?'<span class="pos">Đạt</span>':h.isDs?`<span class="neg">Thiếu ${esc(miss.join(', '))}</span>`:`<span class="neg">Thiếu ${M1(NVT-h.sum4)} Tr</span>`;
-    return `<tr><td class="nm" style="text-align:left">${esc(h.n)} <small style="color:#6a7596;font-weight:600">${esc(h.c)}</small></td><td><span class="tp ${h.isDs?'ds':''}">${h.isDs?'Đại sứ':'VIP'}</span></td><td>${M1(h.base)}</td><td>${h.ds?M1(h.ds):'0,0'}</td><td><span class="pill ${h.pct>=1?'':'o'}">${P1(h.pct,1)}</span></td><td class="${n95?'neg':'pos'}">${n95?M1(n95):'✓'}</td><td class="${need?'neg':'pos'}">${need?M1(need):'✓'}</td>${h.b.map(mo).join('')}<td>${mo(h.oth)}</td><td>${h.ok?'<span class="winp">🏆 M'+h.lvl+'</span>':h.lvl?'M'+h.lvl:'–'}${h.isDs?`<small class="s">${nb}/4 nhãn</small>`:''}</td><td style="text-align:left;font-size:11.5px">${nv2t}</td></tr>`;}).join('');
+  const rows=L.slice(0,400).map(h=>{const need=Math.max(h.m3-h.ds,0),n95=Math.max(h.base*.95-h.ds,0),nb=h.nb?h.n4:h.b.filter(v=>v>=NVB).length;
+    const miss=h.isDs?(h.nb?[]:BR.filter((n,i)=>h.b[i]<NVB)):[], nv2t=h.nv2?'<span class="pos">Đạt</span>':h.isDs?`<span class="neg">Thiếu ${h.nb?(4-h.n4)+' nhãn':esc(miss.join(', '))}</span>`:`<span class="neg">Thiếu ${M1(NVT-h.sum4)} Tr</span>`;
+    return `<tr><td class="nm" style="text-align:left">${esc(h.n)} <small style="color:#6a7596;font-weight:600">${esc(h.c)}</small></td><td><span class="tp ${h.isDs?'ds':''}">${h.isDs?'Đại sứ':'VIP'}</span></td><td>${M1(h.base)}</td><td>${h.ds?M1(h.ds):'0,0'}</td><td><span class="pill ${h.pct>=1?'':'o'}">${P1(h.pct,1)}</span></td><td class="${n95?'neg':'pos'}">${n95?M1(n95):'✓'}</td><td class="${need?'neg':'pos'}">${need?M1(need):'✓'}</td>${h.nb?'<td>–</td><td>–</td><td>–</td><td>–</td><td>–</td>':h.b.map(mo).join('')+'<td>'+mo(h.oth)+'</td>'}<td>${h.ok?'<span class="winp">🏆 M'+h.lvl+'</span>':h.lvl?'M'+h.lvl:'–'}${h.isDs?`<small class="s">${nb}/4 nhãn</small>`:''}</td><td style="text-align:left;font-size:11.5px">${nv2t}</td></tr>`;}).join('');
   const fb=(k,t)=>`<button class="btn ${fl===k?'on':''}" data-hv-fl="${k}">${t}</button>`;
   return `<div class="det"><div class="tools"><b class="lb">${esc(L0[0].o.name)} · ${N0(L0.length)} KH hội viên</b>${fb('push','Cần đẩy (dưới 105%)')}${fb('none','Chưa mua')}${fb('m1','Đạt M1+')}${fb('win','🏆 Đã đạt thưởng')}${fb('nv2','Đạt NV1 – chưa NV2')}${fb('all','Tất cả')}</div><div class="wrap"><table class="st2"><thead><tr><th>Khách hàng</th><th>Loại</th><th>CT nền</th><th>Đã mua</th><th>%</th><th>Thiếu đến 95%</th><th>Thiếu đến 105% (M3)</th><th>Chanté</th><th>Chinsu</th><th>Kokomi</th><th>Nam Ngư</th><th>Others</th><th>Mức</th><th>NV2 · 4 nhãn</th></tr></thead><tbody>${rows||'<tr><td colspan="14">Không có KH phù hợp</td></tr>'}</tbody></table></div>${L.length>400?`<div class="note">Hiển thị 400/${N0(L.length)} KH.</div>`:''}</div>`;
 }
@@ -91,11 +92,12 @@ function table1(T){
   return `<div class="sec"><b>1</b>THEO ASM / NPP / SS / ĐDKD</div><div class="ttl">Hội viên Tết theo ASM / NPP / SS / ĐDKD<small>(Triệu, sau chiết khấu)</small></div>
   <div class="tools"><button class="btn" data-hv-all="1">Mở hết ĐDKD</button><button class="btn" data-hv-all="0">Thu gọn</button><button class="btn dark" data-hv-shot="hv-s1">📷 Chụp ảnh bảng</button></div>
   <div class="wrap" id="hv-s1"><table><thead><tr><th rowspan="2" class="g5" style="text-align:left">ASM / NPP / SS / ĐDKD</th><th colspan="3" class="g1">Khách hàng hội viên</th><th colspan="4" class="g2">Doanh số so với chỉ tiêu nền</th><th colspan="3" class="g3">Số KH theo mức đạt</th><th class="g4">VIP Đại sứ</th><th rowspan="2" class="g5 winh">🏆 KH ĐÃ<br>ĐẠT THƯỞNG</th><th colspan="4" class="g1">Phân loại KH (Type)</th><th colspan="3" class="g3">Nhiệm vụ</th><th colspan="2" class="g2">Thưởng &amp; nhịp</th></tr><tr><th class="s1">Tổng KH</th><th class="s1">Đã mua</th><th class="s1">% mua</th><th class="s2">CT nền</th><th class="s2">Thực hiện</th><th class="s2">%TH</th><th class="s2">Còn thiếu đến 105%</th><th class="s3">≥95% (M1)</th><th class="s3">≥100% (M2)</th><th class="s3">≥105% (M3)</th><th class="s4">Đủ 4 nhãn ≥150k</th><th class="s1">VIP3</th><th class="s1">VIP5</th><th class="s1">VIP Sỉ</th><th class="s1">Lẻ</th><th class="s3">Đạt NV1 (DS)</th><th class="s3">Đạt NV2 (nhãn)</th><th class="s3">NV1 đạt – NV2 chưa</th><th class="s2">Thưởng ước tính (đ)</th><th class="s2">Bám nhịp</th></tr></thead><tbody>${h}</tbody></table></div>
-  <div class="note">Thực hiện = DS cột L (newsale) · %TH so với chỉ tiêu nền; tiến độ thời gian ${P1(WD,WT)} (${WD}/${WT} ngày). Mức đạt NV1: M1 ≥95%, M2 ≥100%, M3 ≥105% — <b>mục tiêu theo dõi là Mức 3 (105%)</b>. NV2 theo cột J (SALE2): VIP Đại sứ đủ 4 nhãn Chanté, Chinsu, Kokomi, Nam Ngư mỗi nhãn ≥150.000đ · VIP tổng 4 nhãn ≥500.000đ. KH đủ ĐK xét thưởng = đạt cả NV1 và NV2 (khớp QualifiedLevel của hệ thống). Thưởng ước tính = DS × 1,2% / 1,5% / 2,0% theo M1/M2/M3. Bám nhịp = KH đã mua có %TH ≥ 70% tiến độ thời gian. Bấm vào ĐDKD để xem từng cửa hàng.</div>`;
+  <div class="note">Thực hiện = ${(HVT11.meta&&HVT11.meta.nobrand)?'DS thực hiện (trừ Canceled &amp; Pending)':'DS cột L (newsale)'} · %TH so với chỉ tiêu nền; tiến độ thời gian ${P1(WD,WT)} (${WD}/${WT} ngày). Mức đạt NV1: M1 ≥95%, M2 ≥100%, M3 ≥105% — <b>mục tiêu theo dõi là Mức 3 (105%)</b>. NV2 theo cột J (SALE2): VIP Đại sứ đủ 4 nhãn Chanté, Chinsu, Kokomi, Nam Ngư mỗi nhãn ≥150.000đ · VIP tổng 4 nhãn ≥500.000đ. KH đủ ĐK xét thưởng = đạt cả NV1 và NV2 (khớp QualifiedLevel của hệ thống). Thưởng ước tính = DS × 1,2% / 1,5% / 2,0% theo M1/M2/M3. Bám nhịp = KH đã mua có %TH ≥ 70% tiến độ thời gian. Bấm vào ĐDKD để xem từng cửa hàng.</div>`;
 }
 
 /* ---------- 2. Theo nhãn hàng ---------- */
 function table2(T){
+  if(T.length&&T[0].nb)return `<div class="sec o"><b>2</b>THEO NHÃN HÀNG</div><div class="note">File data CT Hội viên Tết đến ${esc(AS)} là bảng tổng hợp theo KH, <b>không tách doanh số theo nhãn</b> nên bảng này tạm ẩn. Cần file PERFORMANCE CHI TIẾT THEO NHÃN HÀNG mới để cập nhật. Số KH đủ 4 nhãn (Đại sứ) và tổng 4 nhãn (VIP) vẫn lấy từ file.</div>`;
   const calc=(L,k)=>{const v=L.map(h=>k===4?h.oth:h.b[k]||0);return {ds:v.reduce((a,b)=>a+b,0),n:v.filter(x=>x>0).length,k:v.filter(x=>x>=NVB).length};};
   const grp=[['VIP',T.filter(h=>!h.isDs)],['VIP Đại sứ',T.filter(h=>h.isDs)],['Tổng',T]];
   return `<div class="sec o"><b>2</b>THEO NHÃN HÀNG</div><div class="ttl">Doanh số hội viên theo nhãn hàng<small>(Triệu, sau chiết khấu · ${esc(scopeLabel())})</small></div>
@@ -107,9 +109,9 @@ function table2(T){
 /* ---------- 3. Đạt NV1 – chưa NV2 ---------- */
 function table3(T){
   const X=T.filter(h=>h.lvl>0&&!h.nv2), xd=X.filter(h=>h.isDs), xv=X.filter(h=>!h.isDs);
-  const brRows=BR.map((b,i)=>{const L=xd.filter(h=>h.b[i]<NVB);return `<tr><td class="nm" style="text-align:left">⚠ ${b}</td><td class="neg">${N0(L.length)}</td><td>${M1(sm(L,h=>NVB-Math.min(h.b[i],NVB)))}</td><td>${M1(sm(L,'ds'))}</td></tr>`;}).join('');
+  const brRows=T.length&&T[0].nb?`<tr><td class="nm" style="text-align:left">⚠ Chưa đủ 4 nhãn ≥150k (không tách từng nhãn)</td><td class="neg">${N0(xd.length)}</td><td>–</td><td>${M1(sm(xd,'ds'))}</td></tr>`:BR.map((b,i)=>{const L=xd.filter(h=>h.b[i]<NVB);return `<tr><td class="nm" style="text-align:left">⚠ ${b}</td><td class="neg">${N0(L.length)}</td><td>${M1(sm(L,h=>NVB-Math.min(h.b[i],NVB)))}</td><td>${M1(sm(L,'ds'))}</td></tr>`;}).join('');
   const L=X.slice().sort((a,b)=>b.ds-a.ds).slice(0,30);
-  const rows=L.map(h=>{const miss=h.isDs?'Thiếu nhãn: '+BR.filter((n,i)=>h.b[i]<NVB).join(', '):'Thiếu '+M1(NVT-h.sum4)+' Tr từ 4 nhãn (cần 500k)';
+  const rows=L.map(h=>{const miss=h.isDs?(h.nb?'Thiếu '+(4-h.n4)+' / 4 nhãn (≥150k)':'Thiếu nhãn: '+BR.filter((n,i)=>h.b[i]<NVB).join(', ')):'Thiếu '+M1(NVT-h.sum4)+' Tr từ 4 nhãn (cần 500k)';
     return `<tr><td class="nm" style="text-align:left">${esc(h.n)} <small style="color:#6a7596;font-weight:600">${esc(h.c)}</small></td><td>${esc(h.o.name)}<small class="s">${esc(h.o.ss)} · ${esc(h.o.npp)}</small></td><td>${h.isDs?'Đại sứ':'VIP'}</td><td>${M1(h.ds)}</td><td><span class="pill ${h.pct>=1?'':'o'}">${P1(h.pct,1)}</span></td><td style="text-align:left"><b class="neg">${esc(miss)}</b></td></tr>`;}).join('');
   return `<div class="sec r"><b>⚠</b>ĐẠT NV1 (DOANH SỐ) · CHƯA ĐẠT NV2 (4 NHÃN TRỌNG ĐIỂM)</div>
   <div class="note" style="border-left:3px solid #d6244f;padding-left:8px"><b>⚠ Đạt NV1 chưa đạt NV2:</b> ${N0(X.length)} KH (VIP Đại sứ ${N0(xd.length)} · VIP ${N0(xv.length)}) đã đạt ≥95% chỉ tiêu nền nhưng chưa đủ nhãn trọng điểm, DS <b class="neg">${M1(sm(X,'ds'))} Tr</b> chưa được thưởng. Bổ sung nhãn còn thiếu là KH đủ điều kiện ngay.</div>
@@ -122,7 +124,7 @@ function table3(T){
 
 function render(){
   const root=$('hvv11'), y=window.scrollY, T=K.filter(h=>h.o&&inScope(h.o)), tb=(k,t)=>`<button class="btn ${S.tab===k?'on':''}" data-hv-tab="${k}">${t}</button>`;
-  root.innerHTML=`<div class="h1">Hội viên Tết 2027 – Tháng ${MY.m}/${MY.y}</div><div class="sub">Doanh số theo file PERFORMANCE CHI TIẾT THEO NHÃN HÀNG (MBS TẾT 2027) đến ${esc(AS)} · ${esc(scopeLabel())} · tiến độ thời gian ${P1(WD,WT)}</div>${filterHtml()}
+  root.innerHTML=`<div class="h1">Hội viên Tết 2027 – Tháng ${MY.m}/${MY.y}</div><div class="sub">Doanh số theo ${(HVT11.meta&&HVT11.meta.nobrand)?'file data CT Hội viên Tết (tổng hợp theo KH)':'file PERFORMANCE CHI TIẾT THEO NHÃN HÀNG (MBS TẾT 2027)'} đến ${esc(AS)} · ${esc(scopeLabel())} · tiến độ thời gian ${P1(WD,WT)}</div>${filterHtml()}
   ${topCards(T)}${grpCards('VIP','',T.filter(h=>!h.isDs),false)}${grpCards('VIP ĐẠI SỨ','o',T.filter(h=>h.isDs),true)}
   <div class="tools">${tb('all','Tất cả')}${tb('tbl','① Theo ASM / ĐDKD')}${tb('brand','② Theo nhãn hàng')}${tb('nv2','③ Đạt NV1 – chưa NV2')}</div>
   ${S.tab==='all'||S.tab==='nv2'?table3(T):''}${S.tab==='all'||S.tab==='tbl'?table1(T):''}${S.tab==='all'||S.tab==='brand'?table2(T):''}`;

@@ -55,6 +55,7 @@ async function run(files){
       const ctx={CBT11:RAW.CBT11||G('CBT11'),COMBO11:RAW.COMBO11||G('COMBO11'),HVT11:RAW.HVT11||G('HVT11'),TDS11:RAW.TDS11||G('TDS11')};
       if(kind==='combo'){const r=MTLIB.buildCombo(aoa,ctx);put('COMBO11',r.COMBO11);if(r.CBT11)put('CBT11',r.CBT11);log.push('✔ '+r.info);}
       else if(kind==='hv'){const r=MTLIB.buildHV(aoa,ctx,askDate('hội viên'));put('HVT11',r.HVT11);log.push('✔ '+r.info);}
+      else if(kind==='hv2'){const r=MTLIB.buildHV2(aoa,ctx,askDate('hội viên'));put('HVT11',r.HVT11);log.push('✔ '+r.info);}
       else if(kind==='tds'){const r=MTLIB.buildTDS(aoa,ctx,askDate('tăng doanh số'));put('TDS11',r.TDS11);log.push('✔ '+r.info);}
       else log.push(`✖ ${f.name}: không nhận ra loại file (cần PROMOTION - OUTLET DETAIL, PERFORMANCE hội viên hoặc data tăng doanh số)`);
     }catch(e){console.error(e);log.push(`✖ ${f.name}: ${e.message}`);}

@@ -128,8 +128,8 @@ function init(){
 function avail(){
   const el=document.getElementById('t11Avail'); if(!el)return;
   const card=(l,v,sb,ac)=>`<div class="kpi" style="border-top:3px solid ${ac}"><div class="k-lab" style="color:${ac}">${l}</div><div class="k-val">${v}</div><div class="k-sub">${sb}</div></div>`;
-  let h='<div class="panel" style="margin-top:14px;border-top:3px solid #7c5cbf"><div class="tbl-head"><div><h3 style="display:inline;color:#7c5cbf">📌 Số liệu Tháng 11 đã có (MTD)</h3> <span class="pnote" style="display:inline">— SO / Active / PC / LPPC đã cập nhật đến hết 14/11; Hội viên Tết và Tăng doanh số đến hết 13/11; Combo đến hết 14/11</span></div></div><div class="kpis" style="grid-template-columns:repeat(4,1fr)">';
-  if(typeof HVT11!=='undefined'){let n=0,d=0,sp=0,ps=0;HVT11.rows.forEach(r=>{n++;if(r[5]>0)ps++;if(r[7]>0)d++;else if(r[6]>0&&r[5]<0.95*r[6]&&0.95*r[6]-r[5]<=0.3*r[6])sp++;});
+  let h='<div class="panel" style="margin-top:14px;border-top:3px solid #7c5cbf"><div class="tbl-head"><div><h3 style="display:inline;color:#7c5cbf">📌 Số liệu Tháng 11 đã có (MTD)</h3> <span class="pnote" style="display:inline">— SO / Active / PC / LPPC đã cập nhật đến hết 14/11; Hội viên Tết đến hết '+HVT11.meta.asof+'; Tăng doanh số đến hết '+TDS11.meta.asof+'; Combo đến hết '+COMBO11.meta.asof+'</span></div></div><div class="kpis" style="grid-template-columns:repeat(4,1fr)">';
+  if(typeof HVT11!=='undefined'){let n=0,d=0,sp=0,ps=0;HVT11.rows.forEach(r=>{n++;if(r[5]>0)ps++;if(HVT11.meta&&HVT11.meta.nobrand?(r[5]>=0.95*r[6]&&r[6]>0&&(r[3]===1?r[15]>=4:(r[16]||0)>=500000)):r[7]>0)d++;else if(r[6]>0&&r[5]<0.95*r[6]&&0.95*r[6]-r[5]<=0.3*r[6])sp++;});
     h+=card('Hội viên Tết · đạt',fi(d),fp(n?d/n*100:0)+' của '+fi(n)+' hội viên · sắp đạt '+fi(sp)+' · phát sinh DS '+fi(ps),'#0369a1');}
   if(typeof COMBO11!=='undefined'){const kh=new Set();let su=0,ng=0;COMBO11.rows.forEach(r=>{kh.add(r[1]);su+=r[6];if(!r[9])ng++;});
     h+=card('Combo · KH đã nhận',fi(kh.size),fi(COMBO11.rows.length)+' đơn · '+fi(su)+' suất','#0ea5e9')+card('Combo ngoài tuyến',fp(ng/COMBO11.rows.length*100),fi(ng)+' đơn','#7c5cbf')+card('Dữ liệu combo đến hết',COMBO11.meta.asof,'ngày công '+COMBO11.meta.wd_passed+'/'+COMBO11.meta.wd_total,'#2e7d5b');}
@@ -150,7 +150,7 @@ window.renderT11=function(){try{init();render();avail();}catch(e){console.error(
     const c=document.getElementById('v3chips'); if(!c)return;
     c.querySelectorAll('.chip').forEach(e=>{
       if(e.children.length)return; const t=e.textContent;
-      if(on&&/^Tháng \d+ · MTD đến \d+\/\d+ \(/.test(t)){e.dataset.orig=t; e.textContent='Tháng 11 · MTD đến hết 14/11 (SO) · 13/11 (hội viên, tăng DS) · 14/11 (combo)';}
+      if(on&&/^Tháng \d+ · MTD đến \d+\/\d+ \(/.test(t)){e.dataset.orig=t; e.textContent='Tháng 11 · MTD đến hết '+T11_META.last_date+' (SO) · '+HVT11.meta.asof+' (hội viên) · '+TDS11.meta.asof+' (tăng DS) · '+COMBO11.meta.asof+' (combo)';}
       else if(!on&&e.dataset.orig){e.textContent=e.dataset.orig; delete e.dataset.orig;}});
   }
   const shiftOn=()=>!!(window.T11SHIFT&&T11SHIFT.on);

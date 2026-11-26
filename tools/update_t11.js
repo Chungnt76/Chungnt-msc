@@ -21,6 +21,7 @@ for(const f of files){
   const aoa=XLSX.utils.sheet_to_json(sh,{header:1,raw:true,blankrows:false}),kind=L.detect(aoa[0]||[]);
   if(kind==='combo'){const r=L.buildCombo(aoa,ctx);ctx.COMBO11=r.COMBO11;changed.add('COMBO11');if(r.CBT11){ctx.CBT11=r.CBT11;changed.add('CBT11');}console.log('✔',path.basename(f),'→',r.info);}
   else if(kind==='hv'){if(!asof)console.log('⚠ thiếu --asof cho file hội viên');const r=L.buildHV(aoa,ctx,asof);ctx.HVT11=r.HVT11;changed.add('HVT11');console.log('✔',path.basename(f),'→',r.info);}
+  else if(kind==='hv2'){if(!asof)console.log('⚠ thiếu --asof cho file hội viên');const r=L.buildHV2(aoa,ctx,asof);ctx.HVT11=r.HVT11;changed.add('HVT11');console.log('✔',path.basename(f),'→',r.info);}
   else if(kind==='tds'){if(!asof)console.log('⚠ thiếu --asof cho file tăng DS');const r=L.buildTDS(aoa,ctx,asof);ctx.TDS11=r.TDS11;changed.add('TDS11');console.log('✔',path.basename(f),'→',r.info);}
   else console.log('✖',path.basename(f),': không nhận ra loại file');
 }

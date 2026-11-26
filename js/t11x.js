@@ -19,9 +19,9 @@ const H={type:'all',asm:'all',open:{a:new Set(),n:new Set(),s:new Set()},tree:nu
 const NV2_BRAND=150000, NV2_TOTAL=500000, BR=['Chanté','Chinsu','Kokomi','Nam Ngư'];
 /* 1 dòng KH → các chỉ số theo chương trình T11: NV1 = DS ≥ 95% chỉ tiêu nền; NV2 = Đại sứ: đủ 4 nhãn ≥150k · VIP: 500k từ 4 nhãn */
 function kh(r){
-  const base=r[6], ds=r[5], b=[r[10],r[11],r[12],r[13]], t=r[3], pct=base?ds/base:0;
-  const m1=pct>=0.95, m2=pct>=1, m3=pct>=1.05, sum4=b[0]+b[1]+b[2]+b[3];
-  const nv2=t===1?b.every(x=>x>=NV2_BRAND):sum4>=NV2_TOTAL, ok=m1&&nv2, rate=m3?0.02:m2?0.015:m1?0.012:0;
+  const base=r[6], ds=r[5], b=[r[10]||0,r[11]||0,r[12]||0,r[13]||0], t=r[3], pct=base?ds/base:0, NB=!!(HVT11.meta&&HVT11.meta.nobrand);
+  const m1=pct>=0.95, m2=pct>=1, m3=pct>=1.05, sum4=NB?(r[16]||0):b[0]+b[1]+b[2]+b[3];
+  const nv2=t===1?(NB?r[15]>=4:b.every(x=>x>=NV2_BRAND)):sum4>=NV2_TOTAL, ok=m1&&nv2, rate=m3?0.02:m2?0.015:m1?0.012:0;
   return {base,ds,b,t,pct,m1,m2,m3,nv2,ok,sum4,vc:r[14],pd:r[4]||0,ps:ds>0,thuong:ok?ds*rate:0,mi105:Math.max(0,1.05*base-ds-(r[4]||0)),dai4:t===1&&nv2};
 }
 const emptyAcc=()=>({n:0,ps:0,base:0,ds:0,pd:0,mi:0,m1:0,m2:0,m3:0,dai4:0,ok:0,vc:[0,0,0,0],nv1:0,nv2:0,nv1x:0,th:0,dsx:0});
@@ -84,7 +84,7 @@ function hvNv(g){
   const mk=()=>({n:0,nv1:0,nv2:0,ok:0,x:0,y:0,z:0,miss:[0,0,0,0],gap:0,dsx:0});
   const o={0:mk(),1:mk()};
   HVT11.rows.forEach(r=>{if(!scope(r[0]))return; const k=kh(r),a=o[r[3]]; a.n++; if(k.m1)a.nv1++; if(k.nv2)a.nv2++; if(k.ok)a.ok++;
-    if(k.m1&&!k.nv2){a.x++;a.dsx+=k.ds; if(r[3]===1)k.b.forEach((v,i)=>{if(v<NV2_BRAND)a.miss[i]++;}); else a.gap+=Math.max(0,NV2_TOTAL-k.sum4);}
+    if(k.m1&&!k.nv2){a.x++;a.dsx+=k.ds; if(r[3]===1&&!(HVT11.meta&&HVT11.meta.nobrand))k.b.forEach((v,i)=>{if(v<NV2_BRAND)a.miss[i]++;}); else a.gap+=Math.max(0,NV2_TOTAL-k.sum4);}
     else if(!k.m1&&k.nv2)a.y++; else if(!k.m1&&!k.nv2)a.z++;});
   const row=(lab,a,cls,vip)=>`<tr class="${cls||''}"><td style="text-align:left;font-weight:700">${lab}</td><td>${fi(a.n)}</td><td>${fi(a.nv1)}</td><td>${fi(a.nv2)}</td><td style="font-weight:800">${fi(a.ok)}</td><td style="font-weight:800;color:var(--accent)">${fi(a.x)}</td><td>${a.nv1?fp(a.x/a.nv1*100):dash}</td><td>${fi(a.y)}</td><td>${fi(a.z)}</td>`+
     (vip===1?a.miss.map(v=>`<td>${fi(v)}</td>`).join('')+'<td>'+dash+'</td>':(vip===0?`<td>${dash}</td><td>${dash}</td><td>${dash}</td><td>${dash}</td><td>${a.gap?gFmt(a.gap):dash}</td>`:`<td colspan="5">${dash}</td>`))+`<td>${Tr(a.dsx)}</td></tr>`;
@@ -99,7 +99,7 @@ function hvNvList(){
   L.sort((a,b)=>b[0].ds-a[0].ds);
   document.getElementById('hvtNvN').textContent=fi(L.length)+' KH đạt NV1 chưa đạt NV2 (hiển thị 100 KH có DS lớn nhất)';
   document.getElementById('hvtNvList').innerHTML=L.slice(0,100).map(([k,r],i)=>{const s=SR[r[0]];
-    const need=r[3]===1?BR.filter((n,j)=>k.b[j]<NV2_BRAND).join(', '):('còn thiếu '+gFmt(NV2_TOTAL-k.sum4)+' từ 4 nhãn');
+    const need=r[3]===1?((HVT11.meta&&HVT11.meta.nobrand)?('thiếu '+(4-Math.max(r[15],0))+'/4 nhãn'):BR.filter((n,j)=>k.b[j]<NV2_BRAND).join(', ')):('còn thiếu '+gFmt(NV2_TOTAL-k.sum4)+' từ 4 nhãn');
     return `<tr><td>${i+1}</td><td style="text-align:left">${esc(s[1])}</td><td style="text-align:left">${esc(s[4])}</td><td style="text-align:left">${esc(s[3])}</td><td style="text-align:left">${esc(s[2])}</td><td style="text-align:left">${esc(r[2])} <span class="kv">· ${esc(r[1])}</span></td><td>${r[3]?'VIP đại sứ':'VIP'}</td><td>${gFmt(k.ds)}</td><td>${fp(k.pct*100)}</td>`+k.b.map(v=>`<td style="${r[3]===1&&v<NV2_BRAND?'color:var(--accent);font-weight:700':''}">${v?gFmt(v):dash}</td>`).join('')+`<td style="text-align:left">${esc(need)}</td></tr>`;}).join('');
 }
 function hvList(){
@@ -115,7 +115,7 @@ function hvRender(){
   if(!document.getElementById('hvtBody'))return;
   H.acc=hvAcc();
   const m=HVT11.meta;
-  document.getElementById('hvtWarn').innerHTML=`Ngày cắt dữ liệu: <b>hết 13/11</b> (theo anh Chung báo; file hội viên không ghi ngày). ${HVT11.sr.some(x=>x[2]==='Chưa gán SS')&&m.unmapped_sr?`<b>${m.unmapped_sr} SR mới</b> chưa có trong dữ liệu T10 nên xếp ở dòng "Chưa gán SS".`:''}`;
+  document.getElementById('hvtWarn').innerHTML=`Ngày cắt dữ liệu: <b>hết ${HVT11.meta.asof||''}</b> (theo anh Chung báo; file hội viên không ghi ngày). ${HVT11.sr.some(x=>x[2]==='Chưa gán SS')&&m.unmapped_sr?`<b>${m.unmapped_sr} SR mới</b> chưa có trong dữ liệu T10 nên xếp ở dòng "Chưa gán SS".`:''}`;
   const g=hvCards(); hvNv(g);
   document.getElementById('hvtBody').innerHTML=hvTable();
   hvNvList(); hvList();

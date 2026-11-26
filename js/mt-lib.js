@@ -38,6 +38,7 @@ function srMap(ctx){
 function detect(head){
   const H=head.map(h=>String(h||'')).join('|');
   if(/PROMO_GROUP|SumQTY_REWARD/.test(H))return 'combo';
+  if(/Phân loại KH/.test(H)&&/Chỉ tiêu nền/.test(H)&&/SM UID/.test(H))return 'hv2';
   if(/newsale|MEMBER_TYPE|Chỉ_tiêu_nền/.test(H))return 'hv';
   if(/Chỉ_tiêu_doanh_số|Doanh_số_thực_hiện|ONTOP/.test(H))return 'tds';
   return null;
@@ -93,6 +94,25 @@ function buildHV(aoa,ctx,asof){
   return {HVT11,info:`Hội viên: ${rows.length.toLocaleString('vi-VN')} KH${asof?', đến '+asof:''}`};
 }
 
+/* ===== HỘI VIÊN (định dạng tổng hợp theo KH): SM UID, Mã KH, Phân loại KH, Chỉ tiêu nền, DS thực hiện (Trừ Canceled & Pending)... =====
+   Không có DS tách theo nhãn → lưu số nhãn đạt (Đại sứ) và tổng 4 nhãn (VIP) ở cột 15–16; meta.nobrand=true */
+function buildHV2(aoa,ctx,asof){
+  const c=cols(aoa[0],{sr:'SM UID',srn:'SM Name',ym:'Month',kh:'Mã KH',khn:'Tên KH',mt:'Phân loại KH',base:'Chỉ tiêu nền',paid:'Doanh số thực hiện (Paid/Invoiced)',ds:'Doanh số thực hiện (Trừ Canceled & Pending)',s4:'Tổng d.số 4 nhãn hàng trọng điểm',n4:'Mua đủ 4 nhãn hàng trọng điểm với doanh số 150k/nhãn',ql:'Mức đạt hiện tại',pt:'Điểm thưởng dự kiến',rw:'Tiền thưởng dự kiến'});
+  const SRM=srMap(ctx),old=new Map(),sr=[],si=new Map(),vc=new Map();let ym='';
+  if(ctx.HVT11){ctx.HVT11.rows.forEach(r=>{const x=ctx.HVT11.sr[r[0]];if(x)old.set(String(r[1]),x);vc.set(String(r[1]),r[14]||0);});}
+  const pn=v=>{if(v==null)return 0;const n=+String(v).replace(/[^\d.-]/g,'');return isFinite(n)?n:0;};
+  const rows=[],seen=new Set();
+  for(let i=1;i<aoa.length;i++){const r=aoa[i];if(!r||r[c.kh]==null||r[c.kh]==='')continue;const kh=String(r[c.kh]).replace(/\.0+$/,'');if(seen.has(kh))continue;seen.add(kh);ym=ym||String(r[c.ym]||'');
+    const code=String(r[c.sr]),ox=old.get(kh),key=ox?String(ox[0]):code;
+    if(!si.has(key)){const x=ox||SRM.get(code)||[code,r[c.srn],'Chưa gán SS','Chưa gán SS','Chưa gán SS'];si.set(key,sr.length);sr.push([key,x[1]||r[c.srn],x[2],x[3],x[4]]);}
+    const dai=/DAISU|ĐẠI SỨ/i.test(String(r[c.mt]))?1:0,ds=num(r[c.ds]),paid=num(r[c.paid]);
+    const m4=String(r[c.n4]||'').match(/(\d)\s*\/\s*4/);
+    rows.push([si.get(key),kh,String(r[c.khn]||''),dai,Math.round(Math.max(0,ds-paid)),Math.round(ds),Math.round(num(r[c.base])),num(r[c.ql]),Math.round(num(r[c.pt])),Math.round(num(r[c.rw])),0,0,0,0,vc.get(kh)||0,dai&&m4?+m4[1]:-1,dai?0:Math.round(pn(r[c.s4]))]);}
+  const m=(ym.match(/(\d{1,2})\/(\d{4})/)||[]);const mo=+m[1]||11,yr=+m[2]||2026;const d=asof?+String(asof).split('/')[0]:null;
+  const HVT11={meta:Object.assign({asof:asof||null,y:yr,m:mo,nobrand:true,src:'data CT Hội viên Tết (tổng hợp theo KH) · T'+mo+'/'+yr,cols:'sr,code,name,type,pend(=TH trừ Canceled&Pending − Paid),ds(=TH trừ Canceled&Pending),base,ql,pt,rw(tiền thưởng dự kiến),0,0,0,0,vipclass,n_nhãn_đạt(Đại sứ),tổng4nhãn(VIP)'},d?cal(yr,mo,d):{}),sr,rows};
+  return {HVT11,info:`Hội viên (tổng hợp): ${rows.length.toLocaleString('vi-VN')} KH${asof?', đến '+asof:''} · không có DS theo nhãn`};
+}
+
 /* ===== TĂNG DOANH SỐ: file data tăng doanh số (MBS ONTOP) ===== */
 function buildTDS(aoa,ctx,asof){
   const c=cols(aoa[0],{sr:'SF_LV5_UID]',srn:'SF_LV5_FULLNAME]',ym:'YearMonthnumber]',kh:'OUTLET_CODE]',khn:['MCP-MASTER[OUTLET]','OUTLET]'],desc:'[DESCRIPTION]',ql:'[QualifiedLevel]',ct:'[Chỉ_tiêu_doanh_số]',th:'[Doanh_số_thực_hiện__Paid___Invoiced_]',pt:'[Điểm_thưởng_dự_kiến__ONTOP_]'});
@@ -109,6 +129,6 @@ function buildTDS(aoa,ctx,asof){
   return {TDS11,info:`Tăng DS: ${rows.length.toLocaleString('vi-VN')} lượt KH${asof?', đến '+asof:''}`+(sk.length?` · BỎ QUA chương trình chưa có trong tab: ${sk.join('; ')}`:'')};
 }
 
-const API={ymd,cal,cols,detect,srMap,buildCombo,buildHV,buildTDS};
+const API={ymd,cal,cols,detect,srMap,buildCombo,buildHV,buildHV2,buildTDS};
 if(typeof module!=='undefined'&&module.exports)module.exports=API; else root.MTLIB=API;
 })(typeof window!=='undefined'?window:globalThis);
